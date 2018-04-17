@@ -35,16 +35,16 @@ print("Running for {} seconds with {} workers. In concurrency mode: {} ".format(
 ### Load Settings
 
 # Minimum queries in incoming query queue to allow before generating more
-min_queries_in_queue = worker_num*4 #*4
+min_queries_in_queue = worker_num*100 #*4
 
 # Maximum queries to have in the incoming query queue at one time
-queue_depth = worker_num*10
+queue_depth = worker_num*200
 
 # How many queries to admit from the incoming query queue into the system
-queries_to_accept_at_a_time = worker_num*5
+queries_to_accept_at_a_time = worker_num*200
 
 # How many threads to have generating queries at a time
-generator_worker_num= worker_num*4
+generator_worker_num= worker_num*8
 
 # Number of queries to pre-parse so queue does not start empty
 queries_to_start_in_queue_with = min_queries_in_queue

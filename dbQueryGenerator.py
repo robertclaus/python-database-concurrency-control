@@ -34,8 +34,6 @@ class dbQueryGenerator:
          replacePattern("<rand_int_1_255>", lambda s: str(random.randint(1,255))),
          replacePattern("<non_uniform_rand_int_subscriber_size_string>", lambda s:str(dbQueryGenerator.non_uniform_random(1,config.SUBSCRIBER_COUNT)).rjust(15,'0')),
          replacePattern("<rand_int_1_big>", lambda s: str(random.randint(1,256*256*256))),
-                       
-                       
     ]
     
     # Used for the TATP 

@@ -14,7 +14,7 @@ class dbConcurrencyEngine:
     
     _archive_completed_queries = []
     
-    def __init__(self, incoming_query_queues):
+    def __init__(self, incoming_query_queues, used_a_query_cv):
         # List of Queue's containing incoming queries
         self.incoming_query_queues = incoming_query_queues
         # A Queue of admitted queries
@@ -28,6 +28,10 @@ class dbConcurrencyEngine:
         self._total_completed_queries=0
         # The list of completed queries that have been removed from the _waiting_query_list already.
         self._archive_completed_queries=[]
+        # A condition variable to signal incoming connections to place more on the queue.
+        self.used_a_query_cv=used_a_query_cv
+    
+        self.query_count=0
     
 # Return the number of queries that have been admitted but not completed
     def queries_left(self):
@@ -44,10 +48,12 @@ class dbConcurrencyEngine:
                         conflicts = conflicts+1
                         self._sidetracked_query_list.append(new_query)
                         #print("Conflict between <{}> and <{}>".format(existing_query.query_text, new_query.query_text))
-                        break;  # Break from the existing_query loop
+                        break  # Break from the existing_query loop
             if conflicts == 0:
                 self.waiting_queries.put(new_query)
                 self._waiting_query_list.append(new_query)
+                self.query_count += 1
+                #print("Submitted Query {}".format(new_query.query_id))
         return True
 
 # Admit the next X random queries from the incoming query queues
@@ -60,6 +66,9 @@ class dbConcurrencyEngine:
             else:
                 i=i-1
         self.append(new_queries, run_concurrency_check)
+        for i in range(0,10):
+          with self.used_a_query_cv:
+            self.used_a_query_cv.notify()
 
 # Remove completed queries from the _waiting_queries_list so their locks no longer get checked against
     def proccess_completed_queries(self):
@@ -73,8 +82,9 @@ class dbConcurrencyEngine:
     def move_sidetracked_queries(self, count):
         count = min(count, len(self._sidetracked_query_list))
         for i in range(count):
-            self.append([self._sidetracked_query_list.pop(0)],
-                                       True)
+            query_to_retry =self._sidetracked_query_list.pop(0)
+            #print("Sidetrack retry {}".format(query_to_retry.query_id))
+            self.append([query_to_retry],True)
 
 # Return the total number of completed queries so far
     def total_completed_queries(self):

@@ -25,7 +25,7 @@ Run the project by calling dbQueryFlowTester with appropriate parameters:
 5. All further parameters are a list of QuerySet numbers that should be used.
 
 Example:
-python dbQueryFlowTester 1 10 5 100000 0 1
+python dbQueryFlowTester.py 1 10 5 100000 0 1
 Run the test with concurrency for 10 seconds with 5 workers.  Cut off the test at 100000 queries.  Only generate query set 0 and 1 for this test.
 
 ## QuerySet Behavior

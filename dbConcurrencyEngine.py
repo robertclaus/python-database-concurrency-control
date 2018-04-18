@@ -54,6 +54,8 @@ class dbConcurrencyEngine:
                 self._waiting_query_list.append(new_query)
                 self.query_count += 1
                 #print("Submitted Query {}".format(new_query.query_id))
+                with self.used_a_query_cv:
+                    self.used_a_query_cv.notify()
         return True
 
 # Admit the next X random queries from the incoming query queues
@@ -66,9 +68,7 @@ class dbConcurrencyEngine:
             else:
                 i=i-1
         self.append(new_queries, run_concurrency_check)
-        for i in range(0,10):
-          with self.used_a_query_cv:
-            self.used_a_query_cv.notify()
+          
 
 # Remove completed queries from the _waiting_queries_list so their locks no longer get checked against
     def proccess_completed_queries(self):

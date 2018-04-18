@@ -41,17 +41,17 @@ print("Running for {} seconds with {} workers. In concurrency mode: {} ".format(
 
 ### Load Settings
 
-# Minimum queries in incoming query queue to allow before generating more
-min_queries_in_queue = worker_num*10 #*4
+# Minimum queries in incoming waiting query queue to allow before generating more
+min_queries_in_queue = worker_num*200
 
-# Maximum queries to have in the incoming query queue at one time
-queue_depth = worker_num*20
+# Maximum queries to have in the incoming generator queue at one time
+queue_depth = min_queries_in_queue*10
 
 # How many queries to admit from the incoming query queue into the system
-queries_to_accept_at_a_time = worker_num*20
+queries_to_accept_at_a_time = worker_num*10
 
 # How many threads to have generating queries at a time
-generator_worker_num= worker_num*8
+generator_worker_num= worker_num*2
 
 # Number of queries to pre-parse so queue does not start empty
 queries_to_start_in_queue_with = min_queries_in_queue
@@ -69,7 +69,7 @@ for query_set_id in sys.argv[param_that_starts_query_sets:]:
 
 ### Pre-generate query queues and admit some queries
 print("Prepopulating Queue")
-while query_generator_queues[0].qsize()<min_queries_in_queue:
+while query_generator_queues[0].qsize()<queue_depth:
     time.sleep(.01)
     with query_generator_condition:
       query_generator_condition.notify()
@@ -89,35 +89,36 @@ start = time.time()
 loop_count = 0;
 
 while(True):
+    # Flag queries as complete
+    concurrency_engine.proccess_completed_queries()
+    
+    if len(concurrency_engine._sidetracked_query_list) > 0:
+      # Try admitting sidetracked queries first so those get priority over new ones
+      print("Trying sidetracked queries. {} in queue.".format(len(concurrency_engine._sidetracked_query_list)))
+      concurrency_engine.move_sidetracked_queries(min_queries_in_queue)
+    
     if concurrency_engine.queries_left() < min_queries_in_queue:
+        queries_to_accept = min_queries_in_queue - concurrency_engine.queries_left()
+      
         # Don't go over max_queries_total when admitting more queries
-        if queries_to_accept_at_a_time + total_queries_admitted > max_queries_total:
-            queries_to_accept_at_a_time = max_queries_total - total_queries_admitted
-
-        # Flag queries as complete
-        concurrency_engine.proccess_completed_queries()
-
-        # Try admitting sidetracked queries first so those get priority over new ones
-        concurrency_engine.move_sidetracked_queries(min_queries_in_queue)
+        if queries_to_accept + total_queries_admitted > max_queries_total:
+            queries_to_accept = max_queries_total - total_queries_admitted
 
         # If we won't hit max_queries_total, admit more queries
-        if queries_to_accept_at_a_time > 0:
+        if queries_to_accept > 0:
             # Admit queries faster if the queue is close to empty
-            if concurrency_engine.waiting_queries.qsize()<1:
-                #queries_to_accept_at_a_time = queries_to_accept_at_a_time*2
-                #print(" ######### NOT ACCEPTING QUERIES FAST ENOUGH: {}".format(concurrency_engine.waiting_queries.qsize()))
-                pass
-            concurrency_engine.append_next(queries_to_accept_at_a_time, run_concurrency_control)
-            total_queries_admitted = total_queries_admitted + queries_to_accept_at_a_time
-    elif len(concurrency_engine._sidetracked_query_list) > 0:
-        # Flag queries as complete
-        concurrency_engine.proccess_completed_queries()
-
-        # Try admitting sidetracked queries first so those get priority over new ones
-        concurrency_engine.move_sidetracked_queries(min_queries_in_queue)
+            if concurrency_engine.waiting_queries.qsize()<worker_num:
+              print(" ### Not accepting queries fast enough. Waiting count: {}".format(len(concurrency_engine._waiting_query_list)))
+            if query_generator_queues[0].qsize()<queries_to_accept:
+              print(" ### Not generating queries fast enough.")
+            #print(" Accepting {} queries at {}.".format(queries_to_accept, time.time()))
+            concurrency_engine.append_next(queries_to_accept, run_concurrency_control)
+            total_queries_admitted = total_queries_admitted + queries_to_accept
+            if concurrency_engine.waiting_queries.qsize()<worker_num:
+              print(" ### Too many queries sidetracked.")
 
     with query_completed_condition:
-      query_completed_condition.wait(.1)
+      query_completed_condition.wait(.001)
 
     # If we're done, wrap up and print results.
     total_time = time.time() - start

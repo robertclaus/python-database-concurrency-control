@@ -5,6 +5,8 @@ import sys
 import multiprocessing
 import random
 
+from repoze.lru import lru_cache
+
 class dbQuery:
     
     
@@ -95,9 +97,10 @@ class dbQuery:
                                     for id in list.tokens:
                                         if type(id) is sqlparse.sql.Identifier:
                                             self.add_identifier(id, self.write_identifiers)
-                                
+            for id in ["subscriber.s_id","special_facility.s_id","subscriber.sub_nbr"]:
+                self.add_identifier(id, self.write_identifiers)
         if self.sql_obj.get_type() == "DELETE":
-            for id in ["call_forwarding.s_id", "call_forwarding.sf_type", "call_forwarding.start_time", "call_forwarding.end_time", "call_forwarding.numberx"]:
+            for id in ["call_forwarding.s_id", "call_forwarding.sf_type", "call_forwarding.start_time", "call_forwarding.end_time", "call_forwarding.numberx","subscriber.s_id","subscriber.sub_nbr"]:
                 self.add_identifier(id, self.write_identifiers)
     
 
@@ -134,6 +137,7 @@ class dbQuery:
                      "lock_type":0,
                      })
 
+    @lru_cache(maxsize=None)
     def conflicts(self, other_query):
         for lock in self.write_identifiers:
           for other_lock in other_query.write_identifiers + other_query.read_identifiers:
@@ -148,39 +152,39 @@ class dbQuery:
     @staticmethod
     def do_locks_conflict(lock, other_lock):
         if lock['column'] == other_lock['column']:
-            if lock['lock_type']=='ANY' or other_lock['lock_type']=='ANY':
+            if lock['lock_type']==0 or other_lock['lock_type']==0:
                 return True
-        if dbQuery.compare_int_locks(lock, other_lock):
-            return True
+            if dbQuery.compare_int_locks(lock["lock_type"], lock["comparison_column"], other_lock["lock_type"], other_lock["comparison_column"]):
+                return True
         return False
     
     @staticmethod
-    def compare_int_locks(lock, other_lock):
-        if (lock['lock_type']==1) and (other_lock['lock_type']==1) and (lock['comparison_column'] == other_lock['comparison_column']):
+    def compare_int_locks(lock1_type, lock1_comparison, lock2_type, lock2_comparison):
+        if (lock1_type==1) and (lock2_type==1) and (lock1_comparison == lock2_comparison):
             return True
         # <= and =
-        if (lock['lock_type']==5) and (other_lock['lock_type']==1) and (int(lock['comparison_column']) >= int(other_lock['comparison_column'])):
+        if (lock1_type==5) and (lock2_type==1) and (lock1_comparison >= lock2_comparison):
             return True
         # = and <=
-        if (lock['lock_type']==1) and (other_lock['lock_type']==5) and (int(lock['comparison_column']) <= int(other_lock['comparison_column'])):
+        if (lock1_type==1) and (lock2_type==5) and (lock1_comparison <= lock2_comparison):
             return True
         # >= and =
-        if (lock['lock_type']==4) and (other_lock['lock_type']==1) and (int(lock['comparison_column']) <= int(other_lock['comparison_column'])):
+        if (lock1_type==4) and (lock2_type==1) and (lock1_comparison <= lock2_comparison):
             return True
         # = and >=
-        if (lock['lock_type']==1) and (other_lock['lock_type']==4) and (int(lock['comparison_column']) >= int(other_lock['comparison_column'])):
+        if (lock1_type==1) and (lock2_type==4) and (lock1_comparison >= lock2_comparison):
             return True
         # lock(>=) conflicts if <= lock(<=)
-        if (lock['lock_type']==4) and (other_lock['lock_type']==5) and (int(lock['comparison_column']) <= int(other_lock['comparison_column'])):
+        if (lock1_type==4) and (lock2_type==5) and (lock1_comparison <= lock2_comparison):
             return True
         # <= and >=
-        if (lock['lock_type']==5) and (other_lock['lock_type']==4) and (int(lock['comparison_column']) >= int(other_lock['comparison_column'])):
+        if (lock1_type==5) and (lock2_type==4) and (lock1_comparison >= lock2_comparison):
             return True
         # >= and >=
-        if (lock['lock_type']==4) and (other_lock['lock_type']==5):
+        if (lock1_type==4) and (lock2_type==4):
             return True
         # <= and <=
-        if (other_lock['lock_type']==4) and (lock['lock_type']==1):
+        if (lock1_type==5) and (lock2_type==5):
                 return True
         return False
 

@@ -95,10 +95,12 @@ class dbQueryGenerator:
     @staticmethod
     def generate_query(possible_query_list, index, generator_id, need_to_parse):
       query_text = possible_query_list[index]
-      query = dbQuery(query_text, generator_id*1000 + index, need_to_parse)
+      query = dbQuery(query_text, generator_id*1000 + index)
       for replace_rule in dbQueryGenerator.wild_card_rules:
         query_text = replace_rule.replace(query_text, query)
       query.query_text = query_text
+      if need_to_parse:
+        query.parse()
       return query
 
     @staticmethod

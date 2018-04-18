@@ -8,7 +8,7 @@ import random
 class dbQuery:
     
     
-    def __init__(self, query_text, query_type_id, need_to_parse=True):
+    def __init__(self, query_text, query_type_id):
         self.query_id = random.randint(0,10000)
         self.id = self.query_id
         self.query_text = query_text
@@ -18,8 +18,6 @@ class dbQuery:
         self.created_at = time.time()
         self.waiting_time = None
         self.completed = False
-        if need_to_parse:
-            self.parse()
         self.sql_obj=None
 
     def complete(self):
@@ -32,6 +30,7 @@ class dbQuery:
     def parse(self):
         self.sql_obj = sqlparse.parse(self.query_text)[0] # Assumes only one query at a time for now
         self.generate_locks()
+        self.sql_obj=None
     
     def generate_locks(self):
         if self.sql_obj.get_type() == 'SELECT':

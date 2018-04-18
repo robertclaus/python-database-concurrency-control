@@ -9,6 +9,13 @@ import time
 import sys
 import math
 
+
+def microseconds_used(sum, count, index):
+  if index in sum and index in count:
+    return str(1000000*sum[index]/count[index])
+  else:
+    return '0'
+
 ### Primary python script for testing queries with or without external concurrency control.
 
 ### Load all params from command line
@@ -35,13 +42,13 @@ print("Running for {} seconds with {} workers. In concurrency mode: {} ".format(
 ### Load Settings
 
 # Minimum queries in incoming query queue to allow before generating more
-min_queries_in_queue = worker_num*100 #*4
+min_queries_in_queue = worker_num*10 #*4
 
 # Maximum queries to have in the incoming query queue at one time
-queue_depth = worker_num*200
+queue_depth = worker_num*20
 
 # How many queries to admit from the incoming query queue into the system
-queries_to_accept_at_a_time = worker_num*200
+queries_to_accept_at_a_time = worker_num*20
 
 # How many threads to have generating queries at a time
 generator_worker_num= worker_num*8
@@ -171,13 +178,13 @@ while(True):
 
         if sys.argv[param_that_starts_query_sets] == '12':
           print("{},{},{},{},{},{},{}, {},{},{}".format(total_time, worker_num, str(completed/total_time),
-                                    str(1000000*type_index_sum[1000]/type_index_count[1000]),
-                                    str(1000000*type_index_sum[1002]/type_index_count[1002]),
-                                    str(1000000*type_index_sum[1004]/type_index_count[1004]),
-                                    str(1000000*type_index_sum[1006]/type_index_count[1006]),
-                                    str(1000000*type_index_sum[1008]/type_index_count[1008]),
-                                    str(1000000*type_index_sum[1010]/type_index_count[1010]),
-                                    str(1000000*type_index_sum[1012]/type_index_count[1012]),
+                                    microseconds_used(type_index_sum, type_index_count, 1000),
+                                    microseconds_used(type_index_sum, type_index_count, 1002),
+                                    microseconds_used(type_index_sum, type_index_count, 1004),
+                                    microseconds_used(type_index_sum, type_index_count, 1006),
+                                    microseconds_used(type_index_sum, type_index_count, 1008),
+                                    microseconds_used(type_index_sum, type_index_count, 1010),
+                                    microseconds_used(type_index_sum, type_index_count, 1012),
                                     ))
         break
 

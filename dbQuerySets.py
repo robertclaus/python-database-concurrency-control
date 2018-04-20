@@ -1,29 +1,72 @@
 query_sets = [
               [
-               "SELECT a1 FROM a WHERE a2 = <randInt>;", 90,
-               "UPDATE a SET a3 = <randInt> WHERE a2 = <randInt2>;", 10,
+               "SELECT a1 FROM a WHERE a2 = <randInt>;", 80,
+               "UPDATE a SET a3 = <randInt> WHERE a2 = <randInt2>;", 20,
                ],
               [
-               "SELECT a1 FROM a WHERE a2=<randInt>;", 70,
-               "UPDATE a SET a3=<randInt> WHERE a2=<randInt2>;", 30,
+               "SELECT a1 FROM a WHERE a2 = <randInt>;", 75,
+               "UPDATE a SET a3 = <randInt> WHERE a2 = <randInt2>;", 25,
                ],
               [
-               "SELECT a1 FROM a WHERE a2=<randInt>;", 50,
-               "UPDATE a SET a3=<randInt> WHERE a2=<randInt2>;", 50,
+               "SELECT a1 FROM a WHERE a2 = <randInt>;", 70,
+               "UPDATE a SET a3 = <randInt> WHERE a2 = <randInt2>;", 30,
                ],
               [
-               "SELECT a1 FROM a WHERE a2=<randInt>;", 30,
-               "UPDATE a SET a3=<randInt> WHERE a2=<randInt2>;", 70,
+               "SELECT a1 FROM a WHERE a2 = <randInt>;", 65,
+               "UPDATE a SET a3 = <randInt> WHERE a2 = <randInt2>;", 35,
                ],
               [
-               "SELECT a1 FROM a WHERE a2=<randInt>;", 20,
-               "UPDATE a SET a3=<randInt> WHERE a2=<randInt2>;", 80,
+               "SELECT a1 FROM a WHERE a2 = <randInt>;", 60,
+               "UPDATE a SET a3 = <randInt> WHERE a2 = <randInt2>;", 40,
                ],
               [
-               "SELECT a1 FROM a WHERE a2=<randInt>;", 10,
-               "UPDATE a SET a3=<randInt> WHERE a2=<randInt2>;", 90,
+               "SELECT a1 FROM a WHERE a2 = <randInt>;", 55,
+               "UPDATE a SET a3 = <randInt> WHERE a2 = <randInt2>;", 45,
                ],
-              
+              [
+               "SELECT a1 FROM a WHERE a2 = <randInt>;", 50,
+               "UPDATE a SET a3 = <randInt> WHERE a2 = <randInt2>;", 50,
+               ],
+              [
+               "SELECT a1 FROM a WHERE a2 = <randInt>;", 45,
+               "UPDATE a SET a3 = <randInt> WHERE a2 = <randInt2>;", 55,
+               ],
+              [
+               "SELECT a1 FROM a WHERE a2 = <randInt>;", 40,
+               "UPDATE a SET a3 = <randInt> WHERE a2 = <randInt2>;", 60,
+               ],
+              [
+               "SELECT a1 FROM a WHERE a2 = <randInt>;", 35,
+               "UPDATE a SET a3 = <randInt> WHERE a2 = <randInt2>;", 65,
+               ],
+              [
+               "SELECT a1 FROM a WHERE a2 = <randInt>;", 30,
+               "UPDATE a SET a3 = <randInt> WHERE a2 = <randInt2>;", 70,
+               ],
+              [
+               "SELECT a1 FROM a WHERE a2 = <randInt>;", 25,
+               "UPDATE a SET a3 = <randInt> WHERE a2 = <randInt2>;", 75,
+               ],
+              [
+               "SELECT a1 FROM a WHERE a2 = <randInt>;", 20,
+               "UPDATE a SET a3 = <randInt> WHERE a2 = <randInt2>;", 80,
+               ],
+              [
+               "SELECT a1 FROM a WHERE a2 = <randInt>;", 15,
+               "UPDATE a SET a3 = <randInt> WHERE a2 = <randInt2>;", 85,
+               ],
+              [
+               "SELECT a1 FROM a WHERE a2 = <randInt>;", 10,
+               "UPDATE a SET a3 = <randInt> WHERE a2 = <randInt2>;", 90,
+               ],
+              [
+               "SELECT a1 FROM a WHERE a2 = <randInt>;", 5,
+               "UPDATE a SET a3 = <randInt> WHERE a2 = <randInt2>;", 95,
+               ],
+              [
+               "SELECT a1 FROM a WHERE a2 = <randInt>;", 0,
+               "UPDATE a SET a3 = <randInt> WHERE a2 = <randInt2>;", 100,
+               ],
               [
                "UPDATE a SET a3=<randInt>;", 100,
                ],
@@ -315,6 +358,41 @@ query_sets = [
                AND subscriber.sub_nbr = '<non_uniform_rand_int_subscriber_size_string>';",10,
                ],
               
+              
+              # TATP Tailored To Predicate Locks
+              [
+               "SELECT \
+              subscriber.bit_2, subscriber.bit_3, subscriber.bit_4, subscriber.bit_5, subscriber.bit_6, subscriber.bit_7, \
+               subscriber.bit_8, subscriber.bit_9, subscriber.bit_10, \
+               subscriber.hex_1, subscriber.hex_2, subscriber.hex_3, subscriber.hex_4, subscriber.hex_5, subscriber.hex_6, subscriber.hex_7, \
+               subscriber.hex_8, subscriber.hex_9, subscriber.hex_10, \
+               subscriber.byte2_1, subscriber.byte2_2, subscriber.byte2_3, subscriber.byte2_4, subscriber.byte2_5, \
+               subscriber.byte2_6, subscriber.byte2_7, subscriber.byte2_8, subscriber.byte2_9, subscriber.byte2_10, \
+               subscriber.msc_location \
+               FROM subscriber \
+               WHERE subscriber.s_id = <non_uniform_rand_int_subscriber_size>; ",35,
+               
+               "SELECT access_info.data1, access_info.data2, access_info.data3, access_info.data4 \
+               FROM access_info \
+               WHERE access_info.s_id = <non_uniform_rand_int_subscriber_size> \
+               AND access_info.ai_type = <rand_int_1_4>;",35,
+               
+               "UPDATE subscriber, special_facility \
+               SET subscriber.bit_1 = <bit_rand>, special_facility.data_a = <rand_int_1_255> \
+               WHERE subscriber.s_id = <non_uniform_rand_int_subscriber_size> \
+               AND special_facility.s_id = <non_uniform_rand_int_subscriber_size> \
+               AND special_facility.sf_type = <rand_int_1_4>;", 10,
+               
+               "UPDATE subscriber \
+               SET subscriber.vlr_location = <rand_int_1_big> \
+               WHERE subscriber.sub_nbr = '<non_uniform_rand_int_subscriber_size_string>';",20,
+               
+               #"DELETE call_forwarding FROM call_forwarding \
+               #INNER JOIN subscriber ON subscriber.s_id = call_forwarding.s_id \
+               #WHERE call_forwarding.sf_type = <rand_int_1_4> \
+               #AND call_forwarding.start_time = <rand_0_8_16> \
+               #AND subscriber.sub_nbr = '<non_uniform_rand_int_subscriber_size_string>';",6,
+               ],
               
               [ # Old version before collapsing into single queries
                "SELECT <non_uniform_rand_int_subscriber_size> \

@@ -42,13 +42,13 @@ print("Running for {} seconds with {} workers. In concurrency mode: {} ".format(
 ### Load Settings
 
 # Minimum queries in incoming waiting query queue to allow before generating more
-min_queries_in_queue = worker_num*200
+min_queries_in_queue = worker_num*40
 
 # Maximum queries to have in the incoming generator queue at one time
 queue_depth = min_queries_in_queue*10
 
 # How many queries to admit from the incoming query queue into the system
-queries_to_accept_at_a_time = worker_num*10
+queries_to_accept_at_a_time = worker_num*15
 
 # How many threads to have generating queries at a time
 generator_worker_num= worker_num*2
@@ -94,8 +94,10 @@ while(True):
     
     if len(concurrency_engine._sidetracked_query_list) > 0:
       # Try admitting sidetracked queries first so those get priority over new ones
-      print("Trying sidetracked queries. {} in queue.".format(len(concurrency_engine._sidetracked_query_list)))
+      #print("Trying sidetracked queries. {} in queue.".format(len(concurrency_engine._sidetracked_query_list)))
       concurrency_engine.move_sidetracked_queries(min_queries_in_queue)
+      if concurrency_engine.waiting_queries.qsize()<worker_num:
+        print(" ### Not accepting queries from sidetrack fast enough. Waiting count: {}".format(len(concurrency_engine._waiting_query_list)))
     
     if concurrency_engine.queries_left() < min_queries_in_queue:
         queries_to_accept = min_queries_in_queue - concurrency_engine.queries_left()
@@ -118,7 +120,7 @@ while(True):
               print(" ### Too many queries sidetracked.")
 
     with query_completed_condition:
-      query_completed_condition.wait(.001)
+      query_completed_condition.wait(.01)
 
     # If we're done, wrap up and print results.
     total_time = time.time() - start
@@ -177,16 +179,9 @@ while(True):
           print("### ERROR: Utilization under 98% - Indicates this process was too slow.")
         print("Throughput (Q/s) : " + str(completed/total_time))
 
-        if sys.argv[param_that_starts_query_sets] == '12':
-          print("{},{},{},{},{},{},{}, {},{},{}".format(total_time, worker_num, str(completed/total_time),
-                                    microseconds_used(type_index_sum, type_index_count, 1000),
-                                    microseconds_used(type_index_sum, type_index_count, 1002),
-                                    microseconds_used(type_index_sum, type_index_count, 1004),
-                                    microseconds_used(type_index_sum, type_index_count, 1006),
-                                    microseconds_used(type_index_sum, type_index_count, 1008),
-                                    microseconds_used(type_index_sum, type_index_count, 1010),
-                                    microseconds_used(type_index_sum, type_index_count, 1012),
-                                    ))
+        sys.stdout.write("\n csv,{},{},{},{}".format(total_time, worker_num, str(completed/total_time), total_utilization*100))
+        for query_type in type_index_sum:
+          sys.stdout.write(",{},{}".format(query_type,microseconds_used(type_index_sum, type_index_count, 1000)))
         break
 
 sys.exit()

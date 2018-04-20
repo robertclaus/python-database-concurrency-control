@@ -47,7 +47,7 @@ class dbConcurrencyEngine:
                     if new_query.conflicts(existing_query):
                         conflicts = conflicts+1
                         self._sidetracked_query_list.append(new_query)
-                        #print("Conflict between <{}> and <{}>".format(existing_query.query_text, new_query.query_text))
+                        # print("Conflict between <{}> and <{}>".format(existing_query.query_text, new_query.query_text))
                         break  # Break from the existing_query loop
             if conflicts == 0:
                 self.waiting_queries.put(new_query)

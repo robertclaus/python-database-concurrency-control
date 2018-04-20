@@ -9,7 +9,7 @@ class config:
   MYSQL_HOST = 'localhost'
   MYSQL_USER = 'root'
   MYSQL_PASSWORD = 'test'
-  MYSQL_DB_NAME = 'mydb'
+  MYSQL_DB_NAME = 't'
 
   # Postgres Configuration
   POSTGRES_HOST = '127.0.0.1'

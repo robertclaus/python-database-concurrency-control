@@ -81,7 +81,7 @@ class dbQuery:
                 if type(token) is sqlparse.sql.Where:
                     for predicate in token:
                         if type(predicate) is sqlparse.sql.Comparison:
-                            self.add_comparison(predicate,self.write_identifiers)
+                            self.add_comparison(predicate,self.read_identifiers)
                         if type(predicate) is sqlparse.sql.Parenthesis:
                             for n_predicate in predicate.tokens:
                                if type(n_predicate) is sqlparse.sql.Comparison:
@@ -100,7 +100,14 @@ class dbQuery:
             for id in ["subscriber.s_id","special_facility.s_id","subscriber.sub_nbr"]:
                 self.add_identifier(id, self.write_identifiers)
         if self.sql_obj.get_type() == "DELETE":
-            for id in ["call_forwarding.s_id", "call_forwarding.sf_type", "call_forwarding.start_time", "call_forwarding.end_time", "call_forwarding.numberx","subscriber.s_id","subscriber.sub_nbr"]:
+            for token in self.sql_obj.tokens:
+                if type(token) is sqlparse.sql.Comparison:
+                    self.add_comparison(token, self.write_identifiers)
+                if type(token) is sqlparse.sql.Where:
+                    for predicate in token:
+                        if type(predicate) is sqlparse.sql.Comparison:
+                            self.add_comparison(predicate, self.write_identifiers)
+            for id in ["call_forwarding.sf_type", "call_forwarding.numberx"]:
                 self.add_identifier(id, self.write_identifiers)
     
 
@@ -142,10 +149,14 @@ class dbQuery:
         for lock in self.write_identifiers:
           for other_lock in other_query.write_identifiers + other_query.read_identifiers:
             if dbQuery.do_locks_conflict(lock,other_lock):
+                #print("Conflict Between {} and {}".format(self.query_type_id, other_query.query_type_id))
+                #print("   Conflict Between {} and {}".format(lock,other_lock))
               return True
         for lock in self.read_identifiers:
           for other_lock in other_query.write_identifiers:
             if dbQuery.do_locks_conflict(lock, other_lock):
+                #print("Conflict Between {} and {}".format(self.query_type_id, other_query.query_type_id))
+                #print("   Conflict Between {} and {}".format(lock,other_lock))
               return True
         return False
     

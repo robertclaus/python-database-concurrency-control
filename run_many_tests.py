@@ -1,24 +1,21 @@
 import os
 import sys
 
-for isolation_level in ['ru','ru-exi','rc','rr','s']:
-  os.system("python setIsolationLevel.py "+isolation_level)
-  for workers in [1, 2, 4, 8, 10, 12]:
-    argString = ""
-    argnum=0
-    for arg in sys.argv:
-      if argnum == 3:
-        argString = argString+str(workers)+" "
-      elif argnum == 0:
-        argString = "python dbQueryFlowTester.py "
-      elif argnum == 1: # Isolation Mode 0 for all but read uncomitted - external
-        if isolation_level == 'ru-exi':
-          argString = argString + "1 "
-        else:
-          argString = argString + "0 "
-      else:
-        argString=argString+arg+" "
-      argnum=argnum+1
-    print(argString)
-    os.system(argString)
-    print("Ran in Isolation Mode {} with {} workers.\n\n\n\n".format(isolation_level, workers))
+
+
+for tuples_to_add in ['1000', '10000', '100000', '1000000']:
+  for isolation_level in ['ru','ru-exi','rc','rr','s']:
+    os.system("python setIsolationLevel.py "+isolation_level)
+    for workers in [1, 2, 4, 8, 16, 32, 64]:
+      
+      print("Clearing and Generating {} Tuples".format(tuples_to_add))
+      os.system("python setIsolationLevel.py 'd'")
+      add_tuple_command = "python dbQueryFlowTester.py 0 1000000000 128 {} 10".format(tuples_to_add)
+      os.system(add_tuple_command)
+      print("Done adding Tuples")
+
+      use_isolation = "1 " if isolation_level == 'ru-exi' else "0 "
+      argString = "python dbQueryFlowTester.py {} {} {} {} {}".format(use_isolation, sys.argv[2], workers, sys.argv[4], sys.argv[5])
+      print(argString)
+      os.system(argString)
+      sys.stdout.write(", {}, {}, {} \n\n\n\n".format(isolation_level, workers, tuples_to_add))

@@ -14,12 +14,15 @@ if len(sys.argv)>1:
       isolation_level = 3
     if isolation_level == 'ru-exi':
       isolation_level = 0
+    if isolation_level == 'd':
+      isolation_level = 4
 
     query_text = [
     "SET GLOBAL TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;",
     "SET GLOBAL TRANSACTION ISOLATION LEVEL SERIALIZABLE;",
     "SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;",
     "SET GLOBAL TRANSACTION ISOLATION LEVEL REPEATABLE READ;",
+    "DELETE FROM t.a;",
     ]
 
     conn = MySQLdb.connect(host=config.MYSQL_HOST,user=config.MYSQL_USER,passwd=config.MYSQL_PASSWORD,db=config.MYSQL_DB_NAME)

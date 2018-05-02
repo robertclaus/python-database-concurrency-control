@@ -23,6 +23,13 @@ class dbQueryGenerator:
     
     wild_card_rules = [
         replacePattern("<randInt>", lambda s: str(random.randint(1,100000))),
+                       replacePattern("<randIntO7>", lambda s: str(random.randint(1,10000000))),
+                       replacePattern("<randIntO6>", lambda s: str(random.randint(1,1000000))),
+                       replacePattern("<randIntO5>", lambda s: str(random.randint(1,100000))),
+                       replacePattern("<randIntO4>", lambda s: str(random.randint(1,10000))),
+                       replacePattern("<randIntO3>", lambda s: str(random.randint(1,1000))),
+                       replacePattern("<randIntO2>", lambda s: str(random.randint(1,100))),
+                       replacePattern("<randIntO1>", lambda s: str(random.randint(1,10))),
         replacePattern("<randInt2>", lambda s: str(random.randint(1,100000))),
         replacePattern("<randInt3>", lambda s: str(random.randint(1,100000))),
         replacePattern("<query_obj_id>", lambda s: str(s.query_id)),

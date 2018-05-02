@@ -62,10 +62,10 @@ class dbClientManager:
               connection.commit()
             except IntegrityError as IE:
               pass
-              #print("Integrity Error")
+              print("Integrity Error")
             except OperationalError as OE:
               pass
-              #print("Operational Error (Deadlock)")
+              print("Operational Error (Deadlock)")
             complete_queue.put(query)
             
             query.complete()

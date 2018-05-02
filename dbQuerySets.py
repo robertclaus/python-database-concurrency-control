@@ -1,5 +1,90 @@
 query_sets = [
               [
+               "INSERT INTO a (a1, a2, a3) VALUES (<randInt>, <randInt2>, <randInt3>);",100,
+               ],
+              [
+               "SELECT a1,a2 FROM a WHERE a1 = <randIntO1>;", 80,
+               "UPDATE a SET a2 = <randIntO1> WHERE a2 = <randIntO1>;", 20,
+               ],
+              ]
+query_sets_ = [
+                [
+                 "INSERT INTO a (a1, a2, a3) VALUES (<randInt>, <randInt2>, <randInt3>);",100,
+                 ],
+                [
+                 "SELECT a1,a2 FROM a WHERE a1 = <randIntO1>;", 80,
+                 "UPDATE a SET a1 = <randIntO1> WHERE a1 = <randIntO1>;", 20,
+                 ],
+              [
+               "SELECT a1,a2 FROM a WHERE a1 = <randIntO2>;", 80,
+               "UPDATE a SET a1 = <randIntO2> WHERE a1 = <randIntO2>;", 20,
+               ],
+              [
+               "SELECT a1,a2 FROM a WHERE a1 = <randIntO3>;", 80,
+               "UPDATE a SET a1 = <randIntO3> WHERE a1 = <randIntO3>;", 20,
+               ],
+              [
+               "SELECT a1,a2 FROM a WHERE a1 = <randIntO4>;", 80,
+               "UPDATE a SET a1 = <randIntO4> WHERE a1 = <randIntO4>;", 20,
+               ],
+              [
+               "SELECT a1,a2 FROM a WHERE a1 = <randIntO5>;", 80,
+               "UPDATE a SET a1 = <randIntO5> WHERE a1 = <randIntO5>;", 20,
+               ],
+              [
+               "SELECT a1,a2 FROM a WHERE a1 = <randIntO6>;", 80,
+               "UPDATE a SET a1 = <randIntO6> WHERE a1 = <randIntO6>;", 20,
+               ],
+              [
+               "SELECT a1,a2 FROM a WHERE a1 = <randIntO7>;", 80,
+               "UPDATE a SET a1 = <randIntO7> WHERE a1 = <randIntO7>;", 20,
+               ],
+                [
+                 "SELECT a1,a2 FROM a WHERE a1 = <randInt>;", 80,
+                 "UPDATE a SET a1 = <randInt> WHERE a1 = <randInt2>;", 20,
+                 ],
+                ]
+
+query_sets_3 = [
+              [
+               "INSERT INTO a (a1, a2, a3) VALUES (<randInt>, <randInt2>, <randInt3>);",100,
+               ],
+              [
+               "SELECT a1 FROM a WHERE a2 = <randIntO1>;", 80,
+               "UPDATE a SET a3 = <randIntO1> WHERE a2 = <randIntO1>;", 20,
+               ],
+              [
+               "SELECT a1 FROM a WHERE a2 = <randIntO2>;", 80,
+               "UPDATE a SET a3 = <randIntO2> WHERE a2 = <randIntO2>;", 20,
+               ],
+              [
+               "SELECT a1 FROM a WHERE a2 = <randIntO3>;", 80,
+               "UPDATE a SET a3 = <randIntO3> WHERE a2 = <randIntO3>;", 20,
+               ],
+              [
+               "SELECT a1 FROM a WHERE a2 = <randIntO4>;", 80,
+               "UPDATE a SET a3 = <randIntO4> WHERE a2 = <randIntO4>;", 20,
+               ],
+              [
+               "SELECT a1 FROM a WHERE a2 = <randIntO5>;", 80,
+               "UPDATE a SET a3 = <randIntO5> WHERE a2 = <randIntO5>;", 20,
+               ],
+              [
+               "SELECT a1 FROM a WHERE a2 = <randIntO6>;", 80,
+               "UPDATE a SET a3 = <randIntO6> WHERE a2 = <randIntO6>;", 20,
+               ],
+              [
+               "SELECT a1 FROM a WHERE a2 = <randIntO7>;", 80,
+               "UPDATE a SET a3 = <randIntO7> WHERE a2 = <randIntO7>;", 20,
+               ],
+              [
+               "SELECT a1,a2 FROM a WHERE a1 = <randInt>;", 80,
+               "UPDATE a SET a1 = <randInt> WHERE a1 = <randInt2>;", 20,
+               ],
+]
+
+query_sets2 = [
+              [
                "SELECT a1 FROM a WHERE a2 = <randInt>;", 80,
                "UPDATE a SET a3 = <randInt> WHERE a2 = <randInt2>;", 20,
                ],

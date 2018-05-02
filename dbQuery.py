@@ -19,8 +19,10 @@ class dbQuery:
         self.query_type_id = query_type_id
         self.created_at = time.time()
         self.waiting_time = None
+        self.admitted_at = None
         self.completed = False
         self.sql_obj=None
+        self.columns_locked=[]
 
     def complete(self):
         self.total_time = time.time()-self.created_at
@@ -28,6 +30,9 @@ class dbQuery:
     
     def done_waiting(self):
         self.waiting_time = time.time() - self.created_at
+    
+    def admitted(self):
+        self.admitted_at = time.time()
 
     def parse(self):
         self.sql_obj = sqlparse.parse(self.query_text)[0] # Assumes only one query at a time for now
@@ -44,13 +49,6 @@ class dbQuery:
                     in_identifier_list = False
                     in_table_list = True
                 
-                if in_identifier_list and type(token) is sqlparse.sql.IdentifierList:
-                    for identifier in token:
-                        if type(identifier) is sqlparse.sql.Identifier:
-                            self.add_identifier(identifier, self.read_identifiers)
-                if in_identifier_list and type(token) is sqlparse.sql.Identifier:
-                    self.add_identifier(token, self.read_identifiers)
-                
                 if type(token) is sqlparse.sql.Where:
                     for predicate in token:
                         if type(predicate) is sqlparse.sql.Comparison:
@@ -59,6 +57,23 @@ class dbQuery:
                             for n_predicate in predicate.tokens:
                                 if type(n_predicate) is sqlparse.sql.Comparison:
                                     self.add_comparison(n_predicate,self.read_identifiers)
+
+            for token in self.sql_obj.tokens:
+                if type(token) is sqlparse.sql.Token and token.value=='SELECT':
+                    in_identifier_list = True
+                    in_table_list = False
+                if type(token) is sqlparse.sql.Token and token.value=='FROM':
+                    in_identifier_list = False
+                    in_table_list = True
+        
+                if in_identifier_list and type(token) is sqlparse.sql.IdentifierList:
+                    for identifier in token:
+                        if type(identifier) is sqlparse.sql.Identifier:
+                            if not any(p for p in self.read_identifiers if p['column']==str(identifier[0])):
+                                self.add_identifier(identifier[0], self.read_identifiers)
+                if in_identifier_list and type(token) is sqlparse.sql.Identifier:
+                    if not any(p for p in self.read_identifiers if p['column']==str(token[0])):
+                        self.add_identifier(token[0], self.read_identifiers)
                                 
         if self.sql_obj.get_type() == 'UPDATE':
             for token in self.sql_obj.tokens:
@@ -68,16 +83,7 @@ class dbQuery:
                 if type(token) is sqlparse.sql.Token and token.value=='SET':
                     in_set_list = True
                     in_table_list = False
-                    
-                if in_set_list and type(token) is sqlparse.sql.IdentifierList:
-                    for comparison in token:
-                        if type(comparison) is sqlparse.sql.Comparison:
-                            self.add_identifier(comparison[0],self.write_identifiers)
-                            self.add_comparison(comparison, self.write_identifiers)
-                if in_set_list and type(token) is sqlparse.sql.Comparison:
-                    self.add_identifier(token,self.write_identifiers)
-                    self.add_comparison(token, self.write_identifiers)
-                        
+            
                 if type(token) is sqlparse.sql.Where:
                     for predicate in token:
                         if type(predicate) is sqlparse.sql.Comparison:
@@ -86,6 +92,28 @@ class dbQuery:
                             for n_predicate in predicate.tokens:
                                if type(n_predicate) is sqlparse.sql.Comparison:
                                  self.add_comparison(n_predicate,self.read_identifiers)
+
+            for token in self.sql_obj.tokens:
+                if type(token) is sqlparse.sql.Token and token.value=='UPDATE':
+                    in_table_list = True
+                    in_set_list = False
+                if type(token) is sqlparse.sql.Token and token.value=='SET':
+                    in_set_list = True
+                    in_table_list = False
+
+                if in_set_list and type(token) is sqlparse.sql.IdentifierList:
+                    for comparison in token:
+                        if type(comparison) is sqlparse.sql.Comparison:
+                            if not any(p for p in self.read_identifiers if p['column']==str(comparison[0])):
+                                self.add_identifier(comparison[0],self.write_identifiers)
+                            self.add_comparison(comparison, self.write_identifiers)
+                
+                if in_set_list and type(token) is sqlparse.sql.Comparison:
+                    if not any(p for p in self.read_identifiers if p['column']==str(token[0])):
+                        self.add_identifier(token[0],self.write_identifiers)
+                    self.add_comparison(token, self.write_identifiers)
+
+
 
         if self.sql_obj.get_type() == "INSERT":
             for token in self.sql_obj.tokens:
@@ -137,9 +165,11 @@ class dbQuery:
         self.add_identifier(lock['column'], list)
         self.add_identifier(lock['comparison_column'], list)
       else:
+        self.columns_locked.append(lock['column']);
         list.append(lock)
 
     def add_identifier(self, identifier, list):
+        self.columns_locked.append(str(identifier));
         list.append({"column":str(identifier),
                      "lock_type":0,
                      })

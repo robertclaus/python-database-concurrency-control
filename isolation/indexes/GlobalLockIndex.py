@@ -19,12 +19,9 @@ class GlobalLockIndex:
     def remove_queries(self, queries):
         map(GlobalLockIndex.remove_query, queries)
 
-    def remove_queries(self, query):
+    def remove_query(self, query):
         self.locking_queries.remove(query)
         self.non_equality_values -= query.predicatelock.nonequality_value_count
 
     def does_conflict(self, query):
-        for existing_query in self.locking_queries:
-            if query.conflicts(existing_query, self.column_reference):
-                return True
-        return False
+        return any([query.conflicts(existing_query) for existing_query in self.locking_queries])

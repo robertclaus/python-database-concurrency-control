@@ -5,25 +5,52 @@ import sys
 import multiprocessing
 import random
 
-from repoze.lru import lru_cache
+from PredicateLock import PredicateLock
 
 class dbQuery:
-    
+    READ = 1
+    WRITE = 2
     
     def __init__(self, query_text, query_type_id):
-        self.query_id = random.randint(0,10000)
+        self.query_id = random.randint(0,100000000)
         self.id = self.query_id
         self.query_text = query_text
-        self.read_identifiers = []
-        self.write_identifiers = []
+        self.predicatelock = PredicateLock()
+        self.locks = []
         self.query_type_id = query_type_id
         self.created_at = time.time()
         self.waiting_time = None
         self.admitted_at = None
         self.completed = False
         self.sql_obj=None
-        self.columns_locked=[]
+        self.worker = None
+        self.worker_waited_time = None
+        self.lock_run_under = None
+        self.lock_indexes = { 'columns_locked':[],
+                              'columns_locked_not_all':[],
+                              'columns_locked_write':[],
+                              'tables_locked':[],
+                              'mode':[],
+                              }
+        self.error = None
+        self.start_admit_time=0
+        self.finish_admit_time=0
+        self.time_to_admit=0
+        self.readonly=True
+    
+    def __eq__(self, other):
+        return self.query_id == other.query_id
 
+    def start_admit(self):
+        self.start_admit_time = time.time()
+    
+    def finish_admit(self):
+        self.finish_admit_time = time.time()
+        self.time_to_admit = self.finish_admit_time-self.start_admit_time
+
+    def log_error(self, error):
+        self.error =error
+    
     def complete(self):
         self.total_time = time.time()-self.created_at
         self.completed = True
@@ -38,25 +65,36 @@ class dbQuery:
         self.sql_obj = sqlparse.parse(self.query_text)[0] # Assumes only one query at a time for now
         self.generate_locks()
         self.sql_obj=None
+        self.predicatelock.merge_values()
+        self.generate_lock_indexes()
     
+    def generate_lock_indexes(self):
+        for tabledotcolumn in self.predicatelock.tabledotcolumnindex:
+            self.lock_indexes['columns_locked'].append(tabledotcolumn)
+        for tabledotcolumn in self.predicatelock.notalltabledotcolumnindex:
+            self.lock_indexes['columns_locked_not_all'].append(tabledotcolumn)
+        if self.predicatelock.readonly:
+            self.readonly=True
+        else:
+            self.readonly=False
+
+    def get_locked_columns(self):
+        return self.lock_indexes['columns_locked']
+
+    def get_locked_tables(self):
+        return self.predicatelock.tableindex
+
     def generate_locks(self):
         if self.sql_obj.get_type() == 'SELECT':
             for token in self.sql_obj.tokens:
-                if type(token) is sqlparse.sql.Token and token.value=='SELECT':
-                    in_identifier_list = True
-                    in_table_list = False
-                if type(token) is sqlparse.sql.Token and token.value=='FROM':
-                    in_identifier_list = False
-                    in_table_list = True
-                
                 if type(token) is sqlparse.sql.Where:
                     for predicate in token:
                         if type(predicate) is sqlparse.sql.Comparison:
-                            self.add_comparison(predicate,self.read_identifiers)
+                            self.add_comparison(predicate,PredicateLock.READ)
                         if type(predicate) is sqlparse.sql.Parenthesis:
                             for n_predicate in predicate.tokens:
                                 if type(n_predicate) is sqlparse.sql.Comparison:
-                                    self.add_comparison(n_predicate,self.read_identifiers)
+                                    self.add_comparison(n_predicate,PredicateLock.READ)
 
             for token in self.sql_obj.tokens:
                 if type(token) is sqlparse.sql.Token and token.value=='SELECT':
@@ -69,29 +107,22 @@ class dbQuery:
                 if in_identifier_list and type(token) is sqlparse.sql.IdentifierList:
                     for identifier in token:
                         if type(identifier) is sqlparse.sql.Identifier:
-                            if not any(p for p in self.read_identifiers if p['column']==str(identifier[0])):
-                                self.add_identifier(identifier[0], self.read_identifiers)
+                            if not self.predicatelock.value_exists(PredicateLock.READ, str(identifier)):
+                                self.add_identifier(identifier, PredicateLock.READ)
                 if in_identifier_list and type(token) is sqlparse.sql.Identifier:
-                    if not any(p for p in self.read_identifiers if p['column']==str(token[0])):
-                        self.add_identifier(token[0], self.read_identifiers)
+                    if not self.predicatelock.value_exists(PredicateLock.READ, str(token)):
+                        self.add_identifier(token, PredicateLock.READ)
                                 
         if self.sql_obj.get_type() == 'UPDATE':
             for token in self.sql_obj.tokens:
-                if type(token) is sqlparse.sql.Token and token.value=='UPDATE':
-                    in_table_list = True
-                    in_set_list = False
-                if type(token) is sqlparse.sql.Token and token.value=='SET':
-                    in_set_list = True
-                    in_table_list = False
-            
                 if type(token) is sqlparse.sql.Where:
                     for predicate in token:
                         if type(predicate) is sqlparse.sql.Comparison:
-                            self.add_comparison(predicate,self.read_identifiers)
+                            self.add_comparison(predicate,PredicateLock.READ)
                         if type(predicate) is sqlparse.sql.Parenthesis:
                             for n_predicate in predicate.tokens:
                                if type(n_predicate) is sqlparse.sql.Comparison:
-                                 self.add_comparison(n_predicate,self.read_identifiers)
+                                 self.add_comparison(n_predicate,PredicateLock.READ)
 
             for token in self.sql_obj.tokens:
                 if type(token) is sqlparse.sql.Token and token.value=='UPDATE':
@@ -104,14 +135,14 @@ class dbQuery:
                 if in_set_list and type(token) is sqlparse.sql.IdentifierList:
                     for comparison in token:
                         if type(comparison) is sqlparse.sql.Comparison:
-                            if not any(p for p in self.read_identifiers if p['column']==str(comparison[0])):
-                                self.add_identifier(comparison[0],self.write_identifiers)
-                            self.add_comparison(comparison, self.write_identifiers)
+                            if not self.predicatelock.value_exists(PredicateLock.READ, str(comparison[0])):
+                                self.add_identifier(comparison[0],PredicateLock.WRITE)
+                            self.add_comparison(comparison, PredicateLock.WRITE)
                 
                 if in_set_list and type(token) is sqlparse.sql.Comparison:
-                    if not any(p for p in self.read_identifiers if p['column']==str(token[0])):
-                        self.add_identifier(token[0],self.write_identifiers)
-                    self.add_comparison(token, self.write_identifiers)
+                    if not self.predicatelock.value_exists(PredicateLock.READ, str(token[0])):
+                        self.add_identifier(token[0],PredicateLock.WRITE)
+                    self.add_comparison(token, PredicateLock.WRITE)
 
 
 
@@ -124,19 +155,30 @@ class dbQuery:
                                 if type(list) is sqlparse.sql.IdentifierList:
                                     for id in list.tokens:
                                         if type(id) is sqlparse.sql.Identifier:
-                                            self.add_identifier(id, self.write_identifiers)
-            for id in ["subscriber.s_id","special_facility.s_id","subscriber.sub_nbr"]:
-                self.add_identifier(id, self.write_identifiers)
+                                            self.add_identifier(id, PredicateLock.WRITE)
+            for token in self.sql_obj.tokens:
+              if type(token) is sqlparse.sql.Where:
+                for predicate in token:
+                  if type(predicate) is sqlparse.sql.Comparison:
+                    self.add_comparison(predicate,PredicateLock.READ)
+                    if type(predicate) is sqlparse.sql.Parenthesis:
+                      for n_predicate in predicate.tokens:
+                        if type(n_predicate) is sqlparse.sql.Comparison:
+                          self.add_comparison(n_predicate,PredicateLock.READ)
+        
+            for id in ["subscriber.s_id","special_facility.s_id"]:#,"subscriber.sub_nbr"]:
+              self.add_identifier(id, PredicateLock.WRITE)
+
         if self.sql_obj.get_type() == "DELETE":
             for token in self.sql_obj.tokens:
                 if type(token) is sqlparse.sql.Comparison:
-                    self.add_comparison(token, self.write_identifiers)
+                    self.add_comparison(token, PredicateLock.WRITE)
                 if type(token) is sqlparse.sql.Where:
                     for predicate in token:
                         if type(predicate) is sqlparse.sql.Comparison:
-                            self.add_comparison(predicate, self.write_identifiers)
+                            self.add_comparison(predicate, PredicateLock.WRITE)
             for id in ["call_forwarding.sf_type", "call_forwarding.numberx"]:
-                self.add_identifier(id, self.write_identifiers)
+                self.add_identifier(id, PredicateLock.WRITE)
     
 
     def comparison_types(self, comparison_string):
@@ -153,88 +195,32 @@ class dbQuery:
       print("Failed to recognize comparison type.")
       return -1
 
-    def add_comparison(self, comparison, list):
-      lock = {
-        "column":str(comparison[0]),
-        "lock_type":self.comparison_types(str(comparison[2])),
-        "comparison_column":str(comparison[4]).replace("'",""),
-        }
-      
+    def add_comparison(self, comparison, mode):
+      main_column = str(comparison[0])
+      comparison_column = str(comparison[4]).replace("'","")
+                                                              
       # Comparing between columns means use ANY for both columns
-      if '.' in lock['comparison_column']:
-        self.add_identifier(lock['column'], list)
-        self.add_identifier(lock['comparison_column'], list)
+      if '.' in comparison_column:
+          self.add_identifier(main_column, mode)
+          self.add_identifier(comparison_column, mode)
       else:
-        self.columns_locked.append(lock['column']);
-        list.append(lock)
+          self.predicatelock.add_value(main_column,
+                                       self.comparison_types(str(comparison[2])),
+                                       comparison_column,
+                                       mode)
 
-    def add_identifier(self, identifier, list):
-        self.columns_locked.append(str(identifier));
-        list.append({"column":str(identifier),
-                     "lock_type":0,
-                     })
+    def add_identifier(self, identifier, mode):
+      self.predicatelock.add_value(str(identifier),
+                                   0,
+                                   "",
+                                   mode)
 
-    @lru_cache(maxsize=None)
-    def conflicts(self, other_query):
-        for lock in self.write_identifiers:
-          for other_lock in other_query.write_identifiers + other_query.read_identifiers:
-            if dbQuery.do_locks_conflict(lock,other_lock):
-                #print("Conflict Between {} and {}".format(self.query_type_id, other_query.query_type_id))
-                #print("   Conflict Between {} and {}".format(lock,other_lock))
-              return True
-        for lock in self.read_identifiers:
-          for other_lock in other_query.write_identifiers:
-            if dbQuery.do_locks_conflict(lock, other_lock):
-                #print("Conflict Between {} and {}".format(self.query_type_id, other_query.query_type_id))
-                #print("   Conflict Between {} and {}".format(lock,other_lock))
-              return True
-        return False
-    
-    @staticmethod
-    def do_locks_conflict(lock, other_lock):
-        if lock['column'] == other_lock['column']:
-            if lock['lock_type']==0 or other_lock['lock_type']==0:
-                return True
-            if dbQuery.compare_int_locks(lock["lock_type"], lock["comparison_column"], other_lock["lock_type"], other_lock["comparison_column"]):
-                return True
-        return False
-    
-    @staticmethod
-    def compare_int_locks(lock1_type, lock1_comparison, lock2_type, lock2_comparison):
-        if (lock1_type==1) and (lock2_type==1) and (lock1_comparison == lock2_comparison):
+    def conflicts(self, other_query, columns_to_consider={}):
+        if self.predicatelock.do_locks_conflict(other_query.predicatelock, columns_to_consider):
+            #print("Conflict Between \n  {} \n  and \n  {}".format(self.query_text, other_query.query_text))
+            #print("   Conflict Between {} and {}".format(lock,other_lock))
             return True
-        # <= and =
-        if (lock1_type==5) and (lock2_type==1) and (lock1_comparison >= lock2_comparison):
-            return True
-        # = and <=
-        if (lock1_type==1) and (lock2_type==5) and (lock1_comparison <= lock2_comparison):
-            return True
-        # >= and =
-        if (lock1_type==4) and (lock2_type==1) and (lock1_comparison <= lock2_comparison):
-            return True
-        # = and >=
-        if (lock1_type==1) and (lock2_type==4) and (lock1_comparison >= lock2_comparison):
-            return True
-        # lock(>=) conflicts if <= lock(<=)
-        if (lock1_type==4) and (lock2_type==5) and (lock1_comparison <= lock2_comparison):
-            return True
-        # <= and >=
-        if (lock1_type==5) and (lock2_type==4) and (lock1_comparison >= lock2_comparison):
-            return True
-        # >= and >=
-        if (lock1_type==4) and (lock2_type==4):
-            return True
-        # <= and <=
-        if (lock1_type==5) and (lock2_type==5):
-                return True
         return False
 
-    def print_locks(self):
-      print("Query: {}\n".format(self.query_text))
-      for lock in self.write_identifiers:
-        print(lock)
-      #print("Write: {} {} {}\n".format(lock.column, lock.lock_type, lock.comparison_column))
-      for lock in self.read_identifiers:
-        print(lock)
-#print("Read: {} {} {}\n".format(lock.column, lock.lock_type, lock.comparison_column))
-
+    def __str__(self):
+        return "Query: {}\n{}".format(self.query_text, str(self.predicatelock))

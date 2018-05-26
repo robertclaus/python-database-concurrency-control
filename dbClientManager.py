@@ -5,6 +5,8 @@ import threading
 import time
 from config import config
 
+import multiprocessing
+
 import MySQLdb
 import psycopg2
 
@@ -24,18 +26,17 @@ class dbClientManager:
         self.waiting_queue = waiting_queue
         self.complete_queue = complete_queue
         for i in range(num_worker_threads):
-          if config.DB_TYPE == config.DB_TYPE_MYSQL:
-            conn = MySQLdb.connect(host=config.MYSQL_HOST,user=config.MYSQL_USER,passwd=config.MYSQL_PASSWORD,db=config.MYSQL_DB_NAME)
-          if config.DB_TYPE == config.DB_TYPE_POSTGRES:
-            conn = psycopg2.connect(database = config.POSTGRES_DB_NAME, user = config.POSTGRES_USER, password = config.POSTGRES_PASSWORD, host = config.POSTGRES_HOST, port = config.POSTGRES_PORT)
-          cur = conn.cursor()
-
-
-          t = threading.Thread(target=dbClientManager.worker,
-                               args=[waiting_queue, complete_queue, conn, cur, query_completed_condition],)
-          t.setDaemon(True)
-          t.start()
-          self.threads.append(t)
+          
+          p = multiprocessing.Process(target = dbClientManager.worker, args = (waiting_queue, complete_queue, query_completed_condition, i))
+          p.daemon=True
+          p.start()
+          self.threads.append(p)
+          
+          #t = threading.Thread(target=dbClientManager.worker,
+          #                     args=[waiting_queue, complete_queue, query_completed_condition],)
+          #t.setDaemon(True)
+          #t.start()
+          #self.threads.append(t)
 
     def end_processes(self):
         # Place "Stop" commands (None) on worker queue
@@ -46,29 +47,41 @@ class dbClientManager:
             self.waiting_queue.task_done()
         
         # Wait for other threads to complete the remaining "Stop" commands
-        while any([thread for thread in self.threads if thread.isAlive()]):
+        while any([thread for thread in self.threads if thread.is_alive()]):
             time.sleep(.01)
 
     @staticmethod
-    def worker(waiting_queue, complete_queue, connection, cursor, cv):
+    def worker(waiting_queue, complete_queue, cv, worker_id):
+        if config.DB_TYPE == config.DB_TYPE_MYSQL:
+            connection = MySQLdb.connect(host=config.MYSQL_HOST,user=config.MYSQL_USER,passwd=config.MYSQL_PASSWORD,db=config.MYSQL_DB_NAME)
+        if config.DB_TYPE == config.DB_TYPE_POSTGRES:
+            connection = psycopg2.connect(database = config.POSTGRES_DB_NAME, user = config.POSTGRES_USER, password = config.POSTGRES_PASSWORD, host = config.POSTGRES_HOST, port = config.POSTGRES_PORT)
+        cursor = connection.cursor()
+        total_time_waiting = 0
         while True:
+            start_wait = time.time()
             query = waiting_queue.get()
+            end_wait = time.time()
+            
             if query is None:
                 connection.close()
                 return
             query.done_waiting()
+            #print("\n Query: {}".format(query.query_text))
             try:
+              #time.sleep(1)
               cursor.execute(query.query_text)
               connection.commit()
             except IntegrityError as IE:
+              query.log_error("Integrity")
               pass
-              print("Integrity Error")
             except OperationalError as OE:
+              query.log_error("Operational (deadlock)")
               pass
-              print("Operational Error (Deadlock)")
-            complete_queue.put(query)
-            
             query.complete()
+            query.worker = worker_id
+            query.worker_waited_time = end_wait-start_wait
             waiting_queue.task_done()
+            complete_queue.put(query)
             with cv:
-              cv.notifyAll()
+              cv.notify()

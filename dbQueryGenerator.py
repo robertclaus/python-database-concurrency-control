@@ -82,11 +82,11 @@ class dbQueryGenerator:
     def end_processes(self):
         # stop workers
         for i in range(self.total_thread_count):
-            self.waiting_queue.put(None)
+            self.generated_query_queue.put(None)
             
-        self.waiting_queue.put(None)
-        while self.waiting_queue.get() is not None:
-            self.waiting_queue.task_done()
+        self.generated_query_queue.put(None)
+        while self.generated_query_queue.get() is not None:
+            self.generated_query_queue.task_done()
             pass
 
     @staticmethod
@@ -114,7 +114,7 @@ class dbQueryGenerator:
     def worker(waiting_queue, possible_query_list, need_to_parse, target_depth, run_in_series, generator_id, cv):
           while True:
             with cv:
-              cv.wait()
+              cv.wait(.001)
             while target_depth - waiting_queue.qsize() > 0:
                 index = dbQueryGenerator.pick_query_index_to_generate(possible_query_list)
                 last_query = dbQueryGenerator.generate_query(possible_query_list, index, generator_id, need_to_parse)

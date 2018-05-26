@@ -42,16 +42,24 @@ print("Running for {} seconds with {} workers. In concurrency mode: {} ".format(
 ### Load Settings
 
 # Minimum queries in incoming waiting query queue to allow before generating more
-min_queries_in_queue = worker_num*40
+min_queries_in_queue = worker_num*1000
+
+# Minimum queries in sidetrack to consider admitting
+min_queries_in_sidetrack = 1000
+
+# Minimum queries to conisder admitting from a sidetrack
+min_queries_from_sidetrack = 100
+# Maximum queries to leave in a sidetrack
+max_queries_from_sidetrack = 20
+
+# Scheduling By Column Only, or also general predicate locking
+admit_to_sidetrack = run_concurrency_control
 
 # Maximum queries to have in the incoming generator queue at one time
-queue_depth = min_queries_in_queue*10
-
-# How many queries to admit from the incoming query queue into the system
-queries_to_accept_at_a_time = worker_num*15
+queue_depth = min_queries_in_queue#*10
 
 # How many threads to have generating queries at a time
-generator_worker_num= worker_num*2
+generator_worker_num= worker_num*4
 
 # Number of queries to pre-parse so queue does not start empty
 queries_to_start_in_queue_with = min_queries_in_queue
@@ -60,11 +68,13 @@ queries_to_start_in_queue_with = min_queries_in_queue
 query_generator_condition = multiprocessing.Condition() # Notifies the generator that we may have used some of its queries
 query_sets = dbQuerySets.query_sets
 query_generator_queues =[]
+generator_processes = []
 for query_set_id in sys.argv[param_that_starts_query_sets:]:
     query_set = query_sets[int(query_set_id)]
     # Create a thread to generate queries.  This is like an application submitting queries to the database.
     new_generator = dbQueryGenerator(query_set, run_concurrency_control, queue_depth, generator_worker_num, not (int(query_set_id)==int(sys.argv[param_that_starts_query_sets])),query_generator_condition) # All but the first queryset wait for one query to complete before doing the next one.
     query_generator_queues.append(new_generator.generated_query_queue)
+    generator_processes.append(new_generator)
 
 
 ### Pre-generate query queues and admit some queries
@@ -74,10 +84,12 @@ while query_generator_queues[0].qsize()<queue_depth:
     with query_generator_condition:
       query_generator_condition.notify()
 print("  Query Generators done.  Waiting for CC Startup")
-query_completed_condition = threading.Condition()
-concurrency_engine = dbConcurrencyEngine(query_generator_queues, query_generator_condition, run_concurrency_control)
 
-concurrency_engine.append_next(queries_to_start_in_queue_with)
+query_completed_condition = multiprocessing.Condition()
+
+concurrency_engine = dbConcurrencyEngine(query_generator_queues, query_generator_condition, run_concurrency_control,query_completed_condition)
+
+concurrency_engine.append_next(queries_to_start_in_queue_with, admit_to_sidetrack)
 total_queries_admitted = queries_to_start_in_queue_with
 print("Done Prepopulating Queue")
 
@@ -92,34 +104,21 @@ while(True):
     # Flag queries as complete
     concurrency_engine.proccess_completed_queries()
     
-    if len(concurrency_engine._sidetracked_query_list) > 0:
-      # Try admitting sidetracked queries first so those get priority over new ones
-      #print("Trying sidetracked queries. {} in queue.".format(len(concurrency_engine._sidetracked_query_list)))
-      
-      #concurrency_engine.move_sidetracked_queries(min_queries_in_queue)
-      if concurrency_engine.waiting_queries.qsize()<worker_num:
-        print(" ### Not accepting queries from sidetrack fast enough. Waiting count: {}".format(len(concurrency_engine._waiting_query_list)))
+    if run_concurrency_control:
+      #concurrency_engine.move_sidetracked_queries(10)
+      concurrency_engine.consider_changing_lock_mode(min_queries_in_sidetrack,min_queries_from_sidetrack,max_queries_from_sidetrack)
     
     if concurrency_engine.queries_left() < min_queries_in_queue:
-        concurrency_engine.consider_changing_lock_mode()
         queries_to_accept = min_queries_in_queue - concurrency_engine.queries_left()
       
         # Don't go over max_queries_total when admitting more queries
         if queries_to_accept + total_queries_admitted > max_queries_total:
             queries_to_accept = max_queries_total - total_queries_admitted
 
-        # If we won't hit max_queries_total, admit more queries
+        # If we haven't hit max_queries_total, admit more queries
         if queries_to_accept > 0:
-            # Admit queries faster if the queue is close to empty
-            if concurrency_engine.waiting_queries.qsize()<worker_num:
-              print(" ### Not accepting queries fast enough. Waiting count: {}".format(len(concurrency_engine._waiting_query_list)))
-            if query_generator_queues[0].qsize()<queries_to_accept:
-              print(" ### Not generating queries fast enough.")
-            #print(" Accepting {} queries at {}.".format(queries_to_accept, time.time()))
-            concurrency_engine.append_next(queries_to_accept)
+            concurrency_engine.append_next(queries_to_accept, admit_to_sidetrack)
             total_queries_admitted = total_queries_admitted + queries_to_accept
-            if concurrency_engine.waiting_queries.qsize()<worker_num:
-              print(" ### Too many queries sidetracked.")
 
     with query_completed_condition:
       query_completed_condition.wait(.01)
@@ -132,6 +131,8 @@ while(True):
         
         # End client threads sending queries to the database
         clientManager.end_processes()
+        for generator in generator_processes:
+          generator.end_processes()
         
         # Process all completed queries
         concurrency_engine.proccess_completed_queries()
@@ -140,11 +141,13 @@ while(True):
         type_index_sum={}
         type_index_count={}
         std_devs={}
+        max={}
+        admit_time={}
         total_wait_time=0
         
         completed = concurrency_engine.total_completed_queries()
         
-        sidetracked = len(concurrency_engine._sidetracked_query_list)
+        sidetracked = len(concurrency_engine.sidetrack_index)
         
         for query in concurrency_engine._archive_completed_queries:
             if not query.query_type_id in type_index_sum:
@@ -154,8 +157,8 @@ while(True):
             if not query.query_type_id in type_index_count:
                 type_index_count[query.query_type_id] =0
             type_index_count[query.query_type_id] += 1
-
-            total_wait_time += query.waiting_time
+            if query.worker_waited_time is not None:
+              total_wait_time += query.worker_waited_time
         
         for query in concurrency_engine._archive_completed_queries:
             if not query.query_type_id in std_devs:
@@ -164,6 +167,22 @@ while(True):
             deviation = mean - (query.total_time - query.waiting_time)
             std_devs[query.query_type_id] += deviation * deviation
 
+        for query in concurrency_engine._archive_completed_queries:
+            if not query.query_type_id in admit_time:
+                admit_time[query.query_type_id] = 0
+            if query.time_to_admit > admit_time[query.query_type_id]:
+                admit_time[query.query_type_id] = query.time_to_admit
+
+        for query in concurrency_engine._archive_completed_queries:
+            if not query.query_type_id in max:
+                max[query.query_type_id] = 0
+            if query.total_time - query.waiting_time > max[query.query_type_id]:
+                max[query.query_type_id]=query.total_time-query.waiting_time
+      
+        with open('allqueries.csv','wb') as file:
+            for query in concurrency_engine._archive_completed_queries:
+              file.write("{},{},{},{},{},\"{}\"\n".format(query.id, query.worker, 1000*(query.waiting_time+query.created_at),1000*(query.total_time+query.created_at),query.lock_run_under, query.query_type_id))
+
         # Total utilization
         total_time_executing = 0
         for query_id in type_index_sum:
@@ -171,11 +190,12 @@ while(True):
         total_utilization = (total_time_executing / worker_num) / total_time
 
         for query_id in type_index_sum:
-            print("Type [{}] Count: {} Average Execution Time: {} [+/- {:1f} ]".format(str(query_id),str(type_index_count[query_id]), str(type_index_sum[query_id]/type_index_count[query_id]), math.sqrt(std_devs[query_id])))
-        print("Average External Wait : {}".format(str(total_wait_time/concurrency_engine.total_completed_queries())))
+          print("Type [{}] Count: {} Average Execution Time: {} [admit[{:1f}] max[{:1f}] +/- {:1f}]".format(str(query_id),str(type_index_count[query_id]), str(type_index_sum[query_id]/type_index_count[query_id]), admit_time[query_id], max[query_id], math.sqrt(std_devs[query_id])))
+        print("Average Worker Wait Time: {}".format(total_wait_time/worker_num))
         print("Total Time: {}".format(total_time))
+        print("Number of scheduling cycles: {}".format(concurrency_engine.cycle_count))
         print("Completed: "+str(concurrency_engine.total_completed_queries()))
-        print("Sidetracked: "+str(len(concurrency_engine._sidetracked_query_list)))
+        print("Sidetracked: "+str(len(concurrency_engine.sidetrack_index)))
         print("Utilization %: {}".format(total_utilization*100))
         if total_utilization < .98:
           print("### ERROR: Utilization under 98% - Indicates this process was too slow.")

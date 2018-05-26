@@ -2,7 +2,7 @@ import os
 import sys
 
 from IsolationLevelSetter import IsolationLevelSetter
-from QueryFlowTester import QueryFlowTester
+from ..QueryFlowTester import QueryFlowTester
 
 time_to_run = 30
 max_queries = 10000000000

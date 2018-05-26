@@ -1,5 +1,5 @@
 import MySQLdb
-from config import config
+from ..config import config
 
 class IsolationLevelSetter:
     @staticmethod

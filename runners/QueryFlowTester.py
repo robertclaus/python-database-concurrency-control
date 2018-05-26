@@ -1,7 +1,7 @@
 from clients.ClientManager import dbClientManager
 from isolation.ConcurrencyEngine import dbConcurrencyEngine
 from connectors.QueryGenerator import dbQueryGenerator
-import QuerySets
+from connectors import QuerySets
 import multiprocessing
 
 import time

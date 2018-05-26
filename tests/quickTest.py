@@ -1,5 +1,4 @@
-from connectors import QueryGenerator
-from runners import QuerySets
+from connectors import QueryGenerator, QuerySets
 import sys
 
 query_set = int(sys.argv[1])

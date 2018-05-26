@@ -102,7 +102,6 @@ class QueryGenerator:
             with cv:
                 cv.wait(.001)
             while target_depth - waiting_queue.qsize() > 0:
-                print("new query!")
                 index = QueryGenerator.pick_query_index_to_generate(possible_query_list)
                 last_query = QueryGenerator.generate_query(possible_query_list, index, generator_id, need_to_parse)
                 waiting_queue.put(last_query)

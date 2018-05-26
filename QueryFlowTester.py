@@ -70,7 +70,9 @@ class QueryFlowTester:
 
         query_completed_condition = multiprocessing.Condition()
 
-        concurrency_engine = dbConcurrencyEngine(query_generator_queues, query_generator_condition, run_concurrency_control,
+        concurrency_engine = dbConcurrencyEngine(query_generator_queues,
+                                                 query_generator_condition,
+                                                 run_concurrency_control,
                                                  query_completed_condition)
 
         concurrency_engine.append_next(queries_to_start_in_queue_with, admit_to_sidetrack)

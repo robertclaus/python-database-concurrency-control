@@ -10,7 +10,7 @@ import math
 
 class QueryFlowTester:
     @staticmethod
-    def run(run_concurrency_control=True, seconds_to_run=10, worker_num=4, max_queries_total=10000, query_sets=[]):
+    def run(run_concurrency_control=True, seconds_to_run=10, worker_num=4, max_queries_total=10000, query_set_choices=[]):
 
         def microseconds_used(sum, count, index):
             if index in sum and index in count:
@@ -51,7 +51,7 @@ class QueryFlowTester:
         query_sets = QuerySets.query_sets
         query_generator_queues = []
         generator_processes = []
-        for query_set_id in query_sets:
+        for query_set_id in query_set_choices:
             query_set = query_sets[int(query_set_id)]
             # Create a thread to generate queries.  This is like an application submitting queries to the database.
             new_generator = dbQueryGenerator(query_set, run_concurrency_control, queue_depth, generator_worker_num,

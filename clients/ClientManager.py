@@ -1,7 +1,7 @@
 # Intended to be a generic multi-threaded way of taking dbQuery objects off of one queue, running them, and putting them onto another.  The more generic this stays, the better.  It should not be aware of locks or any of that.
 
 import time
-from runners.config import config
+from config import config
 
 import multiprocessing
 

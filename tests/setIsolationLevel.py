@@ -1,6 +1,6 @@
 import sys
 import MySQLdb
-from runners.config import config
+from config import config
 
 if len(sys.argv)>1:
     isolation_level = sys.argv[1]

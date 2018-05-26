@@ -3,7 +3,7 @@
 import random
 from queries.Query import dbQuery
 import time
-from runners import config
+import config
 
 import multiprocessing
 

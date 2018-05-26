@@ -1,5 +1,4 @@
-import PredicateLock
-
+from PredicateLock import PredicateLock
 
 class PredicateValue:
     ALL = 0

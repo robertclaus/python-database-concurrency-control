@@ -44,25 +44,23 @@ class dbConcurrencyEngine:
     # Try to admit a list of new queries
     def append(self, new_queries, place_on_sidetrack=True, remove_from_sidetrack=False, readonly=False):
         admitted = []
+
         for new_query in new_queries:
             new_query.start_admit()
             if self.run_concurrency_check and not readonly and self.lock_index.does_conflict(new_query):
                 if place_on_sidetrack:
-                    self.add_to_sidetrack(new_query)
+                    self.sidetrack_index.add_query(new_query)
             else:
                 admitted.append(new_query)
                 self.query_count += 1
                 if self.run_concurrency_check:
                     self.lock_index.add_query(new_query)
                 if remove_from_sidetrack:
-                    self.remove_from_sidetrack(new_query)
+                    self.sidetrack_index.remove_query(new_query)
 
                 new_query.finish_admit()
                 self.waiting_queries.put(new_query)
         return admitted
-
-    def add_to_sidetrack(self, query):
-        self.sidetrack_index.add_query(query)
 
     # Admit the next X random queries from the incoming query queues
     def append_next(self, queries_to_generate_at_a_time, straight_to_sidetrack=False):
@@ -72,7 +70,7 @@ class dbConcurrencyEngine:
                 try:
                     query = queue.get(False)
                     if straight_to_sidetrack:
-                        self.add_to_sidetrack(query)
+                        self.sidetrack_index.add_query(query)
                     else:
                         self.append([query])
                     queries_admitted += 1
@@ -98,9 +96,6 @@ class dbConcurrencyEngine:
             query_to_retry = self.sidetrack_index.get_next_query()
             if query_to_retry.admitted_at is None:
                 self.append([query_to_retry], place_on_sidetrack=False, remove_from_sidetrack=True)
-
-    def remove_from_sidetrack(self, query):
-        self.sidetrack_index.remove_query(query)
 
     # Return the total number of completed queries so far
     def total_completed_queries(self):
@@ -178,11 +173,13 @@ class dbConcurrencyEngine:
                         while len(queries) > target_queue_size:
                             self.proccess_completed_queries()
                             admit_loops += 1
-                            queries_admitted = self.append(queries, place_on_sidetrack=False,
+                            queries_admitted = self.append(queries,
+                                                           place_on_sidetrack=False,
                                                            remove_from_sidetrack=True)
                             admitted += len(queries_admitted)
-                            for q in queries_admitted:
-                                queries.remove(q)
+                            map(list.remove, queries)
+                            queries = [q for q in queries if q not in queries_admitted]
+
                         print("  Finish Admitting. Loops: {}  End Time: {} ".format(admit_loops, time.time()))
                         self.wind_down()
 

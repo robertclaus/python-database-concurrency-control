@@ -1,0 +1,104 @@
+import PredicateValue
+
+class PredicateLock:
+    WRITE = 2
+    READ = 1
+    
+    def __init__(self):
+        self.predicatevalues = []
+        self.tabledotcolumnindex = {}
+        self.tableindex=[]
+        self.tableandcolumnindex={}
+        self.notalltabledotcolumnindex = {}
+        self.nonequality_value_count = 0
+        self.equality_index = {}
+        self.readonly=True
+
+    def add_value(self, tabledotcolumn, type, value, mode):
+        predicatevalue = PredicateValue(tabledotcolumn,type,value, mode)
+        self.predicatevalues.append(predicatevalue)
+        
+        if not tabledotcolumn in self.tabledotcolumnindex:
+            self.tabledotcolumnindex[tabledotcolumn] = []
+        self.tabledotcolumnindex[tabledotcolumn].append(predicatevalue)
+        
+        if not predicatevalue.table in self.equality_index:
+            self.equality_index[predicatevalue.table] = {}
+        if not predicatevalue.column in self.equality_index[predicatevalue.table]:
+            self.equality_index[predicatevalue.table][predicatevalue.column] = {}
+        if predicatevalue.type==1:
+            self.equality_index[predicatevalue.table][predicatevalue.column][predicatevalue.value]=True
+        
+        if not predicatevalue.table in self.tableandcolumnindex:
+            self.tableandcolumnindex[predicatevalue.table]={}
+        if not predicatevalue.column in self.tableandcolumnindex[predicatevalue.table]:
+            self.tableandcolumnindex[predicatevalue.table][predicatevalue.column]=[]
+        self.tableandcolumnindex[predicatevalue.table][predicatevalue.column].append(predicatevalue)
+        
+        if predicatevalue.table not in self.tableindex:
+            self.tableindex.append(predicatevalue.table)
+        
+        if type != PredicateValue.ALL:
+            if not tabledotcolumn in self.notalltabledotcolumnindex:
+                self.notalltabledotcolumnindex[tabledotcolumn] = []
+            self.notalltabledotcolumnindex[tabledotcolumn].append(predicatevalue)
+
+        if type != 1:
+            self.nonequality_value_count+=1
+        
+        if mode != PredicateLock.READ:
+            self.readonly=False
+
+    def remove_value(self, value):
+        self.predicatevalues.remove(value)
+        self.tabledotcolumnindex[value.tabledotcolumn].remove(value)
+        self.tableandcolumnindex[value.table][value.column].remove(value)
+        if value.type != PredicateValue.ALL:
+            self.notalltabledotcolumnindex[value.tabledotcolumn].remove(value)
+        if value.type!=1:
+            self.nonequality_value_count-=1
+        if value.type==1:
+            self.equality_index[value.table][value.column].pop(value.value, None)
+
+    def locked_values_for(self, table, column):
+        if table in self.tableandcolumnindex and column in self.tableandcolumnindex[table]:
+            return self.tableandcolumnindex[table][column]
+        return []
+
+    def locked_columns_for(self, table):
+        if table in self.tableandcolumnindex:
+            for col in self.tableandcolumnindex[table]:
+                yield col
+
+    def value_exists(self, tabledotcolumn, mode):
+        if any(v for v in self.predicatevalues if v.mode==mode and v.tabledotcolumn==tabledotcolumn):
+            return True
+        return False
+
+    # Initially just get rid of ALL locks that we have more specific locks for.
+    def merge_values(self):
+        for value in self.predicatevalues:
+            for other_value in self.predicatevalues:
+                if value!=other_value and value in self.predicatevalues and other_value in self.predicatevalues:
+                    if value.tabledotcolumn == other_value.tabledotcolumn and value.type==0 and value.mode==PredicateLock.READ and value.mode==PredicateLock.READ:
+                        self.remove_value(value)
+                    if value.tabledotcolumn == other_value.tabledotcolumn and value.type==0 and value.mode==PredicateLock.WRITE and value.mode==PredicateLock.WRITE:
+                        self.remove_value(other_value)
+
+    def do_locks_conflict(self, other_lock, columns_to_consider={}):
+        for value in self.predicatevalues:
+            if value.table in other_lock.tableandcolumnindex and value.column in other_lock.tableandcolumnindex[value.table]:
+                for other_value in other_lock.tableandcolumnindex[value.table][value.column]:
+                    if value.do_values_conflict(other_value,columns_to_consider):
+                        return True
+        return False
+
+    def __str__(self):
+        return_string = ""
+        return_string+="\nWrite Locks:\n"
+        for value in [v for v in self.predicatevalues if v.mode==PredicateLock.WRITE]:
+            return_string+=str(value)+"\n"
+        return_string+="\nRead Locks:\n"
+        for value in [v for v in self.predicatevalues if v.mode==PredicateLock.READ]:
+            return_string+=str(value)+"\n"
+        return return_string

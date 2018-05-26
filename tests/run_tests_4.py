@@ -8,10 +8,10 @@ max_queries = 10000000000
 for query_set in ['1','2','3','4','5','6','7']:
   for tuples_to_add in ['100000']:
     for isolation_level in ['ru-exi','ru','rc','rr','s']:
-      os.system("python setIsolationLevel.py "+isolation_level)
+      os.system("python IsolationLevelSetter.py "+isolation_level)
       for workers in [16]:
         print("Clearing and Generating {} Tuples".format(tuples_to_add))
-        os.system("python setIsolationLevel.py 'd'")
+        os.system("python IsolationLevelSetter.py 'd'")
         add_tuple_command = "python QueryFlowTester.py 0 1000000000 128 {} 0".format(tuples_to_add)
         os.system(add_tuple_command)
         print("Done adding Tuples")

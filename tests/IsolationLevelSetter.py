@@ -1,9 +1,9 @@
 import MySQLdb
-from ..config import config
+from config import config
 
 class IsolationLevelSetter:
     @staticmethod
-    def run(self, isolation_level):
+    def run(isolation_level):
             if isolation_level == 'ru':
               isolation_level = 0
             if isolation_level == 's':

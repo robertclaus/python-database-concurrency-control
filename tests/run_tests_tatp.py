@@ -2,7 +2,7 @@ import os
 import sys
 
 from IsolationLevelSetter import IsolationLevelSetter
-from ..QueryFlowTester import QueryFlowTester
+from QueryFlowTester import QueryFlowTester
 
 time_to_run = 30
 max_queries = 10000000000
@@ -10,7 +10,7 @@ max_queries = 10000000000
 # Run #1 - Vary Write %
 for query_set in ['4']:
     for isolation_level in ['ru-exi', 'ru', 's']:
-        IsolationLevelSetter.run()
+        IsolationLevelSetter.run(isolation_level)
         for workers in [4]:
             use_isolation = (isolation_level == 'ru-exi')
 

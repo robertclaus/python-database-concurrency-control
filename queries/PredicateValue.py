@@ -1,8 +1,9 @@
-from PredicateLock import PredicateLock
 
 class PredicateValue:
     ALL = 0
     EQ = 1
+    READ = 1
+    WRITE = 2
 
     def __init__(self, tabledotcolumn, type, value, mode):
         self.tabledotcolumn = tabledotcolumn
@@ -22,8 +23,8 @@ class PredicateValue:
         return "Table:{}, Column:{}, Type:{}, Value:{}".format(self.table, self.column, self.type, self.value)
 
     def do_values_conflict(self, other_value, columns_to_consider):
-        if self.mode == PredicateLock.WRITE or (
-                self.mode == PredicateLock.READ and other_value.mode == PredicateLock.WRITE):
+        if self.mode == PredicateValue.WRITE or (
+                self.mode == PredicateValue.READ and other_value.mode == PredicateValue.WRITE):
             if self.tabledotcolumn == other_value.tabledotcolumn:
                 if self.table not in columns_to_consider or self.column in columns_to_consider[self.table]:
                     if self.type == 0 or other_value.type == 0:

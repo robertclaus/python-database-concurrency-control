@@ -1,4 +1,4 @@
-from PredicateLock import PredicateLock
+import PredicateLock
 
 
 class PredicateValue:

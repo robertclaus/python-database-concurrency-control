@@ -55,7 +55,7 @@ class QueryFlowTester:
             query_set = query_sets[int(query_set_id)]
             # Create a thread to generate queries.  This is like an application submitting queries to the database.
             new_generator = QueryGenerator(query_set, run_concurrency_control, queue_depth, generator_worker_num,
-                                           not query_set==query_sets[0],
+                                           not query_set_id==query_set_choices[0],
                                            query_generator_condition)  # All but the first queryset wait for one query to complete before doing the next one.
             query_generator_queues.append(new_generator.generated_query_queue)
             generator_processes.append(new_generator)

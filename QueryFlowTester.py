@@ -1,6 +1,6 @@
 from clients.ClientManager import ClientManager
 from isolation.ConcurrencyEngine import dbConcurrencyEngine
-from connectors.QueryGenerator import dbQueryGenerator
+from connectors.QueryGenerator import QueryGenerator
 from connectors import QuerySets
 import multiprocessing
 
@@ -54,9 +54,9 @@ class QueryFlowTester:
         for query_set_id in query_set_choices:
             query_set = query_sets[int(query_set_id)]
             # Create a thread to generate queries.  This is like an application submitting queries to the database.
-            new_generator = dbQueryGenerator(query_set, run_concurrency_control, queue_depth, generator_worker_num,
-                                             not query_set==query_sets[0],
-                                             query_generator_condition)  # All but the first queryset wait for one query to complete before doing the next one.
+            new_generator = QueryGenerator(query_set, run_concurrency_control, queue_depth, generator_worker_num,
+                                           not query_set==query_sets[0],
+                                           query_generator_condition)  # All but the first queryset wait for one query to complete before doing the next one.
             query_generator_queues.append(new_generator.generated_query_queue)
             generator_processes.append(new_generator)
 
@@ -117,8 +117,6 @@ class QueryFlowTester:
 
                 # End client threads sending queries to the database
                 clientManager.end_processes()
-                for generator in generator_processes:
-                    generator.end_processes()
 
                 # Process all completed queries
                 concurrency_engine.proccess_completed_queries()

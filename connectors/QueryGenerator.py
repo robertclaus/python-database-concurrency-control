@@ -8,7 +8,7 @@ import config
 import multiprocessing
 
 
-class dbQueryGenerator:
+class QueryGenerator:
     class replacePattern:
         def __init__(self, pattern, lambda_function):
             self._lambda_function = lambda_function
@@ -29,16 +29,16 @@ class dbQueryGenerator:
         replacePattern("<randInt2>", lambda s: str(random.randint(1, 100000))),
         replacePattern("<randInt3>", lambda s: str(random.randint(1, 100000))),
         replacePattern("<query_obj_id>", lambda s: str(s.query_id)),
-        replacePattern("<non_uniform_rand_int_subscriber_size>", lambda s: str(dbQueryGenerator.non_uniform_random(1,
-                                                                                                                   config.SUBSCRIBER_COUNT))),
+        replacePattern("<non_uniform_rand_int_subscriber_size>", lambda s: str(QueryGenerator.non_uniform_random(1,
+                                                                                                                 config.SUBSCRIBER_COUNT))),
         replacePattern("<rand_int_1_4>", lambda s: str(random.randint(1, 4))),
         replacePattern("<rand_0_8_16>", lambda s: str([0, 8, 24][random.randint(0, 2)])),
         replacePattern("<rand_1_to_24>", lambda s: str(random.randint(1, 24))),
         replacePattern("<bit_rand>", lambda s: str(random.randint(0, 1))),
         replacePattern("<rand_int_1_255>", lambda s: str(random.randint(1, 255))),
         replacePattern("<non_uniform_rand_int_subscriber_size_string>",
-                       lambda s: str(dbQueryGenerator.non_uniform_random(1,
-                                                                         config.SUBSCRIBER_COUNT)).rjust(15, '0')),
+                       lambda s: str(QueryGenerator.non_uniform_random(1,
+                                                                       config.SUBSCRIBER_COUNT)).rjust(15, '0')),
         replacePattern("<rand_int_1_big>", lambda s: str(random.randint(1, 256 * 256 * 256))),
     ]
 
@@ -64,26 +64,16 @@ class dbQueryGenerator:
         self.total_thread_count = num_worker_threads
         self.possible_query_list = possible_query_list
         self.generated_query_queue = manager.Queue()
-        self.generator_id = dbQueryGenerator.generator_id
-        dbQueryGenerator.generator_id = dbQueryGenerator.generator_id + 1
+        self.generator_id = QueryGenerator.generator_id
+        QueryGenerator.generator_id = QueryGenerator.generator_id + 1
 
         for i in range(num_worker_threads):
-            p = multiprocessing.Process(target=dbQueryGenerator.worker, args=(
-            self.generated_query_queue, possible_query_list, need_to_parse, target_depth, run_in_series,
-            dbQueryGenerator.generator_id, condition_variable))
+            p = multiprocessing.Process(target=QueryGenerator.worker, args=(
+                self.generated_query_queue, possible_query_list, need_to_parse, target_depth, run_in_series,
+                QueryGenerator.generator_id, condition_variable))
             p.daemon = True
             p.start()
             self.threads.append(p)
-
-    def end_processes(self):
-        # stop workers
-        for i in range(self.total_thread_count):
-            self.generated_query_queue.put(None)
-
-        self.generated_query_queue.put(None)
-        while self.generated_query_queue.get() is not None:
-            self.generated_query_queue.task_done()
-            pass
 
     @staticmethod
     def pick_query_index_to_generate(possible_query_list):
@@ -99,7 +89,7 @@ class dbQueryGenerator:
     def generate_query(possible_query_list, index, generator_id, need_to_parse):
         query_text = possible_query_list[index]
         query = dbQuery(query_text, generator_id * 1000 + index)
-        for replace_rule in dbQueryGenerator.wild_card_rules:
+        for replace_rule in QueryGenerator.wild_card_rules:
             query_text = replace_rule.replace(query_text, query)
         query.query_text = query_text
         if need_to_parse:
@@ -112,8 +102,9 @@ class dbQueryGenerator:
             with cv:
                 cv.wait(.001)
             while target_depth - waiting_queue.qsize() > 0:
-                index = dbQueryGenerator.pick_query_index_to_generate(possible_query_list)
-                last_query = dbQueryGenerator.generate_query(possible_query_list, index, generator_id, need_to_parse)
+                print("new query!")
+                index = QueryGenerator.pick_query_index_to_generate(possible_query_list)
+                last_query = QueryGenerator.generate_query(possible_query_list, index, generator_id, need_to_parse)
                 waiting_queue.put(last_query)
                 while run_in_series and not last_query.completed:
                     time.sleep(.001)

@@ -88,14 +88,6 @@ class QueryFlowTester:
         loop_count = 0;
 
         while (True):
-            # Flag queries as complete
-            concurrency_engine.proccess_completed_queries()
-
-            if run_concurrency_control:
-                # concurrency_engine.move_sidetracked_queries(10)
-                concurrency_engine.consider_changing_lock_mode(min_queries_in_sidetrack, min_queries_from_sidetrack,
-                                                               max_queries_from_sidetrack)
-
             if concurrency_engine.queries_left() < min_queries_in_queue:
                 queries_to_accept = min_queries_in_queue - concurrency_engine.queries_left()
 
@@ -108,8 +100,16 @@ class QueryFlowTester:
                     concurrency_engine.append_next(queries_to_accept, admit_to_sidetrack)
                     total_queries_admitted = total_queries_admitted + queries_to_accept
 
-            with query_completed_condition:
-                query_completed_condition.wait(.01)
+            # Flag queries as complete
+            concurrency_engine.proccess_completed_queries()
+
+            if run_concurrency_control:
+                # concurrency_engine.move_sidetracked_queries(10)
+                concurrency_engine.consider_changing_lock_mode(min_queries_in_sidetrack, min_queries_from_sidetrack,
+                                                               max_queries_from_sidetrack)
+            else:
+                with query_completed_condition:
+                    query_completed_condition.wait(.01)
 
             # If we're done, wrap up and print results.
             total_time = time.time() - start

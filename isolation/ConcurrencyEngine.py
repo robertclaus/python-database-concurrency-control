@@ -43,24 +43,17 @@ class dbConcurrencyEngine:
 
     # Try to admit a list of new queries
     def admit_multiple(self, new_queries, place_on_sidetrack=True, remove_from_sidetrack=False, readonly=False):
-        if readonly or not self.run_concurrency_check:
-            [query.start_admit() for query in new_queries]
-            if remove_from_sidetrack:
-                map(self.sidetrack_index.remove_query, new_queries)
-            map(self.waiting_queries.put, new_queries)
-            self.query_count+=len(new_queries)
-            return new_queries
-
         admitted = []
         not_admitted = []
 
         for new_query in new_queries:
             new_query.start_admit()
-            if self.lock_index.does_conflict(new_query):
+            if self.run_concurrency_check and not readonly and self.lock_index.does_conflict(new_query):
                 not_admitted.append(new_query)
             else:
                 admitted.append(new_query)
-                self.lock_index.add_query(new_query)
+                if self.run_concurrency_check and not readonly:
+                    self.lock_index.add_query(new_query)
                 new_query.finish_admit()
                 self.waiting_queries.put(new_query)
 
@@ -102,7 +95,7 @@ class dbConcurrencyEngine:
                 complete_query = self.completed_queries.get_nowait()
                 self._total_completed_queries = self._total_completed_queries + 1
                 self._archive_completed_queries.append(complete_query)
-                if self.run_concurrency_check and not complete_query.readonly:
+                if self.run_concurrency_check and complete_query.readonly:
                     self.lock_index.remove_query(complete_query)
         except Queue.Empty:
             pass

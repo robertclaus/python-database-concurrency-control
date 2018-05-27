@@ -32,7 +32,7 @@ class QueryFlowTester:
         # Minimum queries to conisder admitting from a sidetrack
         min_queries_from_sidetrack = 100
         # Maximum queries to leave in a sidetrack
-        max_queries_from_sidetrack = 20
+        max_queries_from_sidetrack = 0
 
         # Scheduling By Column Only, or also general predicate locking
         admit_to_sidetrack = run_concurrency_control

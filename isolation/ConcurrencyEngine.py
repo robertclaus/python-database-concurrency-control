@@ -69,18 +69,18 @@ class dbConcurrencyEngine:
 
     # Admit the next X random queries from the incoming query queues
     def append_next(self, queries_to_generate_at_a_time, straight_to_sidetrack=False):
-        queries_to_admit = []
-        while len(queries_to_admit) < queries_to_generate_at_a_time:
+        queries_admitted = 0
+        while queries_admitted < queries_to_generate_at_a_time:
             for queue in self.incoming_query_queues:
                 try:
-                    queries_to_admit.append(queue.get(False))
+                    query = queue.get(False)
+                    if straight_to_sidetrack:
+                        self.sidetrack_index.add_query(query)
+                    else:
+                        self.admit_multiple([query])
+                    queries_admitted += 1
                 except Queue.Empty:
                     print(" ### Not generating queries fast enough.")
-
-        if straight_to_sidetrack:
-            self.sidetrack_index.add_queries(queries_to_admit)
-        else:
-            self.admit_multiple(queries_to_admit)
 
     # Remove completed queries from the _waiting_queries_list so their locks no longer get checked against
     def proccess_completed_queries(self):

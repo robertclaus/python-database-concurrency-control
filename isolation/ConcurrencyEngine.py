@@ -134,8 +134,6 @@ class dbConcurrencyEngine:
 
                 print("Readonly Finish Admitting {} queries. {} ".format(len(admitted_queries), time.time()))
 
-                self.wind_down()
-
                 lock_combinations = [
                     # ['call_forwarding.start_time','subscriber.sub_nbr'], # Delete
                     # ['subscriber.sub_nbr'],# High Volume Update

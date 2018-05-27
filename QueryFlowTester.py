@@ -104,7 +104,6 @@ class QueryFlowTester:
             concurrency_engine.proccess_completed_queries()
 
             if run_concurrency_control:
-                # concurrency_engine.move_sidetracked_queries(10)
                 concurrency_engine.consider_changing_lock_mode(min_queries_in_sidetrack, min_queries_from_sidetrack,
                                                                max_queries_from_sidetrack)
             else:

@@ -44,12 +44,8 @@ class dbConcurrencyEngine:
     # Try to admit a list of new queries
     def admit_multiple(self, new_queries, place_on_sidetrack=True, remove_from_sidetrack=False, readonly=False):
         if readonly or not self.run_concurrency_check:
-            if place_on_sidetrack:
-                map(self.sidetrack_index.add_queries, new_queries)
             if remove_from_sidetrack:
-                map(self.sidetrack_index.remove_queries, new_queries)
-            if self.run_concurrency_check:
-                map(self.lock_index.add_query, new_queries)
+                map(self.sidetrack_index.remove_query, new_queries)
             map(self.waiting_queries.put, new_queries)
             self.query_count+=len(new_queries)
             return new_queries

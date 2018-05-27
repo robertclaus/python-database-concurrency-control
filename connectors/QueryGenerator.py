@@ -100,7 +100,7 @@ class QueryGenerator:
     def worker(waiting_queue, possible_query_list, need_to_parse, target_depth, run_in_series, generator_id, cv):
         while True:
             with cv:
-                cv.wait(.001)
+                cv.wait()
             while target_depth - waiting_queue.qsize() > 0:
                 index = QueryGenerator.pick_query_index_to_generate(possible_query_list)
                 last_query = QueryGenerator.generate_query(possible_query_list, index, generator_id, need_to_parse)

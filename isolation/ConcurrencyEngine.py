@@ -87,8 +87,9 @@ class dbConcurrencyEngine:
                     queries_admitted += 1
                 except Queue.Empty:
                     print(" ### Not generating queries fast enough.")
-        with self.used_a_query_cv:
-            self.used_a_query_cv.notify()
+        for i in xrange(10):
+            with self.used_a_query_cv:
+                self.used_a_query_cv.notify()
 
     # Remove completed queries from the _waiting_queries_list so their locks no longer get checked against
     def proccess_completed_queries(self):

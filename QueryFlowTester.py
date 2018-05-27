@@ -38,7 +38,7 @@ class QueryFlowTester:
         admit_to_sidetrack = run_concurrency_control
 
         # Maximum queries to have in the incoming generator queue at one time
-        queue_depth = min_queries_in_queue  # *10
+        queue_depth = min_queries_in_queue*2  # *10
 
         # How many threads to have generating queries at a time
         generator_worker_num = worker_num * 4

@@ -3,6 +3,7 @@ import Queue
 import multiprocessing
 
 import time
+from collections import defaultdict
 
 from isolation.indexes.GlobalLockIndex import GlobalLockIndex
 from isolation.indexes.SidetrackQueryIndex import SidetrackQueryIndex
@@ -144,7 +145,7 @@ class dbConcurrencyEngine:
                 ]
                 self.cycle_count += 1
                 for combination in lock_combinations:
-                    column_reference = {}
+                    column_reference = defaultdict(list)
                     value = None
                     for column in combination:
                         column_queries = self.sidetrack_index.sidetrack_indexes['columns_locked_not_all'][column]
@@ -155,8 +156,6 @@ class dbConcurrencyEngine:
                         else:
                             value = [q for q in value if q in column_queries]
 
-                        if not tab in column_reference:
-                            column_reference[tab] = []
                         column_reference[tab].append(col)
 
                     if len(value) > minimum_queue_size:

@@ -23,4 +23,8 @@ class GlobalLockIndex:
         self.locking_queries.remove(query)
 
     def does_conflict(self, query):
+        for existing_query in self.locking_queries:
+            if query.conflicts(existing_query):
+                return True
+        return False
         return any([query.conflicts(existing_query) for existing_query in self.locking_queries])

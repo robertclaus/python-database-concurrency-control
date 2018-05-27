@@ -70,14 +70,20 @@ class dbConcurrencyEngine:
     # Admit the next X random queries from the incoming query queues
     def append_next(self, queries_to_generate_at_a_time, straight_to_sidetrack=False):
         queries_admitted = 0
-        while queries_admitted < queries_to_generate_at_a_time:
-            for queue in self.incoming_query_queues:
+        main_queue = self.incoming_query_queues[0]
+        if straight_to_sidetrack:
+            while queries_admitted < queries_to_generate_at_a_time:
                 try:
-                    query = queue.get(False)
-                    if straight_to_sidetrack:
-                        self.sidetrack_index.add_query(query)
-                    else:
-                        self.admit_multiple([query])
+                    query = main_queue.get(False)
+                    self.sidetrack_index.add_query(query)
+                    queries_admitted += 1
+                except Queue.Empty:
+                    print(" ### Not generating queries fast enough.")
+        else:
+            while queries_admitted < queries_to_generate_at_a_time:
+                try:
+                    query = main_queue.get(False)
+                    self.admit_multiple([query])
                     queries_admitted += 1
                 except Queue.Empty:
                     print(" ### Not generating queries fast enough.")

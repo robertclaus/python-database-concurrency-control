@@ -95,7 +95,7 @@ class dbConcurrencyEngine:
                 complete_query = self.completed_queries.get_nowait()
                 self._total_completed_queries = self._total_completed_queries + 1
                 self._archive_completed_queries.append(complete_query)
-                if self.run_concurrency_check and complete_query.readonly:
+                if self.run_concurrency_check and not complete_query.readonly:
                     self.lock_index.remove_query(complete_query)
         except Queue.Empty:
             pass

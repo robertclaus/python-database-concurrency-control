@@ -44,22 +44,27 @@ class dbConcurrencyEngine:
     # Try to admit a list of new queries
     def append(self, new_queries, place_on_sidetrack=True, remove_from_sidetrack=False, readonly=False):
         admitted = []
+        not_admitted = []
 
         for new_query in new_queries:
             new_query.start_admit()
             if self.run_concurrency_check and not readonly and self.lock_index.does_conflict(new_query):
-                if place_on_sidetrack:
-                    self.sidetrack_index.add_query(new_query)
+                not_admitted.append(new_query)
             else:
                 admitted.append(new_query)
-                self.query_count += 1
                 if self.run_concurrency_check:
                     self.lock_index.add_query(new_query)
-                if remove_from_sidetrack:
-                    self.sidetrack_index.remove_query(new_query)
-
                 new_query.finish_admit()
                 self.waiting_queries.put(new_query)
+
+        if place_on_sidetrack:
+            self.sidetrack_index.add_queries(not_admitted)
+
+        if remove_from_sidetrack:
+            self.sidetrack_index.remove_queries(admitted)
+
+        self.query_count+=len(admitted)
+
         return admitted
 
     # Admit the next X random queries from the incoming query queues
@@ -177,7 +182,6 @@ class dbConcurrencyEngine:
                                                            place_on_sidetrack=False,
                                                            remove_from_sidetrack=True)
                             admitted += len(queries_admitted)
-                            map(list.remove, queries)
                             queries = [q for q in queries if q not in queries_admitted]
 
                         print("  Finish Admitting. Loops: {}  End Time: {} ".format(admit_loops, time.time()))

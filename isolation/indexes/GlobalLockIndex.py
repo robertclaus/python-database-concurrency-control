@@ -10,14 +10,14 @@ class GlobalLockIndex:
         self.column_reference = column_reference
 
     def add_queries(self, queries):
-        map(GlobalLockIndex.add_query,queries)
+        map(self.add_query,queries)
 
     def add_query(self,query):
         self.locking_queries.append(query)
         self.non_equality_values += query.predicatelock.nonequality_value_count
 
     def remove_queries(self, queries):
-        map(GlobalLockIndex.remove_query, queries)
+        map(self.remove_query, queries)
 
     def remove_query(self, query):
         self.locking_queries.remove(query)

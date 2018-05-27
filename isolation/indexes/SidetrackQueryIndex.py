@@ -12,6 +12,13 @@ class SidetrackQueryIndex:
     def __len__(self):
         return len(self.sidetracked_write_queries) + len(self.sidetracked_readonly_queries)
 
+    def add_queries(self, queries):
+        if all([query.readonly for query in queries]):
+            self.sidetracked_readonly_queries += queries
+        else:
+            for query in queries:
+                self.add_query(query)
+
     def add_query(self, query):
         if query.readonly:
             self.sidetracked_readonly_queries.append(query)
@@ -24,6 +31,13 @@ class SidetrackQueryIndex:
                         self.sidetrack_indexes[key][column].append(query)  # Add query to index
                     else:
                         self.sidetrack_indexes[key][column] = [query]
+
+    def remove_queries(self, queries):
+        if all([query.readonly for query in queries]):
+            self.sidetracked_readonly_queries = [q for q in self.sidetracked_readonly_queries if not q in queries]
+        else:
+            for query in queries:
+                self.remove_query(query)
 
     def remove_query(self, query):
         # print("Query: {}".format(query))

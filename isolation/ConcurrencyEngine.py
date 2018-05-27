@@ -180,7 +180,9 @@ class dbConcurrencyEngine:
                                                            place_on_sidetrack=False,
                                                            remove_from_sidetrack=True)
                             admitted += len(queries_admitted)
-                            queries = [q for q in queries if q not in queries_admitted]
+                            for query in queries_admitted:
+                                queries.remove(query)
+                            #queries = [q for q in queries if q not in queries_admitted]
 
                         print("  Finish Admitting. Loops: {}  End Time: {} ".format(admit_loops, time.time()))
                         self.wind_down()

@@ -58,7 +58,7 @@ class dbConcurrencyEngine:
 
         self.run_concurrency_check = False
 
-        for single_query in new_queries:
+        for new_query in new_queries:
 
             new_query.start_admit()
             admit_as_readonly = True #self.lock_index.readonly and new_query.readonly

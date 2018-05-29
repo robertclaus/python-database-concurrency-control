@@ -35,7 +35,7 @@ query_sets = [
                AND (call_forwarding.s_id = special_facility.s_id \
                AND call_forwarding.sf_type = special_facility.sf_type) \
                AND (call_forwarding.start_time <= <rand_0_8_16> \
-               AND call_forwarding.end_time >= <rand_1_to_24>);",10,
+               AND call_forwarding.end_time >= <rand_1_to_24>);",24,
                
                "SELECT access_info.data1, access_info.data2, access_info.data3, access_info.data4 \
                FROM access_info \
@@ -46,11 +46,11 @@ query_sets = [
                SET subscriber.bit_1 = <bit_rand>, special_facility.data_a = <rand_int_1_255> \
                WHERE subscriber.s_id = <non_uniform_rand_int_subscriber_size> \
                AND special_facility.s_id = <non_uniform_rand_int_subscriber_size> \
-               AND special_facility.sf_type = <rand_int_1_4>;", 2, # Was 2
+               AND special_facility.sf_type = <rand_int_1_4>;", 0, # Was 2
                
                "UPDATE subscriber \
                SET subscriber.vlr_location = <rand_int_1_big> \
-               WHERE subscriber.sub_nbr = '<non_uniform_rand_int_subscriber_size_string>';",18, # Was 14
+               WHERE subscriber.sub_nbr = '<non_uniform_rand_int_subscriber_size_string>';",0, # Was 14
                
                "INSERT INTO call_forwarding (call_forwarding.s_id, call_forwarding.sf_type, call_forwarding.start_time, call_forwarding.end_time, call_forwarding.numberx) \
                SELECT subscriber.s_id, special_facility.sf_type ,<rand_0_8_16>,<rand_1_to_24>, <non_uniform_rand_int_subscriber_size> \

@@ -100,7 +100,6 @@ class QueryGenerator:
 
     @staticmethod
     def worker(waiting_queue, possible_query_list, need_to_parse, target_depth, run_in_series, generator_id, cv, bundle_size):
-        bundle_size=10
         while True:
             with cv:
                 cv.wait()

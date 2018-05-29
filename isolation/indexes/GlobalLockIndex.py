@@ -6,7 +6,7 @@ class GlobalLockIndex:
         self.locking_queries = []
         self.column_reference = {}
         self.equality_index = {}
-        self.readonly = False
+        self.readonly = True
 
     def set_scheduled_columns(self, column_reference):
         self.column_reference = column_reference

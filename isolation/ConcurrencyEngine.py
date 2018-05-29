@@ -73,7 +73,8 @@ class dbConcurrencyEngine:
 
     # Admit the next X random queries from the incoming query queues
     def append_next(self, queries_to_generate_at_a_time):
-        print("Adding {} new queries. {}".format(queries_to_generate_at_a_time,time.time()))
+        if self.run_concurrency_check:
+            print("Adding {} new queries. {}".format(queries_to_generate_at_a_time,time.time()))
         queries_admitted = 0
 
         while queries_admitted < queries_to_generate_at_a_time:
@@ -85,9 +86,10 @@ class dbConcurrencyEngine:
                 except Queue.Empty:
                     print(" ### Not generating queries fast enough.")
 
-        print("Added {} new queries. {}".format(queries_admitted,time.time()))
+        if self.run_concurrency_check:
+            print("Added {} new queries. {}".format(queries_admitted,time.time()))
 
-        for i in xrange(10):
+        for i in xrange(1):
             with self.used_a_query_cv:
                 self.used_a_query_cv.notify()
 

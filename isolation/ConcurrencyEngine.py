@@ -155,15 +155,17 @@ class dbConcurrencyEngine:
                 print("Readonly Finish Admitting {} queries. {} ".format(len(admitted_queries), time.time()))
 
                 lock_combinations = [
-                    #['call_forwarding.start_time','subscriber.sub_nbr'], # Delete
-                    #['subscriber.sub_nbr'],# High Volume Update
-                    #['special_facility.s_id','subscriber.s_id'],# Low Volume Update
+                    ['call_forwarding.start_time','subscriber.sub_nbr'], # Delete
+                    ['subscriber.sub_nbr'],# High Volume Update
+                    ['special_facility.s_id','subscriber.s_id'],# Low Volume Update
                 ]
                 self.cycle_count += 1
                 for combination in lock_combinations:
                     column_reference = defaultdict(list)
                     value = None
                     for column in combination:
+                        if column not in self.sidetrack_index.sidetrack_indexes['columns_locked_not_all']:
+                            break
                         column_queries = self.sidetrack_index.sidetrack_indexes['columns_locked_not_all'][column]
                         tab = column.split('.')[0]
                         col = column.split('.')[1]

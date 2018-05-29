@@ -38,6 +38,8 @@ class dbConcurrencyEngine:
         self.run_concurrency_check = run_concurrency_check
         self.last_scheduler_change = time.time()
 
+        self.time_processing_completed = 0
+
     # Return the number of queries that have been admitted but not completed
     def queries_left(self):
         return self.waiting_queries.qsize() + len(self.sidetrack_index)
@@ -89,12 +91,13 @@ class dbConcurrencyEngine:
         if self.run_concurrency_check:
             print("Added {} new queries. {}".format(queries_admitted,time.time()))
 
-        for i in xrange(1):
+        for i in xrange(3):
             with self.used_a_query_cv:
                 self.used_a_query_cv.notify()
 
     # Remove completed queries from the _waiting_queries_list so their locks no longer get checked against
     def proccess_completed_queries(self):
+        start = time.time()
         try:
             while True:
                 complete_query = self.completed_queries.get_nowait()
@@ -104,8 +107,9 @@ class dbConcurrencyEngine:
                     self.lock_index.remove_query(complete_query)
         except Queue.Empty:
             pass
+        self.time_processing_completed += (time.time()-start)
 
-    # Return the total number of completed queries so far
+        # Return the total number of completed queries so far
     def total_completed_queries(self):
         return self._total_completed_queries
 

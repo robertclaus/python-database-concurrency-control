@@ -183,6 +183,7 @@ class QueryFlowTester:
                         str(type_index_sum[query_id] / type_index_count[query_id]), admit_time[query_id], max[query_id],
                         math.sqrt(std_devs[query_id])))
                 print("Average Worker Wait Time: {}".format(total_wait_time / worker_num))
+                print("Time spent processing completed queries {}".format(concurrency_engine.time_processing_completed))
                 print("Total Time: {}".format(total_time))
                 print("Number of scheduling cycles: {}".format(concurrency_engine.cycle_count))
                 print("Completed: " + str(concurrency_engine.total_completed_queries()))

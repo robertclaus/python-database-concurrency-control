@@ -76,7 +76,7 @@ class ClientManager:
                 query.complete()
                 query.worker = worker_id
                 query.worker_waited_time = end_wait - start_wait
-                waiting_queue.task_done()
                 complete_queue.put(query)
                 with cv:
                     cv.notify()
+            waiting_queue.task_done()

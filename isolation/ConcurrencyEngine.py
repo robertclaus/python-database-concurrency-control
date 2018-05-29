@@ -56,10 +56,8 @@ class dbConcurrencyEngine:
         query_bundle = []
         admitted = []
         not_admitted = []
-        add_query_fn = self.lock_index.add_query
 
         for new_query in new_queries:
-
             new_query.start_admit()
             admit_as_readonly = self.lock_index.readonly and new_query.readonly
 
@@ -68,15 +66,14 @@ class dbConcurrencyEngine:
             else:
                 admitted.append(new_query)
                 if self.run_concurrency_check and not admit_as_readonly:
-                    add_query_fn(new_query)
-                #new_query.compress()
+                    self.lock_index.add_query(new_query)
                 new_query.finish_admit()
                 query_bundle.append(new_query)
                 if len(query_bundle) > self.send_bundle_size:
                     self.waiting_queries.put(query_bundle)
                     query_bundle = []
 
-        if len(query_bundle) > 0:
+        if query_bundle:
             self.waiting_queries.put(query_bundle)
 
         if not already_on_sidetrack:

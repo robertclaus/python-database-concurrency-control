@@ -43,25 +43,28 @@ class dbConcurrencyEngine:
         return self.waiting_queries.qsize() + len(self.sidetrack_index)
 
     # Try to admit a list of new queries
-    def admit_multiple(self, new_queries, place_on_sidetrack=True, remove_from_sidetrack=False, readonly=False):
+    def admit_multiple(self, new_queries, already_on_sidetrack=False, sidetrack_if_not_readonly=False):
         admitted = []
         not_admitted = []
 
         for new_query in new_queries:
             new_query.start_admit()
-            if self.run_concurrency_check and not readonly and self.lock_index.does_conflict(new_query):
-                not_admitted.append(new_query)
+
+            admit_as_readonly = self.lock_index.readonly and new_query.readonly
+
+            if not admit_as_readonly and (sidetrack_if_not_readonly or (self.run_concurrency_check and self.lock_index.does_conflict(new_query))):
+                not_admitted(new_query)
             else:
                 admitted.append(new_query)
-                if self.run_concurrency_check and not readonly:
+                if self.run_concurrency_check and not admit_as_readonly:
                     self.lock_index.add_query(new_query)
                 new_query.finish_admit()
                 self.waiting_queries.put(new_query)
 
-        if place_on_sidetrack:
+        if not already_on_sidetrack:
             self.sidetrack_index.add_queries(not_admitted)
 
-        if remove_from_sidetrack:
+        if already_on_sidetrack:
             self.sidetrack_index.remove_queries(admitted)
 
         self.query_count+=len(admitted)
@@ -69,25 +72,18 @@ class dbConcurrencyEngine:
         return admitted
 
     # Admit the next X random queries from the incoming query queues
-    def append_next(self, queries_to_generate_at_a_time, straight_to_sidetrack=False):
+    def append_next(self, queries_to_generate_at_a_time):
         queries_admitted = 0
-        main_queue = self.incoming_query_queues[0]
-        if straight_to_sidetrack:
-            while queries_admitted < queries_to_generate_at_a_time:
+
+        while queries_admitted < queries_to_generate_at_a_time:
+            for main_queue in self.incoming_query_queues:
                 try:
                     query = main_queue.get(False)
-                    self.sidetrack_index.add_query(query)
+                    self.admit_multiple([query], already_on_sidetrack=False, sidetrack_if_not_readonly=True)
                     queries_admitted += 1
                 except Queue.Empty:
                     print(" ### Not generating queries fast enough.")
-        else:
-            while queries_admitted < queries_to_generate_at_a_time:
-                try:
-                    query = main_queue.get(False)
-                    self.admit_multiple([query])
-                    queries_admitted += 1
-                except Queue.Empty:
-                    print(" ### Not generating queries fast enough.")
+
         for i in xrange(10):
             with self.used_a_query_cv:
                 self.used_a_query_cv.notify()
@@ -132,9 +128,9 @@ class dbConcurrencyEngine:
 
                 print("Readonly Start Admitting. {} ".format(time.time()))
 
+                self.lock_index.read_only_mode(True)
                 queries = self.sidetrack_index.take_read_only_queries()
-                admitted_queries = self.admit_multiple(queries, place_on_sidetrack=True, remove_from_sidetrack=False,
-                                               readonly=True)
+                admitted_queries = self.admit_multiple(queries, already_on_sidetrack=False)
 
                 print("Readonly Finish Admitting {} queries. {} ".format(len(admitted_queries), time.time()))
 
@@ -161,6 +157,7 @@ class dbConcurrencyEngine:
                     if len(value) > minimum_queue_size:
                         start_depth = len(value)
 
+                        self.lock_index.read_only_mode(False)
                         # Wind down current lock mode
                         self.wind_down()
 
@@ -176,21 +173,23 @@ class dbConcurrencyEngine:
                         while len(queries) > target_queue_size:
                             self.proccess_completed_queries()
                             admit_loops += 1
-                            queries_admitted = self.admit_multiple(queries,
-                                                           place_on_sidetrack=False,
-                                                           remove_from_sidetrack=True)
+                            queries_admitted = self.admit_multiple(queries, already_on_sidetrack=True)
                             admitted += len(queries_admitted)
                             for query in queries_admitted:
                                 queries.remove(query)
                             #queries = [q for q in queries if q not in queries_admitted]
 
                         print("  Finish Admitting. Loops: {}  End Time: {} ".format(admit_loops, time.time()))
-                        self.wind_down()
 
                         # Evaluate the performance of that column
                         end_depth = len(value)
                         print("Admitted {} of {} queries isolated by columns {}.".format(admitted, query_count,
                                                                                          ",".join(combination)))
 
-                # After looping over these return to standard lock mode by default
+            # Always get new queries in readonly mode so they can be admitted immediately.
+            if not self.lock_index.readonly:
+                self.wind_down()
+                self.lock_index.read_only_mode(True)
+
+        # After looping over these return to standard lock mode by default
         self.lock_index.set_scheduled_columns({})

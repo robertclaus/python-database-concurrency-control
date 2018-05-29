@@ -62,8 +62,8 @@ class dbConcurrencyEngine:
                 not_admitted.append(new_query)
             else:
                 admitted.append(new_query)
-                if self.run_concurrency_check and not admit_as_readonly:
-                    add_query_fn(new_query)
+                #if self.run_concurrency_check and not admit_as_readonly:
+                #    add_query_fn(new_query)
                 new_query.finish_admit()
                 query_bundle.append(new_query)
                 if len(query_bundle) > self.send_bundle_size:

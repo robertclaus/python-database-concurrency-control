@@ -51,6 +51,8 @@ class dbConcurrencyEngine:
         query_bundle = []
         admitted = []
         not_admitted = []
+        add_query_fn = self.lock_index.add_query
+
 
         for new_query in new_queries:
             new_query.start_admit()
@@ -61,7 +63,7 @@ class dbConcurrencyEngine:
             else:
                 admitted.append(new_query)
                 if self.run_concurrency_check and not admit_as_readonly:
-                    self.lock_index.add_query(new_query)
+                    add_query_fn(new_query)
                 new_query.finish_admit()
                 query_bundle.append(new_query)
                 if len(query_bundle) > self.send_bundle_size:
@@ -75,7 +77,7 @@ class dbConcurrencyEngine:
             self.sidetrack_index.add_queries(not_admitted)
 
         if already_on_sidetrack:
-            self.sidetrack_index.remove_queries(admitted)
+            self.sidetrack_index.remove_admitted_queries()
 
         self.query_count+=len(admitted)
 
@@ -97,7 +99,7 @@ class dbConcurrencyEngine:
                     print(" ### Not generating queries fast enough.")
 
         if self.run_concurrency_check:
-            print("Added {} new queries of with {} are admitted. {}".format(queries_admitted, self.waiting_queries.qsize()*self.send_bundle_size, time.time()))
+            print("Added {} new queries of with {} are still waiting. {}".format(queries_admitted, self.waiting_queries.qsize()*self.send_bundle_size, time.time()))
 
         for i in xrange(6):
             with self.used_a_query_cv:

@@ -37,6 +37,7 @@ class dbQuery:
         self.finish_admit_time = 0
         self.time_to_admit = 0
         self.readonly = True
+        self.was_admitted = False
 
     def __eq__(self, other):
         return self.query_id == other.query_id
@@ -47,6 +48,7 @@ class dbQuery:
     def finish_admit(self):
         self.finish_admit_time = time.time()
         self.time_to_admit = self.finish_admit_time - self.start_admit_time
+        self.was_admitted = True
 
     def log_error(self, error):
         self.error = error

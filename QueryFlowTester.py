@@ -97,7 +97,7 @@ class QueryFlowTester:
 
                 # If we haven't hit max_queries_total, admit more queries
                 if queries_to_accept > 0:
-                    concurrency_engine.append_next(queries_to_accept, admit_to_sidetrack)
+                    concurrency_engine.append_next(queries_to_accept)
                     total_queries_admitted = total_queries_admitted + queries_to_accept
 
             # Flag queries as complete

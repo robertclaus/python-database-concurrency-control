@@ -33,7 +33,7 @@ class ClientManager:
     def end_processes(self):
         # Place "Stop" commands (None) on worker queue
         for i in range(self.total_thread_count + 2):
-            self.waiting_queue.put([None])
+            self.waiting_queue.put(None)
         # Burn off all tasks on the queue until we hit the "Stop" commands
         while self.waiting_queue.get() is not None:
             self.waiting_queue.task_done()
@@ -58,12 +58,12 @@ class ClientManager:
             query_bundle = waiting_queue.get()
             end_wait = time.time()
 
-            for query in query_bundle:
-                if query is None:
-                    connection.close()
-                    return
-                query.done_waiting()
+            if query_bundle is None:
+                connection.close()
+                return
 
+            for query in query_bundle:
+                query.done_waiting()
                 try:
                     cursor.execute(query.query_text)
                     connection.commit()

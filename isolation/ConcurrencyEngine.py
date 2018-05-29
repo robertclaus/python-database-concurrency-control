@@ -53,7 +53,6 @@ class dbConcurrencyEngine:
         not_admitted = []
         add_query_fn = self.lock_index.add_query
 
-
         for new_query in new_queries:
             new_query.start_admit()
             admit_as_readonly = self.lock_index.readonly and new_query.readonly
@@ -197,10 +196,10 @@ class dbConcurrencyEngine:
                         print("Admitted {} of {} queries isolated by columns {}.".format(admitted, query_count,
                                                                                          ",".join(combination)))
 
-            # Always get new queries in readonly mode so they can be admitted immediately.
-            if not self.lock_index.readonly:
-                self.wind_down()
-                self.lock_index.read_only_mode(True)
+                # Always get new queries in readonly mode so they can be admitted immediately.
+                if not self.lock_index.readonly:
+                    self.wind_down()
+                    self.lock_index.read_only_mode(True)
 
-        # After looping over these return to standard lock mode by default
-        self.lock_index.set_scheduled_columns({})
+                # After looping over these return to standard lock mode by default
+                self.lock_index.set_scheduled_columns({})

@@ -58,8 +58,6 @@ class dbConcurrencyEngine:
         not_admitted = []
         add_query_fn = self.lock_index.add_query
 
-        self.run_concurrency_check = False
-
         for new_query in new_queries:
 
             new_query.start_admit()

@@ -195,7 +195,7 @@ class QueryFlowTester:
                 print("Time spent processing completed queries {}".format(concurrency_engine.time_processing_completed))
                 print("Total Time: {}".format(total_time))
                 print("Number of scheduling cycles: {}".format(concurrency_engine.cycle_count))
-                print("Completed: " + str(concurrency_engine.total_completed_queries()))
+                print("Completed: {}".format(completed))
                 print("Utilization %: {}".format(total_utilization * 100))
                 if total_utilization < .98:
                     print("### ERROR: Utilization under 98% - Indicates this process was too slow.")

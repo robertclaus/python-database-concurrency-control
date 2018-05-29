@@ -130,9 +130,8 @@ class QueryFlowTester:
                 admit_time = {}
                 total_wait_time = 0
 
-                completed = concurrency_engine.total_completed_queries()
+                completed = len(concurrency_engine._archive_completed_queries)
 
-                sidetracked = len(concurrency_engine.sidetrack_index)
 
                 for query in concurrency_engine._archive_completed_queries:
                     if not query.query_type_id in type_index_sum:
@@ -187,7 +186,6 @@ class QueryFlowTester:
                 print("Total Time: {}".format(total_time))
                 print("Number of scheduling cycles: {}".format(concurrency_engine.cycle_count))
                 print("Completed: " + str(concurrency_engine.total_completed_queries()))
-                print("Sidetracked: " + str(len(concurrency_engine.sidetrack_index)))
                 print("Utilization %: {}".format(total_utilization * 100))
                 if total_utilization < .98:
                     print("### ERROR: Utilization under 98% - Indicates this process was too slow.")

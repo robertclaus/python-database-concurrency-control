@@ -75,7 +75,7 @@ class QueryFlowTester:
                                                  run_concurrency_control,
                                                  query_completed_condition)
 
-        concurrency_engine.append_next(queries_to_start_in_queue_with, admit_to_sidetrack)
+        concurrency_engine.append_next(queries_to_start_in_queue_with)
         total_queries_admitted = queries_to_start_in_queue_with
         print("Done Prepopulating Queue")
 

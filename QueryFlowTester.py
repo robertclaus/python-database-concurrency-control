@@ -47,7 +47,7 @@ class QueryFlowTester:
         queries_to_start_in_queue_with = min_queries_in_queue
 
         generator_bundle_size = 50
-        client_bundle_size = 10
+        client_bundle_size = 30
 
         # Load queries to generate.
         query_generator_condition = multiprocessing.Condition()  # Notifies the generator that we may have used some of its queries

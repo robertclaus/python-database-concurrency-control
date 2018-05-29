@@ -16,7 +16,6 @@ class dbQuery:
         self.id = self.query_id
         self.query_text = query_text
         self.predicatelock = PredicateLock()
-        self.locks = []
         self.query_type_id = query_type_id
         self.created_at = time.time()
         self.waiting_time = None
@@ -66,9 +65,16 @@ class dbQuery:
     def parse(self):
         self.sql_obj = sqlparse.parse(self.query_text)[0]  # Assumes only one query at a time for now
         self.generate_locks()
-        self.sql_obj = None
+        self.strip_fluff()
         self.predicatelock.merge_values()
         self.generate_lock_indexes()
+
+    def strip_fluff(self):
+        self.sql_obj = None
+
+    def compress(self):
+        self.predicatelock = None
+        self.lock_indexes = None
 
     def generate_lock_indexes(self):
         for tabledotcolumn in self.predicatelock.tabledotcolumnindex:

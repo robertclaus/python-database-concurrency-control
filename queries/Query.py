@@ -222,4 +222,4 @@ class dbQuery:
         return False
 
     def __str__(self):
-        return "Query: {}\n{}".format(self.query_text, str(self.predicatelock))
+        return "Query: {}\n{}\nReadonly:{}".format(self.query_text, str(self.predicatelock),self.readonly)

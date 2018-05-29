@@ -31,7 +31,7 @@ class GlobalLockIndex:
             return False
 
         for existing_query in self.locking_queries:
-            if query.conflicts(existing_query):
+            if query.conflicts(existing_query, self.column_reference):
                 return True
         return False
         return any([query.conflicts(existing_query) for existing_query in self.locking_queries])

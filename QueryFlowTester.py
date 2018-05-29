@@ -41,7 +41,7 @@ class QueryFlowTester:
         queue_depth = min_queries_in_queue*2  # *10
 
         # How many threads to have generating queries at a time
-        generator_worker_num = worker_num * 8
+        generator_worker_num = worker_num * 10
 
         # Number of queries to pre-parse so queue does not start empty
         queries_to_start_in_queue_with = min_queries_in_queue
@@ -78,7 +78,8 @@ class QueryFlowTester:
                                                  run_concurrency_control,
                                                  query_completed_condition,
                                                  bundle_size,
-                                                 bundle_size)
+                                                 bundle_size,
+                                                 generator_worker_num)
 
         concurrency_engine.append_next(queries_to_start_in_queue_with)
         total_queries_admitted = queries_to_start_in_queue_with

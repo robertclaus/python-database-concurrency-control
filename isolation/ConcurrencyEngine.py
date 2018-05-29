@@ -14,8 +14,10 @@ import zlib
 
 class dbConcurrencyEngine:
 
-    def __init__(self, incoming_query_queues, used_a_query_cv, run_concurrency_check, query_completed_condition, receive_bundle_size, send_bundle_size):
+    def __init__(self, incoming_query_queues, used_a_query_cv, run_concurrency_check, query_completed_condition, receive_bundle_size, send_bundle_size, generator_count):
         manager = multiprocessing.Manager()
+
+        self.generator_count=generator_count
 
         # List of Queue's containing incoming queries
         self.incoming_query_queues = incoming_query_queues
@@ -104,11 +106,12 @@ class dbConcurrencyEngine:
                     queries_admitted += len(decompressed_queries)
                 except Queue.Empty:
                     print(" ### Not generating queries fast enough.")
+                    time.sleep(.1)
 
         if self.run_concurrency_check:
             print("Added {} new queries of with {} are still waiting. {}".format(queries_admitted, self.waiting_queries.qsize()*self.send_bundle_size, time.time()))
 
-        for i in xrange(6):
+        for i in xrange(self.generator_count):
             with self.used_a_query_cv:
                 self.used_a_query_cv.notify()
 

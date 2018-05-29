@@ -99,7 +99,7 @@ class dbConcurrencyEngine:
         if self.run_concurrency_check:
             print("Added {} new queries of with {} are admitted. {}".format(queries_admitted, self.waiting_queries.qsize()*self.send_bundle_size, time.time()))
 
-        for i in xrange(3):
+        for i in xrange(6):
             with self.used_a_query_cv:
                 self.used_a_query_cv.notify()
 

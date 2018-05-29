@@ -24,10 +24,10 @@ class QueryFlowTester:
         ### Load Settings
 
         # Minimum queries in incoming waiting query queue to allow before generating more
-        min_queries_in_queue = worker_num * 1000
+        min_queries_in_queue = worker_num * 2000
 
         # Minimum queries in sidetrack to consider admitting
-        min_queries_in_sidetrack = 1000
+        min_queries_in_sidetrack = 2000
 
         # Minimum queries to conisder admitting from a sidetrack
         min_queries_from_sidetrack = 100
@@ -46,8 +46,8 @@ class QueryFlowTester:
         # Number of queries to pre-parse so queue does not start empty
         queries_to_start_in_queue_with = min_queries_in_queue
 
-        generator_bundle_size = 100
-        client_bundle_size = 20
+        generator_bundle_size = 50
+        client_bundle_size = 10
 
         # Load queries to generate.
         query_generator_condition = multiprocessing.Condition()  # Notifies the generator that we may have used some of its queries
@@ -125,8 +125,12 @@ class QueryFlowTester:
                 # End client threads sending queries to the database
                 clientManager.end_processes()
 
+                print("Clients Stopped")
+
                 # Process all completed queries
                 concurrency_engine.proccess_completed_queries()
+
+                print("Completed Queries Archived")
 
                 # Print any data that might be interesting (primarily concurrency_engine._archive_completed_queries)
                 type_index_sum = {}

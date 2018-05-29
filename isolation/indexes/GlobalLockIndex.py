@@ -19,7 +19,7 @@ class GlobalLockIndex:
 
     def clear_all_queries(self):
         self.locking_queries=[]
-        
+
     def remove_queries(self, queries):
         map(self.remove_query, queries)
 
@@ -30,6 +30,7 @@ class GlobalLockIndex:
         self.readonly = readonly
 
     def does_conflict(self, query):
+        return False
         if self.readonly:
             return False
 

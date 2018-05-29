@@ -9,6 +9,9 @@ from isolation.indexes.GlobalLockIndex import GlobalLockIndex
 from isolation.indexes.SidetrackQueryIndex import SidetrackQueryIndex
 
 
+import cPickle
+import zlib
+
 class dbConcurrencyEngine:
 
     def __init__(self, incoming_query_queues, used_a_query_cv, run_concurrency_check, query_completed_condition, receive_bundle_size, send_bundle_size):
@@ -55,7 +58,8 @@ class dbConcurrencyEngine:
 
         self.run_concurrency_check = False
 
-        for new_query in new_queries:
+        for single_query in new_queries:
+
             new_query.start_admit()
             admit_as_readonly = True #self.lock_index.readonly and new_query.readonly
 
@@ -83,7 +87,6 @@ class dbConcurrencyEngine:
 
         self.query_count+=len(admitted)
 
-        self.run_concurrency_check = True
         return admitted
 
     # Admit the next X random queries from the incoming query queues
@@ -96,7 +99,8 @@ class dbConcurrencyEngine:
             for main_queue in self.incoming_query_queues:
                 try:
                     queries = main_queue.get(False)
-                    self.admit_multiple(queries, already_on_sidetrack=False, sidetrack_if_not_readonly=True)
+                    decompressed_queries = cPickle.loads(zlib.decompress(queries))
+                    self.admit_multiple(decompressed_queries, already_on_sidetrack=False, sidetrack_if_not_readonly=True)
                     queries_admitted += len(queries)
                 except Queue.Empty:
                     print(" ### Not generating queries fast enough.")

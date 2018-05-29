@@ -195,6 +195,7 @@ class dbConcurrencyEngine:
                             admitted += len(queries_admitted)
                             for query in queries_admitted:
                                 queries.remove(query)
+                            print("We have {} queries left".format(len(queries)))
                             #queries = [q for q in queries if q not in queries_admitted]
 
                         print("  Finish Admitting. Loops: {}  End Time: {} ".format(admit_loops, time.time()))

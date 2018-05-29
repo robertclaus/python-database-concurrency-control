@@ -47,6 +47,7 @@ class QueryFlowTester:
         queries_to_start_in_queue_with = min_queries_in_queue
 
         generator_bundle_size = 50
+        client_bundle_size = 10
 
         # Load queries to generate.
         query_generator_condition = multiprocessing.Condition()  # Notifies the generator that we may have used some of its queries
@@ -76,7 +77,9 @@ class QueryFlowTester:
         concurrency_engine = dbConcurrencyEngine(query_generator_queues,
                                                  query_generator_condition,
                                                  run_concurrency_control,
-                                                 query_completed_condition)
+                                                 query_completed_condition,
+                                                 generator_bundle_size,
+                                                 client_bundle_size)
 
         concurrency_engine.append_next(queries_to_start_in_queue_with)
         total_queries_admitted = queries_to_start_in_queue_with
@@ -84,7 +87,7 @@ class QueryFlowTester:
 
         ### Start client threads to push queries to the database
         clientManager = ClientManager(worker_num, concurrency_engine.waiting_queries, concurrency_engine.completed_queries,
-                                      query_completed_condition)
+                                      query_completed_condition, client_bundle_size)
 
         start = time.time()
 

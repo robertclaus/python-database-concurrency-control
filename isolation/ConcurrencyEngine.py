@@ -11,7 +11,7 @@ from isolation.indexes.SidetrackQueryIndex import SidetrackQueryIndex
 
 class dbConcurrencyEngine:
 
-    def __init__(self, incoming_query_queues, used_a_query_cv, run_concurrency_check, query_completed_condition):
+    def __init__(self, incoming_query_queues, used_a_query_cv, run_concurrency_check, query_completed_condition, receive_bundle_size, send_bundle_size):
         manager = multiprocessing.Manager()
 
         # List of Queue's containing incoming queries
@@ -39,18 +39,21 @@ class dbConcurrencyEngine:
 
         self.time_processing_completed = 0
 
+        self.receive_bundle_size = receive_bundle_size
+        self.send_bundle_size = send_bundle_size
+
     # Return the number of queries that have been admitted but not completed
     def queries_left(self):
-        return self.waiting_queries.qsize() + len(self.sidetrack_index)
+        return self.waiting_queries.qsize()*self.send_bundle_size + len(self.sidetrack_index)
 
     # Try to admit a list of new queries
     def admit_multiple(self, new_queries, already_on_sidetrack=False, sidetrack_if_not_readonly=False):
+        query_bundle = []
         admitted = []
         not_admitted = []
 
         for new_query in new_queries:
             new_query.start_admit()
-
             admit_as_readonly = self.lock_index.readonly and new_query.readonly
 
             if self.run_concurrency_check and not admit_as_readonly and (sidetrack_if_not_readonly or self.lock_index.does_conflict(new_query)):
@@ -60,7 +63,13 @@ class dbConcurrencyEngine:
                 if self.run_concurrency_check and not admit_as_readonly:
                     self.lock_index.add_query(new_query)
                 new_query.finish_admit()
-                self.waiting_queries.put(new_query)
+                query_bundle.append(new_query)
+                if len(query_bundle) > self.send_bundle_size:
+                    self.waiting_queries.put(query_bundle)
+                    query_bundle = []
+
+        if len(query_bundle) > 0:
+            self.waiting_queries.put(query_bundle)
 
         if not already_on_sidetrack:
             self.sidetrack_index.add_queries(not_admitted)
@@ -88,7 +97,7 @@ class dbConcurrencyEngine:
                     print(" ### Not generating queries fast enough.")
 
         if self.run_concurrency_check:
-            print("Added {} new queries of with {} are admitted. {}".format(queries_admitted, self.waiting_queries.qsize(), time.time()))
+            print("Added {} new queries of with {} are admitted. {}".format(queries_admitted, self.waiting_queries.qsize()*self.send_bundle_size, time.time()))
 
         for i in xrange(3):
             with self.used_a_query_cv:

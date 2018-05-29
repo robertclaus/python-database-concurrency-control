@@ -1,9 +1,9 @@
-
+from collections import deque
 
 class GlobalLockIndex:
 
     def __init__(self):
-        self.locking_queries = []
+        self.locking_queries = deque
         self.column_reference = {}
         self.equality_index = {}
         self.readonly = True
@@ -20,9 +20,11 @@ class GlobalLockIndex:
     def clear_all_queries(self):
         self.locking_queries=[]
 
+    # Not used, use clear_all instead
     def remove_queries(self, queries):
         map(self.remove_query, queries)
 
+    # Not used, use clear_all instead
     def remove_query(self, query):
         self.locking_queries.remove(query)
 

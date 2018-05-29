@@ -17,6 +17,9 @@ class GlobalLockIndex:
     def add_query(self,query):
         self.locking_queries.append(query)
 
+    def clear_all_queries(self):
+        self.locking_queries=[]
+        
     def remove_queries(self, queries):
         map(self.remove_query, queries)
 

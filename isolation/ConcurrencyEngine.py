@@ -88,7 +88,7 @@ class dbConcurrencyEngine:
                     print(" ### Not generating queries fast enough.")
 
         if self.run_concurrency_check:
-            print("Added {} new queries. {}".format(queries_admitted,time.time()))
+            print("Added {} new queries of with {} are left. {}".format(queries_admitted, self.total_completed_queries(), time.time()))
 
         for i in xrange(3):
             with self.used_a_query_cv:

@@ -58,12 +58,12 @@ class dbConcurrencyEngine:
             new_query.start_admit()
             admit_as_readonly = self.lock_index.readonly and new_query.readonly
 
-            if self.run_concurrency_check and not admit_as_readonly and (sidetrack_if_not_readonly or self.lock_index.does_conflict(new_query)):
+            if self.run_concurrency_check and (not admit_as_readonly) and (sidetrack_if_not_readonly or self.lock_index.does_conflict(new_query)):
                 not_admitted.append(new_query)
             else:
                 admitted.append(new_query)
-                #if self.run_concurrency_check and not admit_as_readonly:
-                #    add_query_fn(new_query)
+                if self.run_concurrency_check and not admit_as_readonly:
+                    add_query_fn(new_query)
                 new_query.finish_admit()
                 query_bundle.append(new_query)
                 if len(query_bundle) > self.send_bundle_size:

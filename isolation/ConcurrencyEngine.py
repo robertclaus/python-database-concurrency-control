@@ -53,6 +53,8 @@ class dbConcurrencyEngine:
         not_admitted = []
         add_query_fn = self.lock_index.add_query
 
+        self.run_concurrency_check = False
+
         for new_query in new_queries:
             new_query.start_admit()
             admit_as_readonly = True #self.lock_index.readonly and new_query.readonly
@@ -80,6 +82,7 @@ class dbConcurrencyEngine:
 
         self.query_count+=len(admitted)
 
+        self.run_concurrency_check = True
         return admitted
 
     # Admit the next X random queries from the incoming query queues

@@ -100,8 +100,8 @@ class QueryFlowTester:
                     concurrency_engine.append_next(queries_to_accept)
                     total_queries_admitted = total_queries_admitted + queries_to_accept
 
-            # Flag queries as complete
-            concurrency_engine.proccess_completed_queries()
+            # Flag queries as complete - Can all be done at end for no-cc case.
+            # concurrency_engine.proccess_completed_queries()
 
             if run_concurrency_control:
                 concurrency_engine.consider_changing_lock_mode(min_queries_in_sidetrack, min_queries_from_sidetrack,

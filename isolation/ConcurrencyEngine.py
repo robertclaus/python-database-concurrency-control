@@ -25,7 +25,6 @@ class dbConcurrencyEngine:
 
         # A list of admitted queries that can't run due to lock conflicts.
         self.sidetrack_index = SidetrackQueryIndex()
-        self._total_completed_queries = 0
         # The list of completed queries that have been removed from the global lock index already.
         self._archive_completed_queries = []
         # A condition variable to signal incoming connections to place more on the queue.
@@ -101,40 +100,33 @@ class dbConcurrencyEngine:
         try:
             while True:
                 complete_query = self.completed_queries.get_nowait()
-                self._total_completed_queries = self._total_completed_queries + 1
                 self._archive_completed_queries.append(complete_query)
-                if self.run_concurrency_check and not complete_query.readonly:
-                    self.lock_index.remove_query(complete_query)
         except Queue.Empty:
             pass
         self.time_processing_completed += (time.time()-start)
 
         # Return the total number of completed queries so far
     def total_completed_queries(self):
-        return self._total_completed_queries
+        return self.completed_queries.qsize()
 
     # Wait for all admitted (non-conflicting) queries to finish and process them
     def wind_down(self):
         print("  Winding down. {}  Total:{}, Completed:{}".format(time.time(), self.query_count,
-                                                                  self._total_completed_queries))
-        while self.query_count != self._total_completed_queries:
+                                                                  self.total_completed_queries()))
+        while self.query_count != self.total_completed_queries():
             with self.query_processed_cv:
                 self.query_processed_cv.wait(.01)
-            self.proccess_completed_queries()
-        self.proccess_completed_queries()
+        self.lock_index.clear_all_queries()
         print("  Wound down. {}  Total:{}, Completed:{}".format(time.time(), self.query_count,
-                                                                self._total_completed_queries))
+                                                                self.total_completed_queries()))
 
     # May change the accept mode to winding down or change the conflict function to be column specific.
     def consider_changing_lock_mode(self, max_sidetracked_queries, minimum_queue_size, target_queue_size):
-        self.proccess_completed_queries()
 
         if self.run_concurrency_check == True:
             if len(self.sidetrack_index) > max_sidetracked_queries:
 
                 # Admit all readonly queries
-                self.wind_down()
-
                 print("Readonly Start Admitting. {} ".format(time.time()))
 
                 self.lock_index.read_only_mode(True)

@@ -58,7 +58,7 @@ class dbConcurrencyEngine:
 
         self.run_concurrency_check = False
 
-        for single_query in new_queries:
+        for new_query in new_queries:
 
             new_query.start_admit()
             admit_as_readonly = True #self.lock_index.readonly and new_query.readonly
@@ -101,7 +101,7 @@ class dbConcurrencyEngine:
                     queries = main_queue.get(False)
                     decompressed_queries = cPickle.loads(zlib.decompress(queries))
                     self.admit_multiple(decompressed_queries, already_on_sidetrack=False, sidetrack_if_not_readonly=True)
-                    queries_admitted += len(queries)
+                    queries_admitted += len(decompressed_queries)
                 except Queue.Empty:
                     print(" ### Not generating queries fast enough.")
 

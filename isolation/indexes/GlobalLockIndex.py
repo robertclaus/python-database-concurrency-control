@@ -30,7 +30,6 @@ class GlobalLockIndex:
         self.readonly = readonly
 
     def does_conflict(self, query):
-        return False
         if self.readonly:
             return False
 

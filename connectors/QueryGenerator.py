@@ -57,7 +57,7 @@ class QueryGenerator:
     generator_id = 0
 
     def __init__(self, possible_query_list, need_to_parse, target_depth,
-                 num_worker_threads, run_in_series, condition_variable):
+                 num_worker_threads, run_in_series, condition_variable, bundle_size):
 
         manager = multiprocessing.Manager()
         self.threads = []
@@ -70,7 +70,7 @@ class QueryGenerator:
         for i in range(num_worker_threads):
             p = multiprocessing.Process(target=QueryGenerator.worker, args=(
                 self.generated_query_queue, possible_query_list, need_to_parse, target_depth, run_in_series,
-                QueryGenerator.generator_id, condition_variable))
+                QueryGenerator.generator_id, condition_variable, bundle_size))
             p.daemon = True
             p.start()
             self.threads.append(p)
@@ -97,13 +97,17 @@ class QueryGenerator:
         return query
 
     @staticmethod
-    def worker(waiting_queue, possible_query_list, need_to_parse, target_depth, run_in_series, generator_id, cv):
+    def worker(waiting_queue, possible_query_list, need_to_parse, target_depth, run_in_series, generator_id, cv, bundle_size):
+        bundle_size=10
         while True:
             with cv:
                 cv.wait()
-            while target_depth - waiting_queue.qsize() > 0:
-                index = QueryGenerator.pick_query_index_to_generate(possible_query_list)
-                last_query = QueryGenerator.generate_query(possible_query_list, index, generator_id, need_to_parse)
-                waiting_queue.put(last_query)
+            while target_depth - (waiting_queue.qsize()*bundle_size) > 0:
+                query_bundle=[]
+                for i in xrange(bundle_size):
+                    index = QueryGenerator.pick_query_index_to_generate(possible_query_list)
+                    last_query = QueryGenerator.generate_query(possible_query_list, index, generator_id, need_to_parse)
+                    query_bundle.append(last_query)
+                waiting_queue.put(query_bundle)
                 while run_in_series and not last_query.completed:
                     time.sleep(.001)

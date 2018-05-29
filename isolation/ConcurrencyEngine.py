@@ -81,9 +81,9 @@ class dbConcurrencyEngine:
         while queries_admitted < queries_to_generate_at_a_time:
             for main_queue in self.incoming_query_queues:
                 try:
-                    query = main_queue.get(False)
-                    self.admit_multiple([query], already_on_sidetrack=False, sidetrack_if_not_readonly=True)
-                    queries_admitted += 1
+                    queries = main_queue.get(False)
+                    self.admit_multiple(queries, already_on_sidetrack=False, sidetrack_if_not_readonly=True)
+                    queries_admitted += len(queries)
                 except Queue.Empty:
                     print(" ### Not generating queries fast enough.")
 

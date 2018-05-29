@@ -35,7 +35,7 @@ query_sets = [
                AND (call_forwarding.s_id = special_facility.s_id \
                AND call_forwarding.sf_type = special_facility.sf_type) \
                AND (call_forwarding.start_time <= <rand_0_8_16> \
-               AND call_forwarding.end_time >= <rand_1_to_24>);",24,
+               AND call_forwarding.end_time >= <rand_1_to_24>);",30,
                
                "SELECT access_info.data1, access_info.data2, access_info.data3, access_info.data4 \
                FROM access_info \

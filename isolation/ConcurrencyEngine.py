@@ -53,7 +53,7 @@ class dbConcurrencyEngine:
             admit_as_readonly = self.lock_index.readonly and new_query.readonly
 
             if not admit_as_readonly and (sidetrack_if_not_readonly or (self.run_concurrency_check and self.lock_index.does_conflict(new_query))):
-                not_admitted(new_query)
+                not_admitted.append(new_query)
             else:
                 admitted.append(new_query)
                 if self.run_concurrency_check and not admit_as_readonly:

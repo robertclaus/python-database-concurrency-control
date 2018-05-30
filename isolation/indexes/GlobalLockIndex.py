@@ -37,7 +37,7 @@ class GlobalLockIndex:
 
         for existing_query in self.locking_queries:
             if query.conflicts(existing_query, self.column_reference):
-                print("\n\nConflicting Query A {}\nConflicting Query B\n".format(query, existing_query))
+                #print("\n\nConflicting Query A {}\nConflicting Query B\n".format(query, existing_query))
                 return True
         return False
         return any([query.conflicts(existing_query) for existing_query in self.locking_queries])

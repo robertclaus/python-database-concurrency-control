@@ -24,10 +24,10 @@ class QueryFlowTester:
         ### Load Settings
 
         # Minimum queries in incoming waiting query queue to allow before generating more
-        min_queries_in_queue = worker_num * 500
+        min_queries_in_queue = worker_num * 1500
 
         # Minimum queries in sidetrack to consider admitting
-        min_queries_in_sidetrack = 500
+        min_queries_in_sidetrack = 1500
 
         # Minimum queries to conisder admitting from a sidetrack
         min_queries_from_sidetrack = 100

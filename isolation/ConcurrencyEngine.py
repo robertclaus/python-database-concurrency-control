@@ -186,7 +186,7 @@ class dbConcurrencyEngine:
 
                         admitted = 0
                         # Admit queries from this set
-                        print("  Start Admitting. {} ".format(time.time()))
+                        print("Start Admitting. {}  Columns: {}".format(time.time(), ",".join(combination)))
                         query_count = len(value)
                         queries = list(value)  # Make a copy so we can remove from it properly
                         admit_loops = 0
@@ -198,14 +198,10 @@ class dbConcurrencyEngine:
                                 queries.remove(query)
                             self.wind_down()
                             print("We have {} queries left".format(len(queries)))
-                            #queries = [q for q in queries if q not in queries_admitted]
 
-                        print("  Finish Admitting. Loops: {}  End Time: {} ".format(admit_loops, time.time()))
-
-                        # Evaluate the performance of that column
-                        end_depth = len(value)
-                        print("Admitted {} of {} queries isolated by columns {}.".format(admitted, query_count,
-                                                                                         ",".join(combination)))
+                        print("Finish Admitting {} of {} queries. Loops: {}  End Time: {} Columns: {}".format(admitted, query_count,
+                                                                                                              admit_loops, time.time(),
+                                                                                                              ",".join(combination)))
 
                 # Always get new queries in readonly mode so they can be admitted immediately.
                 if not self.lock_index.readonly:

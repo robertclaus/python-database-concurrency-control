@@ -174,7 +174,7 @@ class dbConcurrencyEngine:
 
                         column_reference[tab].append(col)
 
-                    if len(value) > minimum_queue_size:
+                    if value is not None and len(value) > minimum_queue_size:
                         start_depth = len(value)
 
                         self.lock_index.read_only_mode(False)

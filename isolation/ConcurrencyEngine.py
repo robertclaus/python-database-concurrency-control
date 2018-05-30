@@ -142,7 +142,7 @@ class dbConcurrencyEngine:
         if self.run_concurrency_check == True:
             if len(self.sidetrack_index) > max_sidetracked_queries:
 
-                # Admit all readonly queries
+                # Admit all readonly queries - Happens automatically when admitting queries the first time, but may as well leave it
                 print("Readonly Start Admitting. {} ".format(time.time()))
 
                 self.lock_index.read_only_mode(True)

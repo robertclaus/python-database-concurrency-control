@@ -46,7 +46,7 @@ class QueryFlowTester:
         # Number of queries to pre-parse so queue does not start empty
         queries_to_start_in_queue_with = min_queries_in_queue
 
-        bundle_size = 10
+        bundle_size = 5
 
         # Load queries to generate.
         query_generator_condition = multiprocessing.Condition()  # Notifies the generator that we may have used some of its queries

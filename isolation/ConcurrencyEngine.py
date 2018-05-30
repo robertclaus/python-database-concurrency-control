@@ -162,6 +162,7 @@ class dbConcurrencyEngine:
                     value = None
                     for column in combination:
                         if column not in self.sidetrack_index.sidetrack_indexes['columns_locked_not_all']:
+                            print("Invalid column!")
                             break
                         column_queries = self.sidetrack_index.sidetrack_indexes['columns_locked_not_all'][column]
                         tab = column.split('.')[0]

@@ -221,11 +221,7 @@ class dbQuery:
                                      mode)
 
     def conflicts(self, other_query, columns_to_consider={}):
-        if self.predicatelock.do_locks_conflict(other_query.predicatelock, columns_to_consider):
-            # print("Conflict Between \n  {} \n  and \n  {}".format(self.query_text, other_query.query_text))
-            # print("   Conflict Between {} and {}".format(lock,other_lock))
-            return True
-        return False
+        return self.predicatelock.do_locks_conflict(other_query.predicatelock, columns_to_consider)
 
     def __str__(self):
         return "Query: {}\n{}\nReadonly:{}".format(self.query_text, str(self.predicatelock),self.readonly)

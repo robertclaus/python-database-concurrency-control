@@ -50,7 +50,7 @@ query_sets = [
                
                "UPDATE subscriber \
                SET subscriber.vlr_location = <rand_int_1_big> \
-               WHERE subscriber.sub_nbr = '<non_uniform_rand_int_subscriber_size_string>';",18, # Was 14
+               WHERE subscriber.sub_nbr = '<non_uniform_rand_int_subscriber_size_string>';",20, # Was 14
                
                "INSERT INTO call_forwarding (call_forwarding.s_id, call_forwarding.sf_type, call_forwarding.start_time, call_forwarding.end_time, call_forwarding.numberx) \
                SELECT subscriber.s_id, special_facility.sf_type ,<rand_0_8_16>,<rand_1_to_24>, <non_uniform_rand_int_subscriber_size> \

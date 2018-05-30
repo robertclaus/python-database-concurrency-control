@@ -46,7 +46,7 @@ query_sets = [
                SET subscriber.bit_1 = <bit_rand>, special_facility.data_a = <rand_int_1_255> \
                WHERE subscriber.s_id = <non_uniform_rand_int_subscriber_size> \
                AND special_facility.s_id = <non_uniform_rand_int_subscriber_size> \
-               AND special_facility.sf_type = <rand_int_1_4>;", 2, # Was 2
+               AND special_facility.sf_type = <rand_int_1_4>;", 0, # Was 2
                
                "UPDATE subscriber \
                SET subscriber.vlr_location = <rand_int_1_big> \

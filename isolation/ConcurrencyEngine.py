@@ -68,7 +68,7 @@ class dbConcurrencyEngine:
                 if self.run_concurrency_check and not admit_as_readonly:
                     self.lock_index.add_query(new_query)
                 new_query.finish_admit()
-                query_bundle.append(new_query)
+                query_bundle.append(new_query.copy_light())
                 if len(query_bundle) > self.send_bundle_size:
                     self.waiting_queries.put(query_bundle)
                     query_bundle = []

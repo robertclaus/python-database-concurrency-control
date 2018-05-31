@@ -38,6 +38,20 @@ class dbQuery:
         self.readonly = True
         self.was_admitted = False
 
+    def copy_light(self):
+        small_query = dbQuery(self.query_text, self.query_type_id)
+        small_query.query_id = self.query_id
+        small_query.id = self.query_id
+        small_query.query_text = self.query_text
+        small_query.created_at = self.created_at
+        small_query.waiting_time = self.waiting_time
+        small_query.admitted_at = self.admitted_at
+        small_query.start_admit_time = self.start_admit_time
+        small_query.finish_admit_time = self.finish_admit_time
+        small_query.time_to_admit = self.time_to_admit
+        small_query.was_admitted = self.was_admitted
+        return small_query
+
     def __eq__(self, other):
         return self.query_id == other.query_id
 

@@ -87,7 +87,7 @@ class PredicateLock:
         columns_that_conflict = defaultdict(list)
 
         for table_accessed in self.tableandcolumnindex:
-            if not columns_to_consider[table_accessed]:
+            if table_accessed not in columns_to_consider:
                 #print("Attempted to schedule a query while one of it's tables wasn't touched by scheduled locks.\nQuery:\n{}\nLocks:\n{}".format(self, columns_to_consider))
                 return True
 

@@ -95,6 +95,8 @@ class dbQuery:
             self.lock_indexes['columns_locked'].append(tabledotcolumn)
         for tabledotcolumn in self.predicatelock.notalltabledotcolumnindex:
             self.lock_indexes['columns_locked_not_all'].append(tabledotcolumn)
+        for table in self.predicatelock.tableindex:
+            self.lock_indexes['tables_locked'].append(table)
         if self.predicatelock.readonly:
             self.readonly = True
         else:

@@ -171,7 +171,7 @@ class dbConcurrencyEngine:
                         if value is None:
                             value = column_queries
                         else:
-                            value = [q for q in value if q in column_queries]
+                            value = [q for q in value if q in column_queries and tab in q.lock_indexes['tables_locked']]
 
                         column_reference[tab].append(col)
 

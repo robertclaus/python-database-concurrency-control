@@ -109,7 +109,7 @@ class QueryGenerator:
                     index = QueryGenerator.pick_query_index_to_generate(possible_query_list)
                     last_query = QueryGenerator.generate_query(possible_query_list, index, generator_id, need_to_parse)
                     query_bundle.append(last_query)
-                compressed_query_bundle = zlib.compress(cPickle.dumps(query_bundle))
-                waiting_queue.put(compressed_query_bundle)
+                #compressed_query_bundle = zlib.compress(cPickle.dumps(query_bundle))
+                waiting_queue.put(query_bundle)
                 #while run_in_series and not last_query.completed: Doesn't work anways since last_query reference is lost in process queue
                 #   time.sleep(.001)

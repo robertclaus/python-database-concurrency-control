@@ -96,9 +96,9 @@ class dbConcurrencyEngine:
             for main_queue in self.incoming_query_queues:
                 try:
                     queries = main_queue.get(False)
-                    decompressed_queries = cPickle.loads(zlib.decompress(queries))
-                    self.admit_multiple(decompressed_queries, already_on_sidetrack=False, sidetrack_if_not_readonly=True)
-                    queries_admitted += len(decompressed_queries)
+                    #decompressed_queries = cPickle.loads(zlib.decompress(queries))
+                    self.admit_multiple(queries, already_on_sidetrack=False, sidetrack_if_not_readonly=True)
+                    queries_admitted += len(queries)
                 except Queue.Empty:
                     print(" ### Not generating queries fast enough.")
                     time.sleep(.1)

@@ -23,8 +23,7 @@ class PredicateValue:
         return "Table:{}, Column:{}, Type:{}, Value:{}".format(self.table, self.column, self.type, self.value)
 
     def do_values_conflict(self, other_value):
-        if self.mode == PredicateValue.WRITE or (
-                self.mode == PredicateValue.READ and other_value.mode == PredicateValue.WRITE):
+        if self.mode == PredicateValue.WRITE or (self.mode == PredicateValue.READ and other_value.mode == PredicateValue.WRITE):
             # These checks occur in PredicateLock now
             #if self.tabledotcolumn == other_value.tabledotcolumn:
                 # if self.table not in columns_to_consider or self.column in columns_to_consider[self.table]:

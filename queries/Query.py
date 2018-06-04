@@ -144,11 +144,11 @@ class dbQuery:
                 if type(token) is sqlparse.sql.Where:
                     for predicate in token:
                         if type(predicate) is sqlparse.sql.Comparison:
-                            self.add_comparison(predicate, PredicateLock.READ)
+                            self.add_comparison(predicate, PredicateLock.WRITE)
                         if type(predicate) is sqlparse.sql.Parenthesis:
                             for n_predicate in predicate.tokens:
                                 if type(n_predicate) is sqlparse.sql.Comparison:
-                                    self.add_comparison(n_predicate, PredicateLock.READ)
+                                    self.add_comparison(n_predicate, PredicateLock.WRITE)
 
             for token in self.sql_obj.tokens:
                 if type(token) is sqlparse.sql.Token and token.value == 'UPDATE':
@@ -161,12 +161,12 @@ class dbQuery:
                 if in_set_list and type(token) is sqlparse.sql.IdentifierList:
                     for comparison in token:
                         if type(comparison) is sqlparse.sql.Comparison:
-                            if not self.predicatelock.value_exists(PredicateLock.READ, str(comparison[0])):
+                            if not self.predicatelock.value_exists(PredicateLock.WRITE, str(comparison[0])):
                                 self.add_identifier(comparison[0], PredicateLock.WRITE)
                             self.add_comparison(comparison, PredicateLock.WRITE)
 
                 if in_set_list and type(token) is sqlparse.sql.Comparison:
-                    if not self.predicatelock.value_exists(PredicateLock.READ, str(token[0])):
+                    if not self.predicatelock.value_exists(PredicateLock.WRITE, str(token[0])):
                         self.add_identifier(token[0], PredicateLock.WRITE)
                     self.add_comparison(token, PredicateLock.WRITE)
 

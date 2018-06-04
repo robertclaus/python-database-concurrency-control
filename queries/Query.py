@@ -184,7 +184,7 @@ class dbQuery:
                 if type(token) is sqlparse.sql.Where:
                     for predicate in token:
                         if type(predicate) is sqlparse.sql.Comparison:
-                            self.add_comparison(predicate, PredicateLock.READ)
+                            self.add_comparison(predicate, PredicateLock.WRITE)
                             if type(predicate) is sqlparse.sql.Parenthesis:
                                 for n_predicate in predicate.tokens:
                                     if type(n_predicate) is sqlparse.sql.Comparison:

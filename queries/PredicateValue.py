@@ -30,7 +30,6 @@ class PredicateValue:
             if self.type == 0 or other_value.type == 0:
                 return True
             if self.compare_int_locks(other_value):
-                print("Value Conflict: \n{}\n{}\n".format(self, other_value))
                 return True
         return False
 

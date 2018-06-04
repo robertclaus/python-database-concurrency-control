@@ -110,7 +110,7 @@ class PredicateLock:
                             columns_that_conflict[table].append(column)
 
         for table in columns_to_consider:
-            for column in columns_to_consider:
+            for column in columns_to_consider[table]:
                 if column not in columns_that_conflict[table]:
                     return False
 

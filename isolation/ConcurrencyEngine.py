@@ -152,8 +152,8 @@ class dbConcurrencyEngine:
                 print("Readonly Finish Admitting {} queries. {} ".format(len(admitted_queries), time.time()))
 
                 lock_combinations = [
-                    ['special_facility.s_id', 'subscriber.s_id'],  # Low Volume Update
                     ['call_forwarding.s_id', 'subscriber.sub_nbr', 'special_facility.s_id'],  # Insert
+                    ['special_facility.s_id', 'subscriber.s_id'],  # Low Volume Update
                     ['call_forwarding.start_time','subscriber.sub_nbr'], # Delete
                     ['subscriber.sub_nbr'], # High Volume Update
                 ]

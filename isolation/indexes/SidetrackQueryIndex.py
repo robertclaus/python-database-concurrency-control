@@ -33,8 +33,8 @@ class SidetrackQueryIndex:
                         self.sidetrack_indexes[key][column] = [query]
 
     def remove_admitted_queries(self):
-        self.sidetracked_readonly_queries = [q for q in self.sidetracked_readonly_queries if q.was_admitted]
-        self.sidetracked_write_queries = [q for q in self.sidetracked_write_queries if q.was_admitted]
+        self.sidetracked_readonly_queries = [q for q in self.sidetracked_readonly_queries if not q.was_admitted]
+        self.sidetracked_write_queries = [q for q in self.sidetracked_write_queries if not q.was_admitted]
 
     def remove_queries(self, queries):
         if all([query.readonly for query in queries]):

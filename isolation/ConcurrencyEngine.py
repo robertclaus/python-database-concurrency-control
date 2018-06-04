@@ -152,9 +152,9 @@ class dbConcurrencyEngine:
                 print("Readonly Finish Admitting {} queries. {} ".format(len(admitted_queries), time.time()))
 
                 lock_combinations = [
+                    ['special_facility.s_id', 'subscriber.s_id'],  # Low Volume Update
                     ['call_forwarding.s_id', 'subscriber.sub_nbr', 'special_facility.s_id'],  # Insert
                     ['call_forwarding.start_time','subscriber.sub_nbr'], # Delete
-                    ['special_facility.s_id','subscriber.s_id'], # Low Volume Update
                     ['subscriber.sub_nbr'], # High Volume Update
                 ]
                 self.cycle_count += 1
@@ -175,7 +175,7 @@ class dbConcurrencyEngine:
 
                         column_reference[tab].append(col)
 
-                    if value is not None and len(value) > minimum_queue_size:
+                    if value is not None:# and len(value) > minimum_queue_size:
                         start_depth = len(value)
 
                         self.lock_index.read_only_mode(False)

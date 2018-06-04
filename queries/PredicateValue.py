@@ -25,12 +25,13 @@ class PredicateValue:
     def do_values_conflict(self, other_value, columns_to_consider):
         if self.mode == PredicateValue.WRITE or (
                 self.mode == PredicateValue.READ and other_value.mode == PredicateValue.WRITE):
-            if self.tabledotcolumn == other_value.tabledotcolumn:
-                if self.table not in columns_to_consider or self.column in columns_to_consider[self.table]:
-                    if self.type == 0 or other_value.type == 0:
-                        return True
-                    if self.compare_int_locks(other_value):
-                        return True
+            # These checks occur in PredicateLock now
+            #if self.tabledotcolumn == other_value.tabledotcolumn:
+                # if self.table not in columns_to_consider or self.column in columns_to_consider[self.table]:
+            if self.type == 0 or other_value.type == 0:
+                return True
+            if self.compare_int_locks(other_value):
+                return True
         return False
 
     def compare_int_locks(self, other_value):

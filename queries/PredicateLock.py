@@ -1,5 +1,6 @@
 from PredicateValue import PredicateValue
 
+from collections import defaultdict
 
 class PredicateLock:
     WRITE = 2
@@ -9,7 +10,7 @@ class PredicateLock:
         self.predicatevalues = []
         self.tabledotcolumnindex = {}
         self.tableindex = []
-        self.tableandcolumnindex = {}
+        self.tableandcolumnindex = defaultdict(lambda: defaultdict(list))
         self.notalltabledotcolumnindex = {}
         self.nonequality_value_count = 0
         self.equality_index = {}
@@ -30,10 +31,6 @@ class PredicateLock:
         if predicatevalue.type == 1:
             self.equality_index[predicatevalue.table][predicatevalue.column][predicatevalue.value] = True
 
-        if not predicatevalue.table in self.tableandcolumnindex:
-            self.tableandcolumnindex[predicatevalue.table] = {}
-        if not predicatevalue.column in self.tableandcolumnindex[predicatevalue.table]:
-            self.tableandcolumnindex[predicatevalue.table][predicatevalue.column] = []
         self.tableandcolumnindex[predicatevalue.table][predicatevalue.column].append(predicatevalue)
 
         if predicatevalue.table not in self.tableindex:
@@ -62,14 +59,11 @@ class PredicateLock:
             self.equality_index[value.table][value.column].pop(value.value, None)
 
     def locked_values_for(self, table, column):
-        if table in self.tableandcolumnindex and column in self.tableandcolumnindex[table]:
-            return self.tableandcolumnindex[table][column]
-        return []
+        return self.tableandcolumnindex[table][column]
 
     def locked_columns_for(self, table):
-        if table in self.tableandcolumnindex:
-            for col in self.tableandcolumnindex[table]:
-                yield col
+        for col in self.tableandcolumnindex[table]:
+            yield col
 
     def value_exists(self, tabledotcolumn, mode):
         if any(v for v in self.predicatevalues if v.mode == mode and v.tabledotcolumn == tabledotcolumn):
@@ -87,9 +81,36 @@ class PredicateLock:
                         self.remove_value(other_value)
 
     def do_locks_conflict(self, other_lock, columns_to_consider={}):
+        columns_that_conflict = defaultdict(list)
+
+        for table_accessed in self.tableandcolumnindex:
+            if not columns_to_consider[table_accessed]:
+                print("Attempted to schedule a query while one of it's tables wasn't touched by scheduled locks.\nQuery:\n{}\nLocks:\n{}".format(self, columns_to_consider))
+                return True
+
+        for table in columns_to_consider:
+            for column in columns_to_consider[table]:
+                if not self.tableandcolumnindex[table][column]:
+                    columns_that_conflict[table].append(column)
+                    # There is a conflict on table and column because this column is ANY
+
+                for value in self.tableandcolumnindex[table][column]:
+                    if not other_lock.tableandcolumnindex[table][column]: # No reference in other lock -> ANY -> conflict
+                        # There is a conflict on table and column
+                        columns_that_conflict[table].append(column)
+                    for other_value in other_lock.tableandcolumnindex[table][column]:
+                        # Test for conflict
+                        if value.do_values_conflict(other_value):
+                            columns_that_conflict[table].append(column)
+
+        for table in columns_to_consider:
+            for column in columns_to_consider:
+                if column not in columns_that_conflict[table]:
+                    return False
+        return True
+
         for value in self.predicatevalues:
-            if value.table in other_lock.tableandcolumnindex and value.column in other_lock.tableandcolumnindex[
-                value.table]:
+            if value.table in other_lock.tableandcolumnindex and value.column in other_lock.tableandcolumnindex[value.table]:
                 for other_value in other_lock.tableandcolumnindex[value.table][value.column]:
                     if value.do_values_conflict(other_value, columns_to_consider):
                         return True

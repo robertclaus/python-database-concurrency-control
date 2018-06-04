@@ -110,6 +110,8 @@ class PredicateLock:
             for column in columns_to_consider:
                 if column not in columns_that_conflict[table]:
                     return False
+
+        print("\nConflict:\nQuery 1:\n{}\nQuery 2:\n{}\n\n".format(self, other_lock))
         return True
 
         for value in self.predicatevalues:

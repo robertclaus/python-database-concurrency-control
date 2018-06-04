@@ -162,10 +162,10 @@ class dbConcurrencyEngine:
                     column_reference = defaultdict(list)
                     value = None
                     for column in combination:
-                        if column not in self.sidetrack_index.sidetrack_indexes['columns_locked_not_all']:
+                        if column not in self.sidetrack_index.sidetrack_indexes['columns_locked']:
                             print("Invalid column {}!".format(column))
                             break
-                        column_queries = self.sidetrack_index.sidetrack_indexes['columns_locked_not_all'][column]
+                        column_queries = self.sidetrack_index.sidetrack_indexes['columns_locked'][column]
                         tab = column.split('.')[0]
                         col = column.split('.')[1]
                         if value is None:

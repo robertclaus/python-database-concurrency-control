@@ -95,18 +95,18 @@ class PredicateLock:
             for column in columns_to_consider[table]:
                 if not self.tableandcolumnindex[table][column]:
                     columns_that_conflict[table].append(column)
-                    print("No reference to {}.{} in query 1 means a conflict on it.".format(table,column))
+                    #print("No reference to {}.{} in query 1 means a conflict on it.".format(table,column))
                     # There is a conflict on table and column because this column is ANY
 
                 for value in self.tableandcolumnindex[table][column]:
                     if not other_lock.tableandcolumnindex[table][column]: # No reference in other lock -> ANY -> conflict
                         # There is a conflict on table and column
                         columns_that_conflict[table].append(column)
-                        print("No reference to {}.{} in query 2 means a conflict on it.".format(table, column))
+                        #print("No reference to {}.{} in query 2 means a conflict on it.".format(table, column))
                     for other_value in other_lock.tableandcolumnindex[table][column]:
                         # Test for conflict
                         if value.do_values_conflict(other_value):
-                            print("Conflict on values:\n{}\n{}\n".format(value, other_value))
+                            #print("Conflict on values:\n{}\n{}\n".format(value, other_value))
                             columns_that_conflict[table].append(column)
 
         for table in columns_to_consider:
@@ -114,7 +114,7 @@ class PredicateLock:
                 if column not in columns_that_conflict[table]:
                     return False
 
-        print("\nConflict:\nQuery 1:\n{}\nQuery 2:\n{}\n\n".format(self, other_lock))
+        #print("\nConflict:\nQuery 1:\n{}\nQuery 2:\n{}\n\n".format(self, other_lock))
         return True
 
         for value in self.predicatevalues:

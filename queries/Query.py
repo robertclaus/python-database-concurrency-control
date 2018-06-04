@@ -186,7 +186,7 @@ class dbQuery:
                             if type(predicate) is sqlparse.sql.Parenthesis:
                                 for n_predicate in predicate.tokens:
                                     if type(n_predicate) is sqlparse.sql.Comparison:
-                                        self.add_comparison(n_predicate, PredicateLock.READ)
+                                        self.add_comparison(n_predicate, PredicateLock.WRITE)
 
             for id in ["subscriber.s_id", "special_facility.s_id"]:  # ,"subscriber.sub_nbr"]:
                 self.add_identifier(id, PredicateLock.WRITE)

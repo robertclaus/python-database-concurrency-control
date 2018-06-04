@@ -38,6 +38,7 @@ class QueryFlowTester:
 
         # Scheduling By Column Only, or also general predicate locking
         admit_to_sidetrack = run_concurrency_control
+        phased_mode = True
 
         # Maximum queries to have in the incoming generator queue at one time
         queue_depth = min_queries_in_queue*2  # *10
@@ -48,7 +49,7 @@ class QueryFlowTester:
         # Number of queries to pre-parse so queue does not start empty
         queries_to_start_in_queue_with = min_queries_in_queue
 
-        bundle_size = 5
+        bundle_size = 4
 
         # Load queries to generate.
         query_generator_condition = multiprocessing.Condition()  # Notifies the generator that we may have used some of its queries

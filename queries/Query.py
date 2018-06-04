@@ -108,6 +108,8 @@ class dbQuery:
 
     def generate_locks(self):
         if self.sql_obj.get_type() == 'SELECT':
+            self.readonly = True
+            return
             for token in self.sql_obj.tokens:
                 if type(token) is sqlparse.sql.Where:
                     for predicate in token:

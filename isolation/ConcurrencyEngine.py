@@ -193,6 +193,8 @@ class dbConcurrencyEngine:
                             admit_loops += 1
                             queries_admitted = self.admit_multiple(queries, already_on_sidetrack=True)
                             admitted += len(queries_admitted)
+                            if len(queries_admitted)<2:
+                                print("Only admitted one query:\n{}\n".format(queries_admitted[0]))
                             for query in queries_admitted:
                                 queries.remove(query)
                             self.wind_down()

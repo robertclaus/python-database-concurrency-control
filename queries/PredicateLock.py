@@ -6,11 +6,15 @@ class PredicateLock:
     WRITE = 2
     READ = 1
 
+    @staticmethod
+    def default_dict_function():
+        return defaultdict(list)
+
     def __init__(self):
         self.predicatevalues = []
         self.tabledotcolumnindex = {}
         self.tableindex = []
-        self.tableandcolumnindex = defaultdict(lambda: defaultdict(list))
+        self.tableandcolumnindex = defaultdict(PredicateLock.default_dict_function)
         self.notalltabledotcolumnindex = {}
         self.nonequality_value_count = 0
         self.equality_index = {}

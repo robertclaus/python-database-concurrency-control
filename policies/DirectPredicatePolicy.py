@@ -7,6 +7,7 @@ from collections import deque
 class DirectPredicatePolicy(BasePredicatePolicy):
     sidetracked_queries = deque()
     running_queries = deque()
+    max_sidetrack_wait = 1
 
     # Is run on receiving the query within the client connector process
     @staticmethod
@@ -22,9 +23,16 @@ class DirectPredicatePolicy(BasePredicatePolicy):
                 DirectPredicatePolicy.sidetracked_queries.append(query)
                 return []
 
-        # No conflicts
-        DirectPredicatePolicy.running_queries.append(query)
-        return [query]
+        # If we could admit right now, should we to be fair to sidetrack?
+        should_admit_immediately = True
+        if len(DirectPredicatePolicy.sidetracked_queries)>0:
+            next_sidetracked_query = DirectPredicatePolicy.sidetracked_queries[0]
+            should_admit_immediately = time.time() - next_sidetracked_query.start_admit_time < DirectPredicatePolicy.max_sidetrack_wait
+
+        # No conflicts and fair to admit ahead of the sidetrack
+        if should_admit_immediately:
+            DirectPredicatePolicy.running_queries.append(query)
+            return [query]
 
     # Returns a list of queries to admit
     @staticmethod
@@ -33,8 +41,10 @@ class DirectPredicatePolicy(BasePredicatePolicy):
 
         queries_to_admit = []
 
-        if time.time()-query.start_admit_time > 1:
-            queries_to_consider = [DirectPredicatePolicy.sidetracked_queries[0]]
+        next_sidetracked_query = DirectPredicatePolicy.sidetracked_queries[0]
+
+        if time.time()-next_sidetracked_query.start_admit_time > DirectPredicatePolicy.max_sidetrack_wait:
+            queries_to_consider = [next_sidetracked_query]
         else:
             queries_to_consider = DirectPredicatePolicy.sidetracked_queries
 

@@ -22,8 +22,8 @@ class ZeroConcurrencyPolicy(BasePredicatePolicy):
         ZeroConcurrencyPolicy.running_queries.remove(query)
 
         if ZeroConcurrencyPolicy.waiting_queries:
-            query = ZeroConcurrencyPolicy.waiting_queries.popleft()
-            ZeroConcurrencyPolicy.running_queries.append(query)
-            return [query]
+            waiting_query = ZeroConcurrencyPolicy.waiting_queries.popleft()
+            ZeroConcurrencyPolicy.running_queries.append(waiting_query)
+            return [waiting_query]
         else:
             return []

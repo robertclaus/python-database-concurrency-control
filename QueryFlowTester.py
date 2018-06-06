@@ -209,7 +209,13 @@ class QueryFlowTester:
 
                 sys.stdout.write(
                     "\n csv,{},{},{},{}".format(total_time, worker_num, str(completed / total_time), total_utilization * 100))
-                for query_type in type_index_sum:
+
+                type_index_count.sort()
+                for query_type in sorted(type_index_sum.iterkeys()):
+                    sys.stdout.write(",{}".format(microseconds_used(type_index_sum, type_index_count, query_type)))
+                for query_type in sorted(type_index_sum.iterkeys()):
+                    sys.stdout.write(",{}".format(type_index_count[query_type]))
+                for query_type in sorted(type_index_sum.iterkeys()):
                     sys.stdout.write(",{},{},{}".format(query_type, microseconds_used(type_index_sum, type_index_count, query_type),
                                                         type_index_count[query_type]))
                 break

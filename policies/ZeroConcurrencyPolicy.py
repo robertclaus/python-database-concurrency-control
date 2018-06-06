@@ -3,6 +3,7 @@ from collections import deque
 
 class ZeroConcurrencyPolicy(BasePredicatePolicy):
     waiting_queries = deque()
+    running_queries = []
 
     @staticmethod
     def parse_query(query):
@@ -10,13 +11,16 @@ class ZeroConcurrencyPolicy(BasePredicatePolicy):
 
     @staticmethod
     def admit_query(query):
-        if len(ZeroConcurrencyPolicy.waiting_queries)==0:
+        if not ZeroConcurrencyPolicy.running_queries:
+            ZeroConcurrencyPolicy.running_queries.append(query)
             return [query]
         else:
             ZeroConcurrencyPolicy.waiting_queries.append(query)
 
     @staticmethod
     def complete_query(query):
+        ZeroConcurrencyPolicy.running_queries.remove(query)
+
         if ZeroConcurrencyPolicy.waiting_queries:
             return [ZeroConcurrencyPolicy.waiting_queries.popleft()]
         else:

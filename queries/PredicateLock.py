@@ -121,7 +121,7 @@ class PredicateLock:
             for value in self.predicatevalues:
                 if value.table in other_lock.tableandcolumnindex and value.column in other_lock.tableandcolumnindex[value.table]:
                     for other_value in other_lock.tableandcolumnindex[value.table][value.column]:
-                        if value.do_values_conflict(other_value, columns_to_consider):
+                        if value.do_values_conflict(other_value):
                             return True
             return False
 

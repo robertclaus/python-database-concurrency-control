@@ -32,7 +32,7 @@ class DirectPredicatePolicy(BasePredicatePolicy):
                 DirectPredicatePolicy.running_queries.append(query)
                 return [query]
 
-            if not query.conflicts(next_sidetracked_query):
+            if not query.conflicts(next_sidetracked_query, None):
                 DirectPredicatePolicy.running_queries.append(query)
                 return [query]
         else:

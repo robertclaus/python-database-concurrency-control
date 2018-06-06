@@ -24,15 +24,15 @@ class DirectPredicatePolicy(BasePredicatePolicy):
                 return []
 
         # If we could admit right now, should we to be fair to sidetrack?
-        should_admit_immediately = True
-        if len(DirectPredicatePolicy.sidetracked_queries)>0:
-            next_sidetracked_query = DirectPredicatePolicy.sidetracked_queries[0]
-            should_admit_immediately = time.time() - next_sidetracked_query.start_admit_time < DirectPredicatePolicy.max_sidetrack_wait
+        if DirectPredicatePolicy.sidetracked_queries:
+            if DirectPredicatePolicy.sidetracked_queries[0].time_since_admit() < DirectPredicatePolicy.max_sidetrack_wait:
 
-        # No conflicts and fair to admit ahead of the sidetrack
-        if should_admit_immediately:
-            DirectPredicatePolicy.running_queries.append(query)
-            return [query]
+                # No conflicts and fair to admit ahead of the sidetrack
+                DirectPredicatePolicy.running_queries.append(query)
+                return [query]
+
+        return []
+
 
     # Returns a list of queries to admit
     @staticmethod
@@ -40,25 +40,25 @@ class DirectPredicatePolicy(BasePredicatePolicy):
         DirectPredicatePolicy.running_queries.remove(query)
 
         queries_to_admit = []
+        if DirectPredicatePolicy.sidetracked_queries:
+            next_sidetracked_query = DirectPredicatePolicy.sidetracked_queries[0]
 
-        next_sidetracked_query = DirectPredicatePolicy.sidetracked_queries[0]
+            if next_sidetracked_query.time_since_admit > DirectPredicatePolicy.max_sidetrack_wait:
+                queries_to_consider = [next_sidetracked_query]
+            else:
+                queries_to_consider = DirectPredicatePolicy.sidetracked_queries
 
-        if time.time()-next_sidetracked_query.start_admit_time > DirectPredicatePolicy.max_sidetrack_wait:
-            queries_to_consider = [next_sidetracked_query]
-        else:
-            queries_to_consider = DirectPredicatePolicy.sidetracked_queries
+            for waiting_query in queries_to_consider:
+                can_admit_waiting_query = True
+                for running_query in DirectPredicatePolicy.running_queries:
+                    if waiting_query.conflicts(running_query, None):
+                        can_admit_waiting_query = False
 
-        for waiting_query in queries_to_consider:
-            can_admit_waiting_query = True
-            for running_query in DirectPredicatePolicy.running_queries:
-                if waiting_query.conflicts(running_query, None):
-                    can_admit_waiting_query = False
+                if can_admit_waiting_query:
+                    DirectPredicatePolicy.running_queries.append(waiting_query)
+                    queries_to_admit.append(waiting_query)
 
-            if can_admit_waiting_query:
-                DirectPredicatePolicy.running_queries.append(waiting_query)
-                queries_to_admit.append(waiting_query)
-
-        for query in queries_to_admit:
-            DirectPredicatePolicy.sidetracked_queries.remove(query)
+            for query in queries_to_admit:
+                DirectPredicatePolicy.sidetracked_queries.remove(query)
 
         return queries_to_admit

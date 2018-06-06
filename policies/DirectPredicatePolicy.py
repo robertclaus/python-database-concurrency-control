@@ -46,7 +46,9 @@ class DirectPredicatePolicy(BasePredicatePolicy):
 
             if can_admit_waiting_query:
                 DirectPredicatePolicy.running_queries.append(waiting_query)
-                DirectPredicatePolicy.sidetracked_queries.remove(waiting_query)
                 queries_to_admit.append(waiting_query)
+
+        for query in queries_to_admit:
+            DirectPredicatePolicy.sidetracked_queries.remove(query)
 
         return queries_to_admit

@@ -58,6 +58,9 @@ class dbQuery:
     def start_admit(self):
         self.start_admit_time = time.time()
 
+    def time_since_admit(self):
+        return time.time() - self.start_admit_time
+
     def finish_admit(self):
         self.finish_admit_time = time.time()
         self.time_to_admit = self.finish_admit_time - self.start_admit_time

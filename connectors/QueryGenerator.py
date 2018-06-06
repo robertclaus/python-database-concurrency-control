@@ -58,7 +58,7 @@ class QueryGenerator:
 
     generator_id = 0
 
-    def __init__(self, possible_query_list, need_to_parse, target_depth,
+    def __init__(self, possible_query_list, dibs_policy, target_depth,
                  num_worker_threads, run_in_series, condition_variable, bundle_size):
 
         manager = multiprocessing.Manager()
@@ -71,7 +71,7 @@ class QueryGenerator:
 
         for i in range(num_worker_threads):
             p = multiprocessing.Process(target=QueryGenerator.worker, args=(
-                self.generated_query_queue, possible_query_list, need_to_parse, target_depth, run_in_series,
+                self.generated_query_queue, possible_query_list, dibs_policy, target_depth, run_in_series,
                 QueryGenerator.generator_id, condition_variable, bundle_size))
             p.daemon = True
             p.start()
@@ -88,18 +88,17 @@ class QueryGenerator:
                 return index
 
     @staticmethod
-    def generate_query(possible_query_list, index, generator_id, need_to_parse):
+    def generate_query(possible_query_list, index, generator_id, dibs_policy):
         query_text = possible_query_list[index]
         query = dbQuery(query_text, generator_id * 1000 + index)
         for replace_rule in QueryGenerator.wild_card_rules:
             query_text = replace_rule.replace(query_text, query)
         query.query_text = query_text
-        if need_to_parse:
-            query.parse()
+        dibs_policy.parse_query(query)
         return query
 
     @staticmethod
-    def worker(waiting_queue, possible_query_list, need_to_parse, target_depth, run_in_series, generator_id, cv, bundle_size):
+    def worker(waiting_queue, possible_query_list, dibs_policy, target_depth, run_in_series, generator_id, cv, bundle_size):
         while True:
             with cv:
                 cv.wait()
@@ -107,7 +106,7 @@ class QueryGenerator:
                 query_bundle=[]
                 for i in xrange(bundle_size):
                     index = QueryGenerator.pick_query_index_to_generate(possible_query_list)
-                    last_query = QueryGenerator.generate_query(possible_query_list, index, generator_id, need_to_parse)
+                    last_query = QueryGenerator.generate_query(possible_query_list, index, generator_id, dibs_policy)
                     query_bundle.append(last_query)
                 query_bundle = zlib.compress(cPickle.dumps(query_bundle))
                 waiting_queue.put(query_bundle)

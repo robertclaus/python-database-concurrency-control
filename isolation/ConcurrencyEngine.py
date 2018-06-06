@@ -12,9 +12,12 @@ from isolation.indexes.SidetrackQueryIndex import SidetrackQueryIndex
 import cPickle
 import zlib
 
+from policies.PhasedPolicy import PhasedPolicy
+
+
 class dbConcurrencyEngine:
 
-    def __init__(self, incoming_query_queues, used_a_query_cv, run_concurrency_check, query_completed_condition, receive_bundle_size, send_bundle_size, generator_count):
+    def __init__(self, incoming_query_queues, used_a_query_cv, dibs_policy, query_completed_condition, receive_bundle_size, send_bundle_size, generator_count):
         manager = multiprocessing.Manager()
 
         self.generator_count=generator_count
@@ -39,13 +42,15 @@ class dbConcurrencyEngine:
         self.query_count = 0
         self.cycle_count = 0
 
-        self.run_concurrency_check = run_concurrency_check
+        self.dibs_policy = dibs_policy
         self.last_scheduler_change = time.time()
 
         self.time_processing_completed = 0
 
         self.receive_bundle_size = receive_bundle_size
         self.send_bundle_size = send_bundle_size
+
+        self.run_phased_policy = isinstance(self.dibs_policy, PhasedPolicy)
 
     # Return the number of queries that have been admitted but not completed
     def queries_left(self):
@@ -59,27 +64,40 @@ class dbConcurrencyEngine:
 
         for new_query in new_queries:
             new_query.start_admit()
-            admit_as_readonly = self.lock_index.readonly and new_query.readonly
 
-            if self.run_concurrency_check and (not admit_as_readonly) and (sidetrack_if_not_readonly or self.lock_index.does_conflict(new_query)):
-                not_admitted.append(new_query)
+            if self.run_phased_policy:
+
+                admit_as_readonly = self.lock_index.readonly and new_query.readonly
+
+                if self.run_phased_policy and (not admit_as_readonly) and (sidetrack_if_not_readonly or self.lock_index.does_conflict(new_query)):
+                    not_admitted.append(new_query)
+                else:
+                    admitted.append(new_query)
+                    if self.run_phased_policy and not admit_as_readonly:
+                        self.lock_index.add_query(new_query)
+                    new_query.finish_admit()
+                    query_bundle.append(new_query.copy_light())
+                    if len(query_bundle) > self.send_bundle_size:
+                        self.waiting_queries.put(query_bundle)
+                        query_bundle = []
             else:
-                admitted.append(new_query)
-                if self.run_concurrency_check and not admit_as_readonly:
-                    self.lock_index.add_query(new_query)
-                new_query.finish_admit()
-                query_bundle.append(new_query.copy_light())
-                if len(query_bundle) > self.send_bundle_size:
-                    self.waiting_queries.put(query_bundle)
-                    query_bundle = []
+                queries_to_admit = self.dibs_policy.new_query(new_query)
+                for query in queries_to_admit:
+                    admitted.append(new_query)
+                    query.finish_admit()
+                    query_bundle.append(new_query.copy_light())
+                    if len(query_bundle) > self.send_bundle_size:
+                        self.waiting_queries.put(query_bundle)
+                        query_bundle = []
+                self.proccess_completed_queries()
 
         if query_bundle:
             self.waiting_queries.put(query_bundle)
 
-        if not already_on_sidetrack:
+        if self.run_phased_policy and not already_on_sidetrack:
             self.sidetrack_index.add_queries(not_admitted)
 
-        if already_on_sidetrack:
+        if self.run_phased_policy and already_on_sidetrack:
             self.sidetrack_index.remove_admitted_queries()
 
         self.query_count+=len(admitted)
@@ -88,8 +106,6 @@ class dbConcurrencyEngine:
 
     # Admit the next X random queries from the incoming query queues
     def append_next(self, queries_to_generate_at_a_time):
-        if self.run_concurrency_check:
-            print("Adding {} new queries. {}".format(queries_to_generate_at_a_time,time.time()))
         queries_admitted = 0
 
         while queries_admitted < queries_to_generate_at_a_time:
@@ -103,9 +119,6 @@ class dbConcurrencyEngine:
                     print(" ### Not generating queries fast enough.")
                     time.sleep(.1)
 
-        if self.run_concurrency_check:
-            print("Added {} new queries of with {} are still waiting. {}".format(queries_admitted, self.waiting_queries.qsize()*self.send_bundle_size, time.time()))
-
         for i in xrange(self.generator_count):
             with self.used_a_query_cv:
                 self.used_a_query_cv.notify()
@@ -117,6 +130,7 @@ class dbConcurrencyEngine:
             while True:
                 complete_query = self.completed_queries.get_nowait()
                 self._archive_completed_queries.append(complete_query)
+                self.dibs_policy.complete_query(complete_query)
         except Queue.Empty:
             pass
         self.time_processing_completed += (time.time()-start)
@@ -139,7 +153,7 @@ class dbConcurrencyEngine:
     # May change the accept mode to winding down or change the conflict function to be column specific.
     def consider_changing_lock_mode(self, max_sidetracked_queries, minimum_queue_size, target_queue_size):
 
-        if self.run_concurrency_check == True:
+        if self.run_phased_policy == True:
             if len(self.sidetrack_index) > max_sidetracked_queries:
 
                 # Admit all readonly queries - Happens automatically when admitting queries the first time, but may as well leave it

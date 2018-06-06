@@ -8,9 +8,17 @@ import time
 import sys
 import math
 
+# Isolation Policies:
+# 0 - No external isolation
+# 1 - Phased Isolation
+# 2 - Predicate Isolation
+# 4 - Single Thread Isolation
+from policies.BasePredicatePolicy import BasePredicatePolicy
+
+
 class QueryFlowTester:
     @staticmethod
-    def run(run_concurrency_control=True, seconds_to_run=10, worker_num=4, max_queries_total=10000, query_set_choices=[]):
+    def run(dibs_policy=BasePredicatePolicy, seconds_to_run=10, worker_num=4, max_queries_total=10000, query_set_choices=[]):
 
         def microseconds_used(sum, count, index):
             if index in sum and index in count:
@@ -19,14 +27,12 @@ class QueryFlowTester:
                 return '0'
 
         print("Running for {} seconds with {} workers. In concurrency mode: {} ".format(seconds_to_run, worker_num,
-                                                                                        str(run_concurrency_control)))
+                                                                                        str(dibs_policy)))
 
         ### Load Settings
 
         # Minimum queries in incoming waiting query queue to allow before generating more
         min_queries_in_queue = worker_num * 2000
-
-
 
         # Minimum queries in sidetrack to consider admitting
         min_queries_in_sidetrack = 2000
@@ -35,10 +41,6 @@ class QueryFlowTester:
         min_queries_from_sidetrack = 100
         # Maximum queries to leave in a sidetrack
         max_queries_from_sidetrack = 0
-
-        # Scheduling By Column Only, or also general predicate locking
-        admit_to_sidetrack = run_concurrency_control
-        phased_mode = True
 
         # Maximum queries to have in the incoming generator queue at one time
         queue_depth = min_queries_in_queue*2  # *10
@@ -59,7 +61,7 @@ class QueryFlowTester:
         for query_set_id in query_set_choices:
             query_set = query_sets[int(query_set_id)]
             # Create a thread to generate queries.  This is like an application submitting queries to the database.
-            new_generator = QueryGenerator(query_set, run_concurrency_control, queue_depth, generator_worker_num,
+            new_generator = QueryGenerator(query_set, dibs_policy, queue_depth, generator_worker_num,
                                            not query_set_id==query_set_choices[0],
                                            query_generator_condition, bundle_size)  # All but the first queryset wait for one query to complete before doing the next one.
             query_generator_queues.append(new_generator.generated_query_queue)
@@ -78,7 +80,7 @@ class QueryFlowTester:
 
         concurrency_engine = dbConcurrencyEngine(query_generator_queues,
                                                  query_generator_condition,
-                                                 run_concurrency_control,
+                                                 dibs_policy,
                                                  query_completed_condition,
                                                  bundle_size,
                                                  bundle_size,
@@ -112,10 +114,11 @@ class QueryFlowTester:
             # Flag queries as complete - Can all be done at end for no-cc case.
             # concurrency_engine.proccess_completed_queries()
 
-            if run_concurrency_control:
+            if concurrency_engine.run_phased_policy:
                 concurrency_engine.consider_changing_lock_mode(min_queries_in_sidetrack, min_queries_from_sidetrack,
                                                                max_queries_from_sidetrack)
             else:
+                concurrency_engine.proccess_completed_queries()
                 with query_completed_condition:
                     query_completed_condition.wait(.01)
 

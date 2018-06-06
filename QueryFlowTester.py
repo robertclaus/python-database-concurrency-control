@@ -210,6 +210,6 @@ class QueryFlowTester:
                 sys.stdout.write(
                     "\n csv,{},{},{},{}".format(total_time, worker_num, str(completed / total_time), total_utilization * 100))
                 for query_type in type_index_sum:
-                    sys.stdout.write(",{},{},{}".format(query_type, microseconds_used(type_index_sum, type_index_count, 1000),
-                                                        type_index_count))
+                    sys.stdout.write(",{},{},{}".format(query_type, microseconds_used(type_index_sum[query_type], type_index_count, 1000),
+                                                        type_index_count[query_type]))
                 break

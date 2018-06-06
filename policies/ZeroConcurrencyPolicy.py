@@ -11,11 +11,12 @@ class ZeroConcurrencyPolicy(BasePredicatePolicy):
 
     @staticmethod
     def admit_query(query):
-        if not ZeroConcurrencyPolicy.running_queries:
+        if not ZeroConcurrencyPolicy.running_query:
             ZeroConcurrencyPolicy.running_query = query
             return [query]
         else:
             ZeroConcurrencyPolicy.waiting_queries.append(query)
+            return []
 
     @staticmethod
     def complete_query(query):

@@ -11,7 +11,7 @@ class DirectPredicatePolicy(BasePredicatePolicy):
     # Is run on receiving the query within the client connector process
     @staticmethod
     def parse_query(query):
-        query.parse()
+        query.parse(False)
 
     # Returns a list of queries to admit
     @staticmethod

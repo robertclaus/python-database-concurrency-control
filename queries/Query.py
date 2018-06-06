@@ -76,9 +76,9 @@ class dbQuery:
     def admitted(self):
         self.admitted_at = time.time()
 
-    def parse(self):
+    def parse(self,skip_read_only=False):
         self.sql_obj = sqlparse.parse(self.query_text)[0]  # Assumes only one query at a time for now
-        self.generate_locks()
+        self.generate_locks(skip_read_only)
         self.strip_fluff()
         self.predicatelock.merge_values()
         self.generate_lock_indexes()
@@ -108,10 +108,11 @@ class dbQuery:
     def get_locked_tables(self):
         return self.predicatelock.tableindex
 
-    def generate_locks(self):
+    def generate_locks(self, skip_read_only):
         if self.sql_obj.get_type() == 'SELECT':
             self.readonly = True
-            return
+            if skip_read_only:
+                return
             for token in self.sql_obj.tokens:
                 if type(token) is sqlparse.sql.Where:
                     for predicate in token:

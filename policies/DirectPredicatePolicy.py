@@ -16,7 +16,7 @@ class DirectPredicatePolicy(BasePredicatePolicy):
     def new_query(query):
         # Check for conflicts
         for running_query in DirectPredicatePolicy.running_queries:
-            if query.conflicts(running_query):
+            if query.conflicts(running_query, None):
                 DirectPredicatePolicy.sidetracked_queries.append(query)
                 return []
 
@@ -33,7 +33,7 @@ class DirectPredicatePolicy(BasePredicatePolicy):
         for waiting_query in DirectPredicatePolicy.sidetracked_queries:
             can_admit_waiting_query = True
             for running_query in DirectPredicatePolicy.running_queries:
-                if waiting_query.conflicts(running_query):
+                if waiting_query.conflicts(running_query, None):
                     can_admit_waiting_query = False
 
             if can_admit_waiting_query:

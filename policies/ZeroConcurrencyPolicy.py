@@ -17,4 +17,7 @@ class ZeroConcurrencyPolicy(BasePredicatePolicy):
 
     @staticmethod
     def complete_query(query):
-        return [ZeroConcurrencyPolicy.waiting_queries.popleft()]
+        if ZeroConcurrencyPolicy.waiting_queries:
+            return [ZeroConcurrencyPolicy.waiting_queries.popleft()]
+        else:
+            return []

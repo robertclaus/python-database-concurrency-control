@@ -1,3 +1,5 @@
+import time
+
 from policies.BasePredicatePolicy import BasePredicatePolicy
 from collections import deque
 
@@ -30,7 +32,13 @@ class DirectPredicatePolicy(BasePredicatePolicy):
         DirectPredicatePolicy.running_queries.remove(query)
 
         queries_to_admit = []
-        for waiting_query in DirectPredicatePolicy.sidetracked_queries:
+
+        if time.time()-query.start_admit_time > 1:
+            queries_to_consider = [DirectPredicatePolicy.sidetracked_queries[0]]
+        else:
+            queries_to_consider = DirectPredicatePolicy.sidetracked_queries
+
+        for waiting_query in queries_to_consider:
             can_admit_waiting_query = True
             for running_query in DirectPredicatePolicy.running_queries:
                 if waiting_query.conflicts(running_query, None):
@@ -38,6 +46,7 @@ class DirectPredicatePolicy(BasePredicatePolicy):
 
             if can_admit_waiting_query:
                 DirectPredicatePolicy.running_queries.append(waiting_query)
+                DirectPredicatePolicy.sidetracked_queries.remove(waiting_query)
                 queries_to_admit.append(waiting_query)
 
         return queries_to_admit

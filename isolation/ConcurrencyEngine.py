@@ -83,9 +83,9 @@ class dbConcurrencyEngine:
             else:
                 queries_to_admit = self.dibs_policy.new_query(new_query)
                 for query in queries_to_admit:
-                    admitted.append(new_query)
+                    admitted.append(query)
                     query.finish_admit()
-                    query_bundle.append(new_query.copy_light())
+                    query_bundle.append(query.copy_light())
                     if len(query_bundle) > self.send_bundle_size:
                         self.waiting_queries.put(query_bundle)
                         query_bundle = []
@@ -126,13 +126,24 @@ class dbConcurrencyEngine:
     # Remove completed queries from the _waiting_queries_list so their locks no longer get checked against
     def proccess_completed_queries(self):
         start = time.time()
+        query_bundle = []
         try:
             while True:
                 complete_query = self.completed_queries.get_nowait()
                 self._archive_completed_queries.append(complete_query)
-                self.dibs_policy.complete_query(complete_query)
+                queries_to_admit = self.dibs_policy.complete_query(complete_query)
+                for query in queries_to_admit:
+                    query.finish_admit()
+                    query_bundle.append(query.copy_light())
+                    if len(query_bundle) > self.send_bundle_size:
+                        self.waiting_queries.put(query_bundle)
+                        query_bundle = []
         except Queue.Empty:
             pass
+
+        if query_bundle:
+            self.waiting_queries.put(query_bundle)
+
         self.time_processing_completed += (time.time()-start)
 
         # Return the total number of completed queries so far

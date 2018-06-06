@@ -25,9 +25,14 @@ class DirectPredicatePolicy(BasePredicatePolicy):
 
         # If we could admit right now, should we to be fair to sidetrack?
         if DirectPredicatePolicy.sidetracked_queries:
-            if DirectPredicatePolicy.sidetracked_queries[0].time_since_admit() < DirectPredicatePolicy.max_sidetrack_wait:
+            next_sidetracked_query = DirectPredicatePolicy.sidetracked_queries[0]
 
+            if next_sidetracked_query.time_since_admit() < DirectPredicatePolicy.max_sidetrack_wait:
                 # No conflicts and fair to admit ahead of the sidetrack
+                DirectPredicatePolicy.running_queries.append(query)
+                return [query]
+
+            if not query.conflicts(next_sidetracked_query):
                 DirectPredicatePolicy.running_queries.append(query)
                 return [query]
         else:

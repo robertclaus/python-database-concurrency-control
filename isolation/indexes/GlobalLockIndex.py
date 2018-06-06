@@ -3,7 +3,7 @@ from collections import deque
 class GlobalLockIndex:
 
     def __init__(self):
-        self.locking_queries = deque
+        self.locking_queries = deque()
         self.column_reference = {}
         self.equality_index = {}
         self.readonly = True

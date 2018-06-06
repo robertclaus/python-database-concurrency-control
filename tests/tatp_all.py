@@ -9,7 +9,7 @@ max_queries = 10000000000
 
 # Run #1 - Vary Write %
 for query_set in [4]:
-    for isolation_level in ['ru-phased', 'ru', 's']:
+    for isolation_level in ['ru-phased', 'ru-directcomparison', 'ru', 's']:
         dibs_policy = IsolationLevelSetter.run(isolation_level)
         for workers in [4]:
 

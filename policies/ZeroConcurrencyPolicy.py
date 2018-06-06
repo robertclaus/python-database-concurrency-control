@@ -10,7 +10,7 @@ class ZeroConcurrencyPolicy(BasePredicatePolicy):
         pass
 
     @staticmethod
-    def admit_query(query):
+    def new_query(query):
         if not ZeroConcurrencyPolicy.running_query:
             ZeroConcurrencyPolicy.running_query = query
             return [query]

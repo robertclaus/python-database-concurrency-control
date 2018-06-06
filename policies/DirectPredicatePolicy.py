@@ -30,6 +30,10 @@ class DirectPredicatePolicy(BasePredicatePolicy):
                 # No conflicts and fair to admit ahead of the sidetrack
                 DirectPredicatePolicy.running_queries.append(query)
                 return [query]
+        else:
+            # Nothing in sidetrack so can admit
+            DirectPredicatePolicy.running_queries.append(query)
+            return [query]
 
         return []
 

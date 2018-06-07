@@ -4,7 +4,7 @@ import sys
 from IsolationLevelSetter import IsolationLevelSetter
 from QueryFlowTester import QueryFlowTester
 
-time_to_run = 300
+time_to_run = 90
 max_queries = 10000000000
 
 # Run #1 - Vary Write %

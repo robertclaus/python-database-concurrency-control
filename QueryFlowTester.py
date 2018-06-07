@@ -56,7 +56,7 @@ class QueryFlowTester:
         bundle_size = 4
 
         # Load queries to generate.
-        query_generator_condition = multiprocessing.Condition()  # Notifies the generator that we may have used some of its queries
+        # Notifies the generator that we may have used some of its queries
         query_sets = QuerySets.query_sets
         query_generator_queues = []
         generator_processes = []
@@ -65,8 +65,7 @@ class QueryFlowTester:
             query_set = query_sets[int(query_set_id)]
             # Create a thread to generate queries.  This is like an application submitting queries to the database.
             new_generator = QueryGenerator(query_set, dibs_policy, queue_depth, generator_worker_num,
-                                           not query_set_id==query_set_choices[0],
-                                           query_generator_condition, bundle_size)  # All but the first queryset wait for one query to complete before doing the next one.
+                                           not query_set_id==query_set_choices[0], bundle_size)  # All but the first queryset wait for one query to complete before doing the next one.
             query_generator_queues.append(new_generator.generated_query_queue)
             generator_processes.append(new_generator)
 
@@ -75,8 +74,8 @@ class QueryFlowTester:
         print("Prepopulating Queue")
         while query_generator_queues[0].qsize()*bundle_size < queue_depth:
             time.sleep(.01)
-            with query_generator_condition:
-                query_generator_condition.notify()
+            for generator in generator_processes:
+                generator.notify_all()
         print("  Query Generators done.  Waiting for CC Startup")
 
         query_completed_condition = multiprocessing.Condition()

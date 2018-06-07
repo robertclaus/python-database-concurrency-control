@@ -63,13 +63,13 @@ class QueryGenerator:
         QueryGenerator.generator_id = 0
 
     def __init__(self, possible_query_list, dibs_policy, target_depth,
-                 num_worker_threads, run_in_series, condition_variable, bundle_size):
+                 num_worker_threads, run_in_series, bundle_size):
 
         self.possible_query_list = possible_query_list
         self.dibs_policy = dibs_policy
         self.target_depth = target_depth
         self.run_in_series = run_in_series
-        self.condition_variable = condition_variable
+        self.condition_variable = multiprocessing.Condition()
         self.bundle_size = bundle_size
 
         manager = multiprocessing.Manager()
@@ -100,7 +100,8 @@ class QueryGenerator:
     # Notify all workers that we've used some queries
     def notify_all(self):
         for worker in self.threads:
-            self.condition_variable.notify()
+            with self.condition_variable:
+                self.condition_variable.notify()
 
     @staticmethod
     def pick_query_index_to_generate(possible_query_list):

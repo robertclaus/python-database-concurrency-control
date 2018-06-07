@@ -27,7 +27,7 @@ class ClientManager:
 
     def end_processes(self):
         for i in self.threads:
-            i.shutdown()
+            i.terminate()
         # Place "Stop" commands (None) on worker queue
         #for i in range(self.total_thread_count + 2):
         #    self.waiting_queue.put(None)

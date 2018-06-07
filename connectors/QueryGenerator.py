@@ -79,7 +79,7 @@ class QueryGenerator:
 
     def end_processes(self):
         for p in self.threads:
-            p.shutdown()
+            p.terminate()
 
     @staticmethod
     def pick_query_index_to_generate(possible_query_list):

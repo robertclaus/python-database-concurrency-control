@@ -58,28 +58,49 @@ class QueryGenerator:
 
     generator_id = 0
 
+    @staticmethod
+    def initialize():
+        QueryGenerator.generator_id = 0
+
     def __init__(self, possible_query_list, dibs_policy, target_depth,
                  num_worker_threads, run_in_series, condition_variable, bundle_size):
 
-        manager = multiprocessing.Manager()
-        self.threads = []
-        self.total_thread_count = num_worker_threads
         self.possible_query_list = possible_query_list
+        self.dibs_policy = dibs_policy
+        self.target_depth = target_depth
+        self.run_in_series = run_in_series
+        self.condition_variable = condition_variable
+        self.bundle_size = bundle_size
+
+        manager = multiprocessing.Manager()
         self.generated_query_queue = manager.Queue()
+
+        self.threads = []
+        self.total_thread_count = 0
+
         self.generator_id = QueryGenerator.generator_id
         QueryGenerator.generator_id = QueryGenerator.generator_id + 1
 
         for i in range(num_worker_threads):
-            p = multiprocessing.Process(target=QueryGenerator.worker, args=(
-                self.generated_query_queue, possible_query_list, dibs_policy, target_depth, run_in_series,
-                QueryGenerator.generator_id, condition_variable, bundle_size))
-            p.daemon = True
-            p.start()
-            self.threads.append(p)
+            self.add_generator()
 
     def end_processes(self):
         for p in self.threads:
             p.terminate()
+
+    def add_generator(self):
+        p = multiprocessing.Process(target=QueryGenerator.worker, args=(
+            self.generated_query_queue, self.possible_query_list, self.dibs_policy, self.target_depth, self.run_in_series,
+            self.generator_id, self.condition_variable, self.bundle_size))
+        p.daemon = True
+        p.start()
+        self.total_thread_count += 1
+        self.threads.append(p)
+
+    # Notify all workers that we've used some queries
+    def notify_all(self):
+        for worker in self.threads:
+            self.condition_variable.notify()
 
     @staticmethod
     def pick_query_index_to_generate(possible_query_list):
@@ -114,5 +135,3 @@ class QueryGenerator:
                     query_bundle.append(last_query)
                 query_bundle = zlib.compress(cPickle.dumps(query_bundle))
                 waiting_queue.put(query_bundle)
-                #while run_in_series and not last_query.completed: Doesn't work anways since last_query reference is lost in process queue
-                #   time.sleep(.001)

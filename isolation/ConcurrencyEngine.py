@@ -17,13 +17,11 @@ from policies.PhasedPolicy import PhasedPolicy
 
 class dbConcurrencyEngine:
 
-    def __init__(self, incoming_query_queues, used_a_query_cv, dibs_policy, query_completed_condition, receive_bundle_size, send_bundle_size, generator_count):
+    def __init__(self, dibs_policy, query_completed_condition, send_bundle_size, generators):
         manager = multiprocessing.Manager()
 
-        self.generator_count=generator_count
+        self.generators=generators
 
-        # List of Queue's containing incoming queries
-        self.incoming_query_queues = incoming_query_queues
         # A Queue of admitted queries
         self.waiting_queries = manager.Queue()
         # A Queue of completed queries (Queries are moved from waiting to completed by client threads)
@@ -35,8 +33,7 @@ class dbConcurrencyEngine:
         self.sidetrack_index = SidetrackQueryIndex()
         # The list of completed queries that have been removed from the global lock index already.
         self._archive_completed_queries = []
-        # A condition variable to signal incoming connections to place more on the queue.
-        self.used_a_query_cv = used_a_query_cv
+
         self.query_processed_cv = query_completed_condition
 
         self.query_count = 0
@@ -47,7 +44,6 @@ class dbConcurrencyEngine:
 
         self.time_processing_completed = 0
 
-        self.receive_bundle_size = receive_bundle_size
         self.send_bundle_size = send_bundle_size
 
         self.run_phased_policy = (self.dibs_policy == PhasedPolicy)
@@ -109,7 +105,8 @@ class dbConcurrencyEngine:
         queries_admitted = 0
 
         while queries_admitted < queries_to_generate_at_a_time:
-            for main_queue in self.incoming_query_queues:
+            for generator in self.generators:
+                main_queue = generator.generated_query_queue
                 try:
                     queries = main_queue.get(False)
                     queries = cPickle.loads(zlib.decompress(queries))
@@ -117,11 +114,11 @@ class dbConcurrencyEngine:
                     queries_admitted += len(queries)
                 except Queue.Empty:
                     print(" ### Not generating queries fast enough.")
+                    generator.add_generator()
                     time.sleep(.1)
 
-        for i in xrange(self.generator_count):
-            with self.used_a_query_cv:
-                self.used_a_query_cv.notify()
+        for generator in self.generators:
+            generator.notify_all()
 
     # Remove completed queries from the _waiting_queries_list so their locks no longer get checked against
     def proccess_completed_queries(self):

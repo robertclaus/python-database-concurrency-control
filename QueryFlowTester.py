@@ -48,7 +48,7 @@ class QueryFlowTester:
         queue_depth = min_queries_in_queue*2  # *10
 
         # How many threads to have generating queries at a time
-        generator_worker_num = worker_num * 8
+        generator_worker_num = min_queries_in_queue/1000
 
         # Number of queries to pre-parse so queue does not start empty
         queries_to_start_in_queue_with = min_queries_in_queue
@@ -60,6 +60,7 @@ class QueryFlowTester:
         query_sets = QuerySets.query_sets
         query_generator_queues = []
         generator_processes = []
+        QueryGenerator.initialize()
         for query_set_id in query_set_choices:
             query_set = query_sets[int(query_set_id)]
             # Create a thread to generate queries.  This is like an application submitting queries to the database.
@@ -80,13 +81,10 @@ class QueryFlowTester:
 
         query_completed_condition = multiprocessing.Condition()
 
-        concurrency_engine = dbConcurrencyEngine(query_generator_queues,
-                                                 query_generator_condition,
-                                                 dibs_policy,
+        concurrency_engine = dbConcurrencyEngine(dibs_policy,
                                                  query_completed_condition,
                                                  bundle_size,
-                                                 bundle_size,
-                                                 generator_worker_num)
+                                                 generator_processes)
 
         concurrency_engine.append_next(queries_to_start_in_queue_with)
         total_queries_admitted = queries_to_start_in_queue_with
@@ -97,8 +95,6 @@ class QueryFlowTester:
                                       query_completed_condition, bundle_size)
 
         start = time.time()
-
-        loop_count = 0;
 
         while (True):
             if concurrency_engine.queries_left() < min_queries_in_queue:

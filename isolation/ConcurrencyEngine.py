@@ -149,9 +149,9 @@ class dbConcurrencyEngine:
         except IOError:
             print("#### IO ERROR - Likely Broken Pipe")
 
-        # Return the total number of completed queries so far
+    # Return the total number of completed queries so far.  This can be in the archive or the completed queue itself.
     def total_completed_queries(self):
-        return self.completed_queries.qsize()
+        return self.completed_queries.qsize() + len(self._archive_completed_queries)
 
     # Wait for all admitted (non-conflicting) queries to finish and process them
     def wind_down(self):

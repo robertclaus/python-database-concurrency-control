@@ -12,11 +12,6 @@ from _mysql_exceptions import IntegrityError, OperationalError
 
 
 class ClientManager:
-    threads = []
-    total_thread_count = 0
-
-    waiting_queue = None
-    complete_queue = None
 
     def __init__(self, num_worker_threads, waiting_queue, complete_queue, query_completed_condition, client_bundle_size):
         self.threads = []
@@ -31,16 +26,18 @@ class ClientManager:
             self.threads.append(p)
 
     def end_processes(self):
+        for i in self.threads:
+            i.shutdown()
         # Place "Stop" commands (None) on worker queue
-        for i in range(self.total_thread_count + 2):
-            self.waiting_queue.put(None)
+        #for i in range(self.total_thread_count + 2):
+        #    self.waiting_queue.put(None)
         # Burn off all tasks on the queue until we hit the "Stop" commands
-        while self.waiting_queue.get() is not None:
-            self.waiting_queue.task_done()
+        #while self.waiting_queue.get() is not None:
+        #    self.waiting_queue.task_done()
 
         # Wait for other threads to complete the remaining "Stop" commands
-        while any([thread for thread in self.threads if thread.is_alive()]):
-            time.sleep(.01)
+        #while any([thread for thread in self.threads if thread.is_alive()]):
+        #   time.sleep(.01)
 
     @staticmethod
     def worker(waiting_queue, complete_queue, cv, worker_id, bundle_size):

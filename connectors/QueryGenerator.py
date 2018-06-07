@@ -77,6 +77,10 @@ class QueryGenerator:
             p.start()
             self.threads.append(p)
 
+    def end_processes(self):
+        for p in self.threads:
+            p.shutdown()
+
     @staticmethod
     def pick_query_index_to_generate(possible_query_list):
         ticket_index = random.randint(0, 100)

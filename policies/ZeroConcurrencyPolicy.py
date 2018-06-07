@@ -6,6 +6,12 @@ class ZeroConcurrencyPolicy(BasePredicatePolicy):
     running_query = None
 
     @staticmethod
+    def initialize():
+        ZeroConcurrencyPolicy.waiting_queries = deque()
+        ZeroConcurrencyPolicy.running_query = None
+
+
+    @staticmethod
     def parse_query(query):
         pass
 

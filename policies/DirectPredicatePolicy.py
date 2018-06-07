@@ -9,6 +9,12 @@ class DirectPredicatePolicy(BasePredicatePolicy):
     running_queries = deque()
     max_sidetrack_wait = 1
 
+    @staticmethod
+    def initialize():
+        DirectPredicatePolicy.sidetracked_queries = deque()
+        DirectPredicatePolicy.running_queries = deque()
+        DirectPredicatePolicy.max_sidetrack_wait = 1
+
     # Is run on receiving the query within the client connector process
     @staticmethod
     def parse_query(query):

@@ -31,6 +31,8 @@ class QueryFlowTester:
 
         ### Load Settings
 
+        dibs_policy.initialize()
+
         # Minimum queries in incoming waiting query queue to allow before generating more
         min_queries_in_queue = worker_num * 200
 

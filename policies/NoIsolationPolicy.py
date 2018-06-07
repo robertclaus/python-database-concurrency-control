@@ -1,6 +1,12 @@
 from policies.BasePredicatePolicy import BasePredicatePolicy
 
 class NoIsolationPolicy(BasePredicatePolicy):
+
+
+    @staticmethod
+    def initialize():
+        pass
+
     # Is run on receiving the query within the client connector process
     @staticmethod
     def parse_query(query):

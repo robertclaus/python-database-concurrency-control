@@ -16,7 +16,7 @@ for query_set in [4]:
         for isolation_level in ['ru-phased', 'ru-directcomparison', 'ru-zerocc', 'ru', 's']:
             dibs_policy = IsolationLevelSetter.run(isolation_level)
 
-            print("QueryFlowTester.run({}, {}, {}, {}, {})".format(dibs_policy, time_to_run, workers, max_queries))
+            print("QueryFlowTester.run({}, {}, {}, {})".format(dibs_policy, time_to_run, workers, max_queries))
             try:
                 QueryFlowTester.run(dibs_policy, MySQLClient, QueryGeneratorConnector, time_to_run, workers, max_queries)
             except IOError:

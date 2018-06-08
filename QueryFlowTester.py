@@ -1,4 +1,5 @@
-from clients.ClientManager import ClientManager
+from clients.ClientConnectorManager import ClientConnectorManager
+from clients.MySQLConnector import MySQLConnector
 from isolation.ConcurrencyEngine import dbConcurrencyEngine
 from connectors.QueryGenerator import QueryGenerator
 from connectors import QuerySets
@@ -18,7 +19,7 @@ from policies.BasePredicatePolicy import BasePredicatePolicy
 
 class QueryFlowTester:
     @staticmethod
-    def run(dibs_policy=BasePredicatePolicy, seconds_to_run=10, worker_num=4, max_queries_total=10000, query_set_choices=[]):
+    def run(dibs_policy=BasePredicatePolicy, client_connector_class = MySQLConnector, seconds_to_run=10, worker_num=4, max_queries_total=10000, query_set_choices=[]):
 
         def microseconds_used(sum, count, index):
             if index in sum and index in count:
@@ -90,8 +91,8 @@ class QueryFlowTester:
         print("Done Prepopulating Queue")
 
         ### Start client threads to push queries to the database
-        clientManager = ClientManager(worker_num, concurrency_engine.waiting_queries, concurrency_engine.completed_queries,
-                                      query_completed_condition, bundle_size)
+        clientManager = ClientConnectorManager(client_connector_class, worker_num, concurrency_engine.waiting_queries, concurrency_engine.completed_queries,
+                                      query_completed_condition)
 
         start = time.time()
 
@@ -207,7 +208,7 @@ class QueryFlowTester:
                 print("Throughput (Q/s) : " + str(completed / total_time))
 
                 sys.stdout.write(
-                    "\n csv,{},{},{},{}".format(total_time, worker_num, str(completed / total_time), total_utilization * 100))
+                    "\n csv,{},{},{},{}".format(total_time, worker_num, completed, str(completed / total_time), total_utilization * 100))
 
                 for query_type in sorted(type_index_sum.iterkeys()):
                     sys.stdout.write(",{}".format(microseconds_used(type_index_sum, type_index_count, query_type)))

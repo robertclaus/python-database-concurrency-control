@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-class BasePredicatePolicy:
+class AbstractPolicy:
 
     @abstractmethod
     def __init__(self):

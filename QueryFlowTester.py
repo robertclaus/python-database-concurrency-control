@@ -1,8 +1,5 @@
-import config
 from clients.ClientManager import ClientConnectorManager
 from isolation.ConcurrencyEngine import ConcurrencyEngine
-from connectors.QueryGeneratorConnector import QueryGenerator
-from connectors import QuerySets
 import multiprocessing
 
 import time

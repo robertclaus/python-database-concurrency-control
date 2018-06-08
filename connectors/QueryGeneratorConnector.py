@@ -56,7 +56,7 @@ class QueryGenerator(AbstractConnector):
 
     def add_generator(self):
         p = multiprocessing.Process(target=QueryGenerator.worker, args=(
-            self.generated_query_queue, self.dibs_policy, self.target_depth, self.condition_variable, self.bundle_size))
+            self.received_queue, self.dibs_policy, self.target_depth, self.condition_variable, self.bundle_size))
         p.daemon = True
         p.start()
         self.total_thread_count += 1

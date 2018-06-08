@@ -55,7 +55,7 @@ class QueryGeneratorConnector(AbstractConnector):
         self.add_generator()
 
     def add_generator(self):
-        p = multiprocessing.Process(target=QueryGenerator.worker, args=(
+        p = multiprocessing.Process(target=QueryGeneratorConnector.worker, args=(
             self.received_queue, self.dibs_policy, self.target_depth, self.condition_variable, self.bundle_size))
         p.daemon = True
         p.start()
@@ -82,7 +82,7 @@ class QueryGeneratorConnector(AbstractConnector):
         replacePattern("<randInt2>", lambda s: str(random.randint(1, 100000))),
         replacePattern("<randInt3>", lambda s: str(random.randint(1, 100000))),
         replacePattern("<query_obj_id>", lambda s: str(s.query_id)),
-        replacePattern("<non_uniform_rand_int_subscriber_size>", lambda s: str(QueryGenerator.non_uniform_random(1,
+        replacePattern("<non_uniform_rand_int_subscriber_size>", lambda s: str(QueryGeneratorConnector.non_uniform_random(1,
                                                                                                                  config.SUBSCRIBER_COUNT))),
         replacePattern("<rand_int_1_4>", lambda s: str(random.randint(1, 4))),
         replacePattern("<rand_0_8_16>", lambda s: str([0, 8, 24][random.randint(0, 2)])),
@@ -90,7 +90,7 @@ class QueryGeneratorConnector(AbstractConnector):
         replacePattern("<bit_rand>", lambda s: str(random.randint(0, 1))),
         replacePattern("<rand_int_1_255>", lambda s: str(random.randint(1, 255))),
         replacePattern("<non_uniform_rand_int_subscriber_size_string>",
-                       lambda s: str(QueryGenerator.non_uniform_random(1,
+                       lambda s: str(QueryGeneratorConnector.non_uniform_random(1,
                                                                        config.SUBSCRIBER_COUNT)).rjust(15, '0')),
         replacePattern("<rand_int_1_big>", lambda s: str(random.randint(1, 256 * 256 * 256))),
     ]
@@ -127,7 +127,7 @@ class QueryGeneratorConnector(AbstractConnector):
     def generate_query(possible_query_sets, index, dibs_policy):
         query_text = possible_query_sets[index]
         query = dbQuery(query_text, index)
-        for replace_rule in QueryGenerator.wild_card_rules:
+        for replace_rule in QueryGeneratorConnector.wild_card_rules:
             query_text = replace_rule.replace(query_text, query)
         query.query_text = query_text
         dibs_policy.parse_query(query)
@@ -141,8 +141,8 @@ class QueryGeneratorConnector(AbstractConnector):
             while target_depth - (waiting_queue.qsize()*bundle_size) > 0:
                 query_bundle=[]
                 for i in xrange(bundle_size):
-                    index = QueryGenerator.pick_query_index_to_generate(QueryGenerator.possible_query_sets)
-                    last_query = QueryGenerator.generate_query(QueryGenerator.possible_query_sets, index, dibs_policy)
+                    index = QueryGeneratorConnector.pick_query_index_to_generate(QueryGeneratorConnector.possible_query_sets)
+                    last_query = QueryGeneratorConnector.generate_query(QueryGeneratorConnector.possible_query_sets, index, dibs_policy)
                     query_bundle.append(last_query)
                 query_bundle = zlib.compress(cPickle.dumps(query_bundle))
                 waiting_queue.put(query_bundle)

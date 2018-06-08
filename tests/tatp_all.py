@@ -4,7 +4,7 @@ import sys
 from IsolationLevelSetter import IsolationLevelSetter
 from QueryFlowTester import QueryFlowTester
 from clients.MySQLClient import MySQLClient
-from connectors import QueryGeneratorConnector
+from connectors.QueryGeneratorConnector import QueryGeneratorConnector
 
 time_to_run = 300
 max_queries = 25000

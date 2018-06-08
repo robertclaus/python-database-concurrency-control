@@ -13,7 +13,7 @@ import cPickle
 import zlib
 
 
-class QueryGenerator(AbstractConnector):
+class QueryGeneratorConnector(AbstractConnector):
 
     possible_query_sets =[]
 

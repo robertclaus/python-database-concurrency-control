@@ -11,7 +11,7 @@ import math
 
 class QueryFlowTester:
     @staticmethod
-    def run(dibs_policy_class, client_connector_class, seconds_to_run=10, worker_num=4, max_queries_total=10000, query_set_choices=[]):
+    def run(dibs_policy_class, client_connector_class, connector_class, seconds_to_run=10, worker_num=4, max_queries_total=10000):
 
         def microseconds_used(sum, count, index):
             if index in sum and index in count:
@@ -47,7 +47,7 @@ class QueryFlowTester:
         complete_list = manager.list()
 
         print("Starting Connectors")
-        connector = QueryGenerator(incoming_queue, complete_list, dibs_policy)
+        connector = connector_class(incoming_queue, complete_list, dibs_policy)
         print("Connectors Started")
 
         query_completed_condition = multiprocessing.Condition()

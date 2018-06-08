@@ -1,23 +1,18 @@
-from policies.BasePredicatePolicy import BasePredicatePolicy
+from policies.AbstractPolicy import AbstractPolicy
 
-class NoIsolationPolicy(BasePredicatePolicy):
+class NoIsolationPolicy(AbstractPolicy):
 
-
-    @staticmethod
-    def initialize():
+    def __init__(self):
         pass
 
     # Is run on receiving the query within the client connector process
-    @staticmethod
-    def parse_query(query):
+    def parse_query(self, query):
         pass
 
     # Returns a list of queries to admit
-    @staticmethod
-    def new_query(query):
+    def new_query(self, query):
         return [query]
 
     # Returns a list of queries to admit
-    @staticmethod
-    def complete_query(query):
+    def complete_query(self, query):
         return []

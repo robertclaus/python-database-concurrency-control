@@ -1,17 +1,13 @@
-from policies.BasePredicatePolicy import BasePredicatePolicy
+from policies.AbstractPolicy import AbstractPolicy
 
 
-class PhasedPolicy(BasePredicatePolicy):
+class PhasedPolicy(AbstractPolicy):
 
-    @staticmethod
-    def initialize():
+    def __init__(self):
         pass
 
-
-    @staticmethod
-    def parse_query(query):
+    def parse_query(self,query):
         query.parse(True)
 
-    @staticmethod
-    def new_query(query):
+    def new_query(self,query):
         return True

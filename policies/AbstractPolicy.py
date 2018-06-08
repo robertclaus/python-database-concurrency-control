@@ -1,22 +1,22 @@
-
+from abc import abstractmethod
 
 class BasePredicatePolicy:
 
-    @staticmethod
-    def initialize():
+    @abstractmethod
+    def __init__(self):
         pass
 
     # Is run on receiving the query within the client connector process
-    @staticmethod
-    def parse_query(query):
+    @abstractmethod
+    def parse_query(self, query):
         pass
 
     # Returns a list of queries to admit
-    @staticmethod
-    def new_query(query):
+    @abstractmethod
+    def new_query(self, query):
         return [query]
 
     # Returns a list of queries to admit
-    @staticmethod
-    def complete_query(query):
+    @abstractmethod
+    def complete_query(self, query):
         return []

@@ -2,7 +2,7 @@
 
 from abc import abstractmethod
 
-class AbstractConnector():
+class AbstractClient():
     @abstractmethod
     def __init__(self):
         pass

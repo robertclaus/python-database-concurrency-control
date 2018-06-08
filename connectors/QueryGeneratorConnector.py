@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import random
+from time import sleep, time
+
+from connectors.AbstractConnector import AbstractConnector
 from queries.Query import dbQuery
-import time
 import config
 
 import multiprocessing
@@ -10,7 +12,56 @@ import multiprocessing
 import cPickle
 import zlib
 
-class QueryGenerator:
+
+class QueryGenerator(AbstractConnector):
+
+    possible_query_sets =[]
+
+    def __init__(self, received_queue, finished_list, policy):
+        self.dibs_policy = policy
+        self.condition_variable = multiprocessing.Condition()
+
+        self.received_queue = received_queue
+
+        self.threads = []
+        self.total_thread_count = 0
+
+        self.target_depth = config.DEFAULT_TARGET_DEPTH
+        self.bundle_size = config.GENERATOR_BUNDLE_SIZE
+        for i in range(config.DEFAULT_GENERATOR_WORKER_COUNT):
+            self.add_generator()
+
+        print("Prepopulating Generator Queue")
+        while received_queue.qsize() * config.GENERATOR_BUNDLE_SIZE < self.target_depth:
+            sleep(.01)
+            self.notify_all()
+
+    def next_queries(self):
+        try:
+            queries = self.received_queue.get(False)
+            return cPickle.loads(zlib.decompress(queries))
+        except multiprocessing.Queue.Empty:
+            self.completed_all_queries()
+            time.sleep(.1)
+            return []
+        self.notify_all()
+
+    def end_processes(self):
+        for p in self.threads:
+            p.terminate()
+
+    def completed_all_queries(self):
+        print(" ### Not generating queries fast enough.")
+        self.add_generator()
+
+    def add_generator(self):
+        p = multiprocessing.Process(target=QueryGenerator.worker, args=(
+            self.generated_query_queue, self.dibs_policy, self.target_depth, self.condition_variable, self.bundle_size))
+        p.daemon = True
+        p.start()
+        self.total_thread_count += 1
+        self.threads.append(p)
+
     class replacePattern:
         def __init__(self, pattern, lambda_function):
             self._lambda_function = lambda_function
@@ -56,47 +107,6 @@ class QueryGenerator:
             return ((random.randint(0, A) | random.randint(low, high)) % (high - low + 1)) + low
         return random.randint(low, high)
 
-    generator_id = 0
-
-    @staticmethod
-    def initialize():
-        QueryGenerator.generator_id = 0
-
-    def __init__(self, possible_query_list, dibs_policy, target_depth,
-                 num_worker_threads, run_in_series, bundle_size):
-
-        self.possible_query_list = possible_query_list
-        self.dibs_policy = dibs_policy
-        self.target_depth = target_depth
-        self.run_in_series = run_in_series
-        self.condition_variable = multiprocessing.Condition()
-        self.bundle_size = bundle_size
-
-        manager = multiprocessing.Manager()
-        self.generated_query_queue = manager.Queue()
-
-        self.threads = []
-        self.total_thread_count = 0
-
-        self.generator_id = QueryGenerator.generator_id
-        QueryGenerator.generator_id = QueryGenerator.generator_id + 1
-
-        for i in range(num_worker_threads):
-            self.add_generator()
-
-    def end_processes(self):
-        for p in self.threads:
-            p.terminate()
-
-    def add_generator(self):
-        p = multiprocessing.Process(target=QueryGenerator.worker, args=(
-            self.generated_query_queue, self.possible_query_list, self.dibs_policy, self.target_depth, self.run_in_series,
-            self.generator_id, self.condition_variable, self.bundle_size))
-        p.daemon = True
-        p.start()
-        self.total_thread_count += 1
-        self.threads.append(p)
-
     # Notify all workers that we've used some queries
     def notify_all(self):
         for worker in self.threads:
@@ -104,19 +114,19 @@ class QueryGenerator:
                 self.condition_variable.notify()
 
     @staticmethod
-    def pick_query_index_to_generate(possible_query_list):
+    def pick_query_index_to_generate(possible_query_sets):
         ticket_index = random.randint(0, 100)
         ticket_counter = 0
-        for query_template_index in range(0, len(possible_query_list) / 2):
-            ticket_counter += possible_query_list[(query_template_index * 2) + 1]
+        for query_template_index in range(0, len(possible_query_sets) / 2):
+            ticket_counter += possible_query_sets[(query_template_index * 2) + 1]
             if ticket_counter >= ticket_index:
                 index = query_template_index * 2
                 return index
 
     @staticmethod
-    def generate_query(possible_query_list, index, generator_id, dibs_policy):
-        query_text = possible_query_list[index]
-        query = dbQuery(query_text, generator_id * 1000 + index)
+    def generate_query(possible_query_sets, index, dibs_policy):
+        query_text = possible_query_sets[index]
+        query = dbQuery(query_text, index)
         for replace_rule in QueryGenerator.wild_card_rules:
             query_text = replace_rule.replace(query_text, query)
         query.query_text = query_text
@@ -124,15 +134,15 @@ class QueryGenerator:
         return query
 
     @staticmethod
-    def worker(waiting_queue, possible_query_list, dibs_policy, target_depth, run_in_series, generator_id, cv, bundle_size):
+    def worker(waiting_queue, dibs_policy, target_depth, cv, bundle_size):
         while True:
             with cv:
                 cv.wait()
             while target_depth - (waiting_queue.qsize()*bundle_size) > 0:
                 query_bundle=[]
                 for i in xrange(bundle_size):
-                    index = QueryGenerator.pick_query_index_to_generate(possible_query_list)
-                    last_query = QueryGenerator.generate_query(possible_query_list, index, generator_id, dibs_policy)
+                    index = QueryGenerator.pick_query_index_to_generate(QueryGenerator.possible_query_sets)
+                    last_query = QueryGenerator.generate_query(QueryGenerator.possible_query_sets, index, dibs_policy)
                     query_bundle.append(last_query)
                 query_bundle = zlib.compress(cPickle.dumps(query_bundle))
                 waiting_queue.put(query_bundle)

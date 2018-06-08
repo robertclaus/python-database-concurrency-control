@@ -1,0 +1,82 @@
+import multiprocessing
+
+from connectors.AbstractConnector import AbstractConnector
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from urlparse import urlparse, parse_qs
+
+from queries.Query import dbQuery
+
+
+class WebConnector(AbstractConnector):
+    def __init__(self, received_queue, finished_list, policy):
+        p = multiprocessing.Process(target=WebConnector.worker, args=(received_queue, finished_list, policy))
+        p.daemon = True
+        p.start()
+        self.process = p
+
+    def end_processes(self):
+        self.process.terminate()
+
+    def next_queries(self):
+        try:
+            query = self.received_queue.get(False)
+            return [query]
+        except multiprocessing.Queue.Empty:
+            return []
+
+
+    @staticmethod
+    def worker(received_queue, finished_list, policy):
+        RequestHandler.received_queue = received_queue
+        RequestHandler.finished_list = finished_list
+        RequestHandler.policy = policy
+
+        with HTTPServer(("", 8000), RequestHandler) as httpd:
+            print("Serving at port", 8000)
+            httpd.serve_forever()
+
+
+
+class RequestHandler(BaseHTTPRequestHandler):
+    received_queue = None
+    finished_list = None
+    policy = None
+
+    def _set_headers(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+
+    def do_GET(self):
+        query_components = parse_qs(urlparse(self.path).query)
+        if "query_text" in query_components:
+            query_text = query_components["query_text"]
+            print("Query Text: {}".format(query_text))
+
+            # Parse and submit the query
+            query = dbQuery(query_text, 1)
+            RequestHandler.policy.parse_query(query)
+            RequestHandler.received_queue.append(query)
+
+            self._set_headers()
+            self.wfile.write("<html><body>Submitted Query With ID {}</body></html>".format(query.query_id))
+            return
+
+        if "query_id" in query_components:
+            # Check if query is in finished_list and return it
+            query_id = query_components["query_id"]
+            query = next((q for q in RequestHandler.finished_list if q.query_id == query_id), None)
+            self._set_headers()
+            if query:
+                self.wfile.write("<html><body>Query Competed With Results: {}</body></html>".format(query.result))
+            else:
+                self.wfile.write("<html><body>Query not complete.</body></html>")
+            return
+
+        else:
+            self._set_headers()
+            self.wfile.write("<html><body>Submit GET with query_text parameter to submit a query or query_id parameter"
+                             "to retrieve results.</body></html>")
+
+    def do_HEAD(self):
+        self._set_headers()

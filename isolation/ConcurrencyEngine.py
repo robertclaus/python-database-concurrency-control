@@ -15,12 +15,12 @@ import zlib
 from policies.PhasedPolicy import PhasedPolicy
 
 
-class dbConcurrencyEngine:
+class ConcurrencyEngine:
 
-    def __init__(self, dibs_policy, query_completed_condition, send_bundle_size, generators):
+    def __init__(self, dibs_policy, query_completed_condition, send_bundle_size, connector):
         manager = multiprocessing.Manager()
 
-        self.generators=generators
+        self.connector=connector
 
         # A Queue of admitted queries
         self.waiting_queries = manager.Queue()
@@ -105,20 +105,9 @@ class dbConcurrencyEngine:
         queries_admitted = 0
 
         while queries_admitted < queries_to_generate_at_a_time:
-            for generator in self.generators:
-                main_queue = generator.generated_query_queue
-                try:
-                    queries = main_queue.get(False)
-                    queries = cPickle.loads(zlib.decompress(queries))
-                    self.admit_multiple(queries, already_on_sidetrack=False, sidetrack_if_not_readonly=True)
-                    queries_admitted += len(queries)
-                except Queue.Empty:
-                    print(" ### Not generating queries fast enough.")
-                    generator.add_generator()
-                    time.sleep(.1)
-
-        for generator in self.generators:
-            generator.notify_all()
+            queries = self.connector.next_queries()
+            self.admit_multiple(queries, already_on_sidetrack=False, sidetrack_if_not_readonly=True)
+            queries_admitted += len(queries)
 
     # Remove completed queries from the _waiting_queries_list so their locks no longer get checked against
     def proccess_completed_queries(self):

@@ -1,7 +1,7 @@
-from clients.ClientConnectorManager import ClientConnectorManager
-from clients.MySQLConnector import MySQLConnector
-from isolation.ConcurrencyEngine import dbConcurrencyEngine
-from connectors.QueryGenerator import QueryGenerator
+import config
+from clients.ClientManager import ClientConnectorManager
+from isolation.ConcurrencyEngine import ConcurrencyEngine
+from connectors.QueryGeneratorConnector import QueryGenerator
 from connectors import QuerySets
 import multiprocessing
 
@@ -9,17 +9,9 @@ import time
 import sys
 import math
 
-# Isolation Policies:
-# 0 - No external isolation
-# 1 - Phased Isolation
-# 2 - Predicate Isolation
-# 4 - Single Thread Isolation
-from policies.BasePredicatePolicy import BasePredicatePolicy
-
-
 class QueryFlowTester:
     @staticmethod
-    def run(dibs_policy=BasePredicatePolicy, client_connector_class = MySQLConnector, seconds_to_run=10, worker_num=4, max_queries_total=10000, query_set_choices=[]):
+    def run(dibs_policy_class, client_connector_class, seconds_to_run=10, worker_num=4, max_queries_total=10000, query_set_choices=[]):
 
         def microseconds_used(sum, count, index):
             if index in sum and index in count:
@@ -28,11 +20,11 @@ class QueryFlowTester:
                 return '0'
 
         print("Running for {} seconds with {} workers. In concurrency mode: {} ".format(seconds_to_run, worker_num,
-                                                                                        str(dibs_policy)))
+                                                                                        str(dibs_policy_class)))
 
         ### Load Settings
 
-        dibs_policy.initialize()
+        dibs_policy = dibs_policy_class()
 
         # Minimum queries in incoming waiting query queue to allow before generating more
         min_queries_in_queue = min(max_queries_total, 800 + worker_num * 300)
@@ -45,46 +37,25 @@ class QueryFlowTester:
         # Maximum queries to leave in a sidetrack
         max_queries_from_sidetrack = 0
 
-        # Maximum queries to have in the incoming generator queue at one time
-        queue_depth = min_queries_in_queue*2  # *10
-
-        # How many threads to have generating queries at a time
-        generator_worker_num = min_queries_in_queue/1000
-
         # Number of queries to pre-parse so queue does not start empty
         queries_to_start_in_queue_with = min_queries_in_queue
 
         bundle_size = 4
 
-        # Load queries to generate.
-        # Notifies the generator that we may have used some of its queries
-        query_sets = QuerySets.query_sets
-        query_generator_queues = []
-        generator_processes = []
-        QueryGenerator.initialize()
-        for query_set_id in query_set_choices:
-            query_set = query_sets[int(query_set_id)]
-            # Create a thread to generate queries.  This is like an application submitting queries to the database.
-            new_generator = QueryGenerator(query_set, dibs_policy, queue_depth, generator_worker_num,
-                                           not query_set_id==query_set_choices[0], bundle_size)  # All but the first queryset wait for one query to complete before doing the next one.
-            query_generator_queues.append(new_generator.generated_query_queue)
-            generator_processes.append(new_generator)
+        manager = multiprocessing.Manager()
+        incoming_queue = manager.Queue()
+        complete_list = manager.list()
 
-
-        ### Pre-generate query queues and admit some queries
-        print("Prepopulating Queue")
-        while query_generator_queues[0].qsize()*bundle_size < queue_depth:
-            time.sleep(.01)
-            for generator in generator_processes:
-                generator.notify_all()
-        print("  Query Generators done.  Waiting for CC Startup")
+        print("Starting Connectors")
+        connector = QueryGenerator(incoming_queue, complete_list, dibs_policy)
+        print("Connectors Started")
 
         query_completed_condition = multiprocessing.Condition()
 
-        concurrency_engine = dbConcurrencyEngine(dibs_policy,
-                                                 query_completed_condition,
-                                                 bundle_size,
-                                                 generator_processes)
+        concurrency_engine = ConcurrencyEngine(dibs_policy,
+                                               query_completed_condition,
+                                               bundle_size,
+                                               connector)
 
         concurrency_engine.append_next(queries_to_start_in_queue_with)
         total_queries_admitted = queries_to_start_in_queue_with

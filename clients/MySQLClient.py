@@ -1,9 +1,9 @@
-from clients.AbstractConnector import AbstractConnector
+from clients.AbstractClient import AbstractClient
 from config import config
 
 import MySQLdb
 
-class MySQLConnector(AbstractConnector):
+class MySQLClient(AbstractClient):
 
     def __init__(self):
         self.connection = MySQLdb.connect(host=config.MYSQL_HOST,

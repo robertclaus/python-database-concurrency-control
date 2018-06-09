@@ -100,7 +100,7 @@ class ConcurrencyEngine:
         if self.run_phased_policy and already_on_sidetrack:
             self.sidetrack_index.remove_admitted_queries()
 
-        self.query_count+=len(admitted)
+        self.query_count += len(admitted)
 
         return admitted
 

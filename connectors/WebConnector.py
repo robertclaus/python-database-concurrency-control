@@ -5,8 +5,7 @@ from BaseHTTPServer import BaseHTTPRequestHandler
 from urlparse import urlparse, parse_qs
 from Queue import Empty
 
-import http.server
-import socketserver
+from SocketServer import TCPServer
 
 from queries.Query import dbQuery
 
@@ -38,7 +37,7 @@ class WebConnector(AbstractConnector):
         RequestHandler.finished_list = finished_list
         RequestHandler.policy = policy
 
-        with socketserver.TCPServer(("", 8000), RequestHandler) as httpd:
+        with TCPServer(("", 8000), RequestHandler) as httpd:
             print("Serving at port", 8000)
             httpd.serve_forever()
 

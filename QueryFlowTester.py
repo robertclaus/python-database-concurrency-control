@@ -8,7 +8,7 @@ import math
 
 class QueryFlowTester:
     @staticmethod
-    def run(dibs_policy_class, client_connector_class, connector_class, seconds_to_run=10, worker_num=4, max_queries_total=10000):
+    def run(dibs_policy, client_connector_class, connector_class, seconds_to_run=10, worker_num=4, max_queries_total=10000):
 
         def microseconds_used(sum, count, index):
             if index in sum and index in count:
@@ -20,8 +20,6 @@ class QueryFlowTester:
                                                                                         str(dibs_policy_class)))
 
         ### Load Settings
-
-        dibs_policy = dibs_policy_class()
 
         # Minimum queries in incoming waiting query queue to allow before generating more
         min_queries_in_queue = min(max_queries_total, 800 + worker_num * 300)

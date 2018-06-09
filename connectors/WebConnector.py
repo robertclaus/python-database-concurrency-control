@@ -59,7 +59,7 @@ class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         query_components = parse_qs(urlparse(self.path).query)
         if "query_text" in query_components:
-            query_text = query_components["query_text"]
+            query_text = query_components["query_text"].join(" ")
             print("Query Text: {}".format(query_text))
 
             # Parse and submit the query

@@ -8,6 +8,7 @@ from queries.Query import dbQuery
 import config
 
 import multiprocessing
+from Queue import Empty
 
 import cPickle
 import zlib
@@ -40,7 +41,7 @@ class QueryGeneratorConnector(AbstractConnector):
         try:
             queries = self.received_queue.get(False)
             return cPickle.loads(zlib.decompress(queries))
-        except multiprocessing.Queue.Empty:
+        except Empty:
             self.completed_all_queries()
             time.sleep(.1)
             return []

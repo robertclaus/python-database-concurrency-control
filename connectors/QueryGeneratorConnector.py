@@ -33,27 +33,26 @@ class QueryGeneratorConnector(AbstractConnector):
             self.add_generator()
 
         print("Prepopulating Generator Queue")
-        while received_queue.qsize() * config.GENERATOR_BUNDLE_SIZE < self.target_depth:
-            sleep(.01)
+        while self.received_queue.qsize() * config.GENERATOR_BUNDLE_SIZE < self.target_depth:
+            sleep(.5)
             self.notify_all()
+            self.add_generator()
+
 
     def next_queries(self):
+        self.notify_all()
         try:
             queries = self.received_queue.get(False)
             return cPickle.loads(zlib.decompress(queries))
         except Empty:
-            self.completed_all_queries()
+            print(" ### Not generating queries fast enough.")
+            self.add_generator()
             sleep(.1)
             return []
-        self.notify_all()
 
     def end_processes(self):
         for p in self.threads:
             p.terminate()
-
-    def completed_all_queries(self):
-        print(" ### Not generating queries fast enough.")
-        self.add_generator()
 
     def add_generator(self):
         p = multiprocessing.Process(target=QueryGeneratorConnector.worker, args=(

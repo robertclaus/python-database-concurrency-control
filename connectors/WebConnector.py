@@ -68,7 +68,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             RequestHandler.received_queue.append(query)
 
             self._set_headers()
-            self.wfile.write("<html><body>Submitted Query With ID {}</body></html>".format(query.query_id))
+            self.wfile.write("<html><body>Submitted Query With ID {}</body></html>\n".format(query.query_id))
             return
 
         if "query_id" in query_components:
@@ -79,13 +79,13 @@ class RequestHandler(BaseHTTPRequestHandler):
             if query:
                 self.wfile.write("<html><body>Query Competed With Results: {}</body></html>".format(query.result))
             else:
-                self.wfile.write("<html><body>Query not complete.</body></html>")
+                self.wfile.write("<html><body>Query not complete.</body></html>\n")
             return
 
         else:
             self._set_headers()
             self.wfile.write("<html><body>Submit GET with query_text parameter to submit a query or query_id parameter"
-                             "to retrieve results.</body></html>")
+                             "to retrieve results.</body></html>\n")
 
     def do_HEAD(self):
         self._set_headers()

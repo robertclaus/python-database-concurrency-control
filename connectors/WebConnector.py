@@ -1,9 +1,11 @@
 import multiprocessing
 
 from connectors.AbstractConnector import AbstractConnector
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from BaseHTTPServer import BaseHTTPRequestHandler
 from urlparse import urlparse, parse_qs
 from Queue import Empty
+
+import socketserver
 
 from queries.Query import dbQuery
 
@@ -35,7 +37,7 @@ class WebConnector(AbstractConnector):
         RequestHandler.finished_list = finished_list
         RequestHandler.policy = policy
 
-        with HTTPServer(("", 8000), RequestHandler) as httpd:
+        with socketserver.TCPServer(("", 8000), RequestHandler) as httpd:
             print("Serving at port", 8000)
             httpd.serve_forever()
 

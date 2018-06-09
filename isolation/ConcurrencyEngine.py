@@ -78,6 +78,7 @@ class ConcurrencyEngine:
                         query_bundle = []
             else:
                 print("Trying query {}".format(new_query))
+                print("DIBS Policy {}".format(self.dibs_policy))
                 queries_to_admit = self.dibs_policy.new_query(new_query)
                 for query in queries_to_admit:
                     admitted.append(query)

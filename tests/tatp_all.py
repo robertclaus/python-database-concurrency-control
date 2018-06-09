@@ -7,7 +7,7 @@ from clients.MySQLClient import MySQLClient
 from connectors.QueryGeneratorConnector import QueryGeneratorConnector
 from connectors.QuerySets import query_sets
 
-time_to_run = 300
+time_to_run = 30
 max_queries = 25000
 
 # Run #1 - Vary Write %

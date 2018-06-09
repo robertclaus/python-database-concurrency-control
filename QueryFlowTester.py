@@ -94,8 +94,7 @@ class QueryFlowTester:
 
                 # End client threads sending queries to the database
                 clientManager.end_processes()
-                for generator in generator_processes:
-                    generator.end_processes()
+                connector.end_processes()
 
                 print("Clients Stopped")
 

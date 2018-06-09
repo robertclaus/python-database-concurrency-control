@@ -41,10 +41,10 @@ class IsolationLevelSetter:
             ]
 
             dibs_policies = [
-                NoIsolationPolicy,
-                PhasedPolicy,
-                ZeroConcurrencyPolicy,
-                DirectPredicatePolicy,
+                NoIsolationPolicy(),
+                PhasedPolicy(),
+                ZeroConcurrencyPolicy(),
+                DirectPredicatePolicy(),
             ]
 
             conn = MySQLdb.connect(host=config.MYSQL_HOST,user=config.MYSQL_USER,passwd=config.MYSQL_PASSWORD,db=config.MYSQL_DB_NAME)

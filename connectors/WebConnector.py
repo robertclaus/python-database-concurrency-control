@@ -3,6 +3,7 @@ import multiprocessing
 from connectors.AbstractConnector import AbstractConnector
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from urlparse import urlparse, parse_qs
+from Queue import Empty
 
 from queries.Query import dbQuery
 
@@ -21,7 +22,7 @@ class WebConnector(AbstractConnector):
         try:
             query = self.received_queue.get(False)
             return [query]
-        except multiprocessing.Queue.Empty:
+        except Empty:
             return []
 
 

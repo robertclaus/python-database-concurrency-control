@@ -65,7 +65,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             # Parse and submit the query
             query = dbQuery(query_text, 1)
             RequestHandler.policy.parse_query(query)
-            RequestHandler.received_queue.append(query)
+            RequestHandler.received_queue.put(query)
 
             self._set_headers()
             self.wfile.write("<html><body>Submitted Query With ID {}</body></html>\n".format(query.query_id))

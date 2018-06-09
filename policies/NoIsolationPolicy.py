@@ -1,5 +1,6 @@
 from policies.AbstractPolicy import AbstractPolicy
 
+
 class NoIsolationPolicy(AbstractPolicy):
 
     def __init__(self):

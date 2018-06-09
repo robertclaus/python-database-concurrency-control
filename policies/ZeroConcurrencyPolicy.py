@@ -1,6 +1,7 @@
 from policies.AbstractPolicy import AbstractPolicy
 from collections import deque
 
+
 class ZeroConcurrencyPolicy(AbstractPolicy):
 
     def __init__(self):

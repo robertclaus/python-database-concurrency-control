@@ -5,6 +5,7 @@ from BaseHTTPServer import BaseHTTPRequestHandler
 from urlparse import urlparse, parse_qs
 from Queue import Empty
 
+import http.server
 import socketserver
 
 from queries.Query import dbQuery

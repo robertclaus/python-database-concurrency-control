@@ -103,7 +103,6 @@ class ConcurrencyEngine:
     # Admit the next X random queries from the incoming query queues
     def append_next(self, queries_to_generate_at_a_time):
         queries_admitted = 0
-        self.proccess_completed_queries()
 
         while queries_admitted < queries_to_generate_at_a_time:
             queries = self.connector.next_queries()

@@ -13,5 +13,6 @@ class MySQLClient(AbstractClient):
         self.cursor = self.connection.cursor()
 
     def execute(self, query_text):
+        print("admitting {}".format(query_text))
         self.cursor.execute(query_text)
         self.connection.commit()

@@ -74,6 +74,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         if "query_id" in query_components:
             # Check if query is in finished_list and return it
             query_id = query_components["query_id"]
+            print("Finished list contains {} entries.".format(len(RequestHandler.finished_list)))
+            print("Searching for entry [{}]".format(query_id))
             query = next((q for q in RequestHandler.finished_list if q.query_id == query_id), None)
             self._set_headers()
             if query:

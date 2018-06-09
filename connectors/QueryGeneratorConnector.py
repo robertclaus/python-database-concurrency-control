@@ -43,7 +43,7 @@ class QueryGeneratorConnector(AbstractConnector):
             return cPickle.loads(zlib.decompress(queries))
         except Empty:
             self.completed_all_queries()
-            time.sleep(.1)
+            sleep(.1)
             return []
         self.notify_all()
 

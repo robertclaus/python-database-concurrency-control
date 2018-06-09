@@ -46,7 +46,7 @@ class ConcurrencyEngine:
 
         self.send_bundle_size = send_bundle_size
 
-        self.run_phased_policy = (self.dibs_policy == PhasedPolicy)
+        self.run_phased_policy = isinstance(self.dibs_policy, PhasedPolicy)
 
     # Return the number of queries that have been admitted but not completed
     def queries_left(self):

@@ -85,6 +85,8 @@ class ConcurrencyEngine:
                     if len(query_bundle) > self.send_bundle_size:
                         self.waiting_queries.put(query_bundle)
                         query_bundle = []
+
+                print("Admitted Query and have {} queries in the finished queue".format(len(self._archive_completed_queries)))
                 self.proccess_completed_queries()
 
         if query_bundle:

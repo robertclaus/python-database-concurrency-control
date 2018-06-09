@@ -37,9 +37,12 @@ class WebConnector(AbstractConnector):
         RequestHandler.finished_list = finished_list
         RequestHandler.policy = policy
 
-        with TCPServer(("", 8000), RequestHandler) as httpd:
+        try:
+            httpd = TCPServer(("", 8000), RequestHandler)
             print("Serving at port", 8000)
             httpd.serve_forever()
+        except:
+            print("Server Error")
 
 
 

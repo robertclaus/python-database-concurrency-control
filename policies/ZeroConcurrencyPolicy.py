@@ -7,7 +7,7 @@ class ZeroConcurrencyPolicy(AbstractPolicy):
         self.waiting_queries = deque()
         self.running_query = None
 
-    def parse_query(query):
+    def parse_query(self, query):
         pass
 
     def new_query(self, query):

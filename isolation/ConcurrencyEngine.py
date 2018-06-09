@@ -32,7 +32,7 @@ class ConcurrencyEngine:
         # A list of admitted queries that can't run due to lock conflicts.
         self.sidetrack_index = SidetrackQueryIndex()
         # The list of completed queries that have been removed from the global lock index already.
-        self._archive_completed_queries = []
+        self._archive_completed_queries = connector.finished_list
 
         self.query_processed_cv = query_completed_condition
 

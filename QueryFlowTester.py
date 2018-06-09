@@ -17,7 +17,7 @@ class QueryFlowTester:
                 return '0'
 
         print("Running for {} seconds with {} workers. In concurrency mode: {} ".format(seconds_to_run, worker_num,
-                                                                                        str(dibs_policy_class)))
+                                                                                        str(dibs_policy)))
 
         ### Load Settings
 

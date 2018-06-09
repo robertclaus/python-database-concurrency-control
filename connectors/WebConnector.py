@@ -10,6 +10,9 @@ from queries.Query import dbQuery
 
 class WebConnector(AbstractConnector):
     def __init__(self, received_queue, finished_list, policy):
+        self.received_queue = received_queue
+        self.finished_list = finished_list
+        self.policy = policy
         p = multiprocessing.Process(target=WebConnector.worker, args=(received_queue, finished_list, policy))
         p.daemon = True
         p.start()

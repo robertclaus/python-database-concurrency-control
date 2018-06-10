@@ -74,11 +74,13 @@ class RequestHandler(BaseHTTPRequestHandler):
             if query:
                 if query.result:
                     self.wfile.write("<html><body>Query Competed With Results: {}</body></html>".format(query.result))
+                    return
                 if query.error:
                     self.wfile.write("<html><body>Query Competed With Error: {}</body></html>".format(query.error))
+                    return
+                self.wfile.write("<html><body>Query Competed With No Result or Error</body></html>".format(query.result))
             else:
                 self.wfile.write("<html><body>Query not complete.</body></html>\n")
-            self.wfile.write("<html><body>Query Competed With No Result or Error</body></html>".format(query.result))
             return
 
         else:

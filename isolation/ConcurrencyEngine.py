@@ -88,12 +88,13 @@ class ConcurrencyEngine:
                     if len(query_bundle) > self.send_bundle_size:
                         self.waiting_queries.put(query_bundle)
                         query_bundle = []
-
-                    print("Admitted Query and have {} queries in the finished queue, {} in the waiting queue.".format(len(self._archive_completed_queries),self.waiting_queries.qsize()))
+                    print("Admitting a query.")
                 self.proccess_completed_queries()
 
         if query_bundle:
             self.waiting_queries.put(query_bundle)
+        print("Admitted Query and have {} queries in the finished queue, {} in the waiting queue.".format(
+            len(self._archive_completed_queries), self.waiting_queries.qsize()))
 
         if self.run_phased_policy and not already_on_sidetrack:
             self.sidetrack_index.add_queries(not_admitted)

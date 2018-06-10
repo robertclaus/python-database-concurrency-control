@@ -22,7 +22,7 @@ class QueryGeneratorConnector(AbstractConnector):
     possible_query_sets =[]
 
     def __init__(self, received_queue, finished_list, policy):
-        self.finished_queries = finished_list
+        self.finished_list = finished_list
         self.dibs_policy = policy
         self.condition_variable = multiprocessing.Condition()
         self.start_time = time()
@@ -86,11 +86,11 @@ class QueryGeneratorConnector(AbstractConnector):
         admit_time = {}
         total_wait_time = 0
 
-        finished_queries = self.finished_queries
+        finished_list = self.finished_list
 
-        completed = len(finished_queries)
+        completed = len(finished_list)
 
-        for query in finished_queries:
+        for query in finished_list:
             if not query.query_type_id in type_index_sum:
                 type_index_sum[query.query_type_id] = 0
             type_index_sum[query.query_type_id] += query.total_time - query.waiting_time
@@ -101,27 +101,27 @@ class QueryGeneratorConnector(AbstractConnector):
             if query.worker_waited_time is not None:
                 total_wait_time += query.worker_waited_time
 
-        for query in finished_queries:
+        for query in finished_list:
             if not query.query_type_id in std_devs:
                 std_devs[query.query_type_id] = 0
             mean = type_index_sum[query.query_type_id] / type_index_count[query.query_type_id]
             deviation = mean - (query.total_time - query.waiting_time)
             std_devs[query.query_type_id] += deviation * deviation
 
-        for query in finished_queries:
+        for query in finished_list:
             if not query.query_type_id in admit_time:
                 admit_time[query.query_type_id] = 0
             if query.time_to_admit > admit_time[query.query_type_id]:
                 admit_time[query.query_type_id] = query.time_to_admit
 
-        for query in finished_queries:
+        for query in finished_list:
             if not query.query_type_id in max:
                 max[query.query_type_id] = 0
             if query.total_time - query.waiting_time > max[query.query_type_id]:
                 max[query.query_type_id] = query.total_time - query.waiting_time
 
         with open('allqueries.csv', 'wb') as file:
-            for query in finished_queries:
+            for query in finished_list:
                 file.write("{},{},{},{},{},\"{}\"\n".format(query.id, query.worker,
                                                             1000 * (query.waiting_time + query.created_at),
                                                             1000 * (query.total_time + query.created_at),

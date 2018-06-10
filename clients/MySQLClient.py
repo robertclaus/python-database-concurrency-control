@@ -20,4 +20,5 @@ class MySQLClient(AbstractClient):
 
     def _result_to_string(self):
         for row in self.cursor.fetchall():
-            yield row
+            print("Row: {}".format(str(row)))
+            yield str(row)

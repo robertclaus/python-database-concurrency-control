@@ -14,6 +14,7 @@ class ClientConnectorManager:
             self.add_process()
 
     def add_process(self):
+        print("add worker")
         p = multiprocessing.Process(target=ClientConnectorManager.worker,
                                     args=(self.client_connector,
                                           self.waiting_queue,

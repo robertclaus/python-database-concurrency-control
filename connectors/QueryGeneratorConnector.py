@@ -25,7 +25,7 @@ class QueryGeneratorConnector(AbstractConnector):
         self.finished_queries = finished_list
         self.dibs_policy = policy
         self.condition_variable = multiprocessing.Condition()
-        self.start_time = time.time()
+        self.start_time = time()
 
         self.received_queue = received_queue
 
@@ -75,7 +75,7 @@ class QueryGeneratorConnector(AbstractConnector):
             else:
                 return '0'
 
-        end_time = time.time()
+        end_time = time()
         total_time = end_time - self.start_time
 
         # Print any data that might be interesting (primarily concurrency_engine._archive_completed_queries)

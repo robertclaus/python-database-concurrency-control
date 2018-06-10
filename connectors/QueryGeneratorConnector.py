@@ -25,7 +25,7 @@ class QueryGeneratorConnector(AbstractConnector):
         self.finished_list = finished_list
         self.dibs_policy = policy
         self.condition_variable = multiprocessing.Condition()
-        self.start_time = time()
+
 
         self.received_queue = received_queue
 
@@ -42,6 +42,8 @@ class QueryGeneratorConnector(AbstractConnector):
             sleep(.5)
             self.notify_all()
             self.add_generator()
+
+        self.start_time = time()
 
 
     def next_queries(self):

@@ -1,4 +1,4 @@
 import MySQLdb
-from config import config
+import config
 
 # Generate Queries

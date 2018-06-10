@@ -1,5 +1,5 @@
 import MySQLdb
-from config import config
+import config
 
 from policies.NoIsolationPolicy import NoIsolationPolicy
 from policies.PhasedPolicy import PhasedPolicy

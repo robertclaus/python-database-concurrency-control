@@ -1,5 +1,5 @@
 from clients.AbstractClient import AbstractClient
-from config import config
+import config
 
 import MySQLdb
 

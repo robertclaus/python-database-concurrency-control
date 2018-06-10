@@ -89,7 +89,6 @@ class ConcurrencyEngine:
                         self.waiting_queries.put(query_bundle)
                         query_bundle = []
                     print("Admitting a query.")
-                self.proccess_completed_queries()
 
         if query_bundle:
             self.waiting_queries.put(query_bundle)
@@ -115,6 +114,7 @@ class ConcurrencyEngine:
             queries = self.connector.next_queries()
             self.admit_multiple(queries, already_on_sidetrack=False, sidetrack_if_not_readonly=True)
             queries_admitted += len(queries)
+            self.proccess_completed_queries()
 
     # Remove completed queries from the _waiting_queries_list so their locks no longer get checked against
     def proccess_completed_queries(self):

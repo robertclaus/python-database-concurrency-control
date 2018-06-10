@@ -11,7 +11,6 @@ class MySQLClient(AbstractClient):
                                           passwd=config.MYSQL_PASSWORD,
                                           db=config.MYSQL_DB_NAME)
         self.cursor = self.connection.cursor()
-        print("Started worker")
 
     def execute(self, query_text):
         print("admitting {}".format(query_text))

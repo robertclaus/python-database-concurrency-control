@@ -29,6 +29,7 @@ class ClientConnectorManager:
 
     @staticmethod
     def worker(client_connector, waiting_queue, complete_queue, cv, worker_id):
+        print("start worker")
         connector = client_connector()
 
         while True:

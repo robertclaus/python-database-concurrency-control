@@ -49,7 +49,7 @@ class QueryGeneratorConnector(AbstractConnector):
     def next_queries(self):
         self.notify_all()
         try:
-            queries = self.received_queue.get_nowait(False)
+            queries = self.received_queue.get_nowait()
             return cPickle.loads(zlib.decompress(queries))
         except Empty:
             print(" ### Not generating queries fast enough.")

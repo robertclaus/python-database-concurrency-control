@@ -1,10 +1,9 @@
+import config
 from clients.ClientManager import ClientConnectorManager
 from isolation.IsolationManager import IsolationManager
 import multiprocessing
 
 import time
-import sys
-import math
 
 class DIBSEngine:
     @staticmethod
@@ -16,9 +15,6 @@ class DIBSEngine:
 
         ### Load Settings
 
-        # Minimum queries in incoming waiting query queue to allow before generating more
-        min_queries_in_queue = 2000 #min(max_queries_total, 800 + worker_num * 300)
-
         # Minimum queries in sidetrack to consider admitting
         min_queries_in_sidetrack = 0
 
@@ -26,9 +22,6 @@ class DIBSEngine:
         min_queries_from_sidetrack = 0
         # Maximum queries to leave in a sidetrack
         max_queries_from_sidetrack = 0
-
-        # Number of queries to pre-parse so queue does not start empty
-        queries_to_start_in_queue_with = min_queries_in_queue
 
         bundle_size = 4
 
@@ -58,8 +51,8 @@ class DIBSEngine:
         start = time.time()
 
         while (True):
-            if concurrency_engine.queries_left() < min_queries_in_queue:
-                queries_to_accept = min_queries_in_queue - concurrency_engine.queries_left()
+            if concurrency_engine.queries_left() < config.MAX_QUERIES_IN_ENGINE:
+                queries_to_accept = config.MAX_QUERIES_IN_ENGINE - concurrency_engine.queries_left()
 
                 # Don't go over max_queries_total when admitting more queries
                 if queries_to_accept + total_queries_admitted > max_queries_total:

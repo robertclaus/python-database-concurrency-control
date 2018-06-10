@@ -33,7 +33,9 @@ class ClientConnectorManager:
 
         while True:
             start_wait = time.time()
+            print("Client waiting")
             query_bundle = waiting_queue.get()
+            print("Client got queries")
             end_wait = time.time()
 
             for query in query_bundle:

@@ -37,12 +37,12 @@ class ConcurrencyEngine:
         self.query_processed_cv = query_completed_condition
 
         self.query_count = 0
-        self.cycle_count = 0
+        ConcurrencyEngine.cycle_count = 0
 
         self.dibs_policy = dibs_policy
         self.last_scheduler_change = time.time()
 
-        self.time_processing_completed = 0
+        ConcurrencyEngine.time_processing_completed = 0
 
         self.send_bundle_size = send_bundle_size
 
@@ -135,7 +135,7 @@ class ConcurrencyEngine:
             if query_bundle:
                 self.waiting_queries.put(query_bundle)
 
-            self.time_processing_completed += (time.time()-start)
+            ConcurrencyEngine.time_processing_completed += (time.time()-start)
         except IOError:
             print("#### IO ERROR - Likely Broken Pipe")
 
@@ -175,7 +175,7 @@ class ConcurrencyEngine:
                     ['call_forwarding.start_time','subscriber.sub_nbr'], # Delete
                     ['subscriber.sub_nbr'], # High Volume Update
                 ]
-                self.cycle_count += 1
+                ConcurrencyEngine.cycle_count += 1
                 for combination in lock_combinations:
                     column_reference = defaultdict(list)
                     value = None

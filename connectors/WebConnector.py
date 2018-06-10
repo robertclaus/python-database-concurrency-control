@@ -25,7 +25,7 @@ class WebConnector(AbstractConnector):
 
     def next_queries(self):
         try:
-            query = WebConnector.received_queue.get(False)
+            query = WebConnector.received_queue.get_nowait(False)
             return [query]
         except Empty:
             return []

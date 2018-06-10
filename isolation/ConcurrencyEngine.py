@@ -121,8 +121,8 @@ class ConcurrencyEngine:
         try:
             start = time.time()
             query_bundle = []
-            try:
-                while True:
+            while True:
+                try:
                     complete_query = self.completed_queries.get_nowait()
                     self._archive_completed_queries.append(complete_query)
                     queries_to_admit = self.dibs_policy.complete_query(complete_query)
@@ -132,8 +132,8 @@ class ConcurrencyEngine:
                         if len(query_bundle) > self.send_bundle_size:
                             self.waiting_queries.put(query_bundle)
                             query_bundle = []
-            except Queue.Empty:
-                pass
+                except Queue.Empty:
+                    break
 
             if query_bundle:
                 self.waiting_queries.put(query_bundle)

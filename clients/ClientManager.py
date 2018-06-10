@@ -48,7 +48,7 @@ class ClientConnectorManager:
                     query.result = connector.execute(query.query_text)
                 except Exception as e:
                     #print("Error with query: {}".format(query))
-                    query.log_error("{}".format(e.message))
+                    query.log_error("ERROR: {}".format(str(e)))
 
                 query.complete()
                 query.worker = worker_id

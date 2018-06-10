@@ -72,9 +72,13 @@ class RequestHandler(BaseHTTPRequestHandler):
             query = next((q for q in WebConnector.finished_list if q.query_id == query_id), None)
             self._set_headers()
             if query:
-                self.wfile.write("<html><body>Query Competed With Results: {}</body></html>".format(query.result))
+                if query.result:
+                    self.wfile.write("<html><body>Query Competed With Results: {}</body></html>".format(query.result))
+                if query.error:
+                    self.wfile.write("<html><body>Query Competed With Error: {}</body></html>".format(query.error))
             else:
                 self.wfile.write("<html><body>Query not complete.</body></html>\n")
+            self.wfile.write("<html><body>Query Competed With No Result or Error</body></html>".format(query.result))
             return
 
         else:

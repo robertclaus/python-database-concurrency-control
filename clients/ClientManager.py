@@ -10,6 +10,7 @@ class ClientConnectorManager:
         self.complete_queue = complete_queue
         self.query_completed_condition = query_completed_condition
         self.next_process_id = 1
+        print("start clients")
         for i in range(num_worker_threads):
             self.add_process()
 

@@ -12,10 +12,10 @@ from queries.Query import dbQuery
 
 class WebConnector(AbstractConnector):
     def __init__(self, received_queue, finished_list, policy):
-        self.received_queue = received_queue
-        self.finished_list = finished_list
-        self.policy = policy
-        p = multiprocessing.Process(target=WebConnector.worker, args=(received_queue, finished_list, policy))
+        WebConnector.received_queue = received_queue
+        WebConnector.finished_list = finished_list
+        WebConnector.policy = policy
+        p = multiprocessing.Process(target=WebConnector.worker, args=())
         p.daemon = True
         p.start()
         self.process = p
@@ -25,18 +25,14 @@ class WebConnector(AbstractConnector):
 
     def next_queries(self):
         try:
-            query = self.received_queue.get(False)
+            query = WebConnector.received_queue.get(False)
             return [query]
         except Empty:
             return []
 
 
     @staticmethod
-    def worker(received_queue, finished_list, policy):
-        RequestHandler.received_queue = received_queue
-        RequestHandler.finished_list = finished_list
-        RequestHandler.policy = policy
-
+    def worker():
         try:
             httpd = TCPServer(("", 8000), RequestHandler)
             print("Serving at port", 8000)
@@ -47,9 +43,6 @@ class WebConnector(AbstractConnector):
 
 
 class RequestHandler(BaseHTTPRequestHandler):
-    received_queue = None
-    finished_list = None
-    policy = None
 
     def _set_headers(self):
         self.send_response(200)
@@ -64,8 +57,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             # Parse and submit the query
             query = dbQuery(query_text, 1)
-            RequestHandler.policy.parse_query(query)
-            RequestHandler.received_queue.put(query)
+            WebConnector.policy.parse_query(query)
+            WebConnector.received_queue.put(query)
 
             self._set_headers()
             self.wfile.write("<html><body>Submitted Query With ID {}</body></html>\n".format(query.query_id))
@@ -74,9 +67,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         if "query_id" in query_components:
             # Check if query is in finished_list and return it
             query_id = int(query_components["query_id"][0])
-            print("Finished list contains {} entries.".format(len(RequestHandler.finished_list)))
+            print("Finished list contains {} entries.".format(len(WebConnector.finished_list)))
             print("Searching for entry [{}]".format(query_id))
-            query = next((q for q in RequestHandler.finished_list if q.query_id == query_id), None)
+            query = next((q for q in WebConnector.finished_list if q.query_id == query_id), None)
             self._set_headers()
             if query:
                 self.wfile.write("<html><body>Query Competed With Results: {}</body></html>".format(query.result))

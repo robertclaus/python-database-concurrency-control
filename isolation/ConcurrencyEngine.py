@@ -59,7 +59,6 @@ class ConcurrencyEngine:
         not_admitted = []
 
         for new_query in new_queries:
-            print("CE Thinks {} Queries Finished".format(len(self._archive_completed_queries)))
             new_query.start_admit()
 
             if self.run_phased_policy:
@@ -78,8 +77,6 @@ class ConcurrencyEngine:
                         self.waiting_queries.put(query_bundle)
                         query_bundle = []
             else:
-                print("Trying query {}".format(new_query))
-                print("DIBS Policy {}".format(self.dibs_policy))
                 queries_to_admit = self.dibs_policy.new_query(new_query)
                 for query in queries_to_admit:
                     admitted.append(query)
@@ -88,11 +85,9 @@ class ConcurrencyEngine:
                     if len(query_bundle) > self.send_bundle_size:
                         self.waiting_queries.put(query_bundle)
                         query_bundle = []
-                    print("Admitting a query.")
 
         if query_bundle:
             self.waiting_queries.put(query_bundle)
-            print("Admitted Query and have {} queries in the finished queue, {} in the waiting queue.".format(len(self._archive_completed_queries), self.waiting_queries.qsize()))
 
         if self.run_phased_policy and not already_on_sidetrack:
             self.sidetrack_index.add_queries(not_admitted)

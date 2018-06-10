@@ -19,6 +19,7 @@ class MySQLClient(AbstractClient):
         return "\n".join(self._result_to_string())
 
     def _result_to_string(self):
+        print("Result: {}".format(str(self.cursor.fetchall())))
         for row in self.cursor.fetchall():
             print("Row: {}".format(str(row)))
             yield str(row)

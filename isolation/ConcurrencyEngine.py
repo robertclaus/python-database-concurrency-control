@@ -59,6 +59,7 @@ class ConcurrencyEngine:
         not_admitted = []
 
         for new_query in new_queries:
+            print("CE Thinks {} Queries Finished".format(len(self._archive_completed_queries)))
             new_query.start_admit()
 
             if self.run_phased_policy:
@@ -106,6 +107,8 @@ class ConcurrencyEngine:
 
     # Admit the next X random queries from the incoming query queues
     def append_next(self, queries_to_generate_at_a_time):
+
+
         queries_admitted = 0
 
         while queries_admitted < queries_to_generate_at_a_time:

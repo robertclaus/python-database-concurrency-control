@@ -26,6 +26,7 @@ class dbQuery:
         self.worker_waited_time = None
         self.lock_run_under = None
         self.tables_locked = []
+        self.result = None
         self.lock_indexes = {'columns_locked': [],
                              'columns_locked_not_all': [],
                              'columns_locked_write': [],
@@ -50,6 +51,7 @@ class dbQuery:
         small_query.finish_admit_time = self.finish_admit_time
         small_query.time_to_admit = self.time_to_admit
         small_query.was_admitted = self.was_admitted
+        small_query.result = self.result
         return small_query
 
     def __eq__(self, other):

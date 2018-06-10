@@ -47,8 +47,8 @@ class QueryFlowTester:
                                                bundle_size,
                                                connector)
 
-        concurrency_engine.append_next(queries_to_start_in_queue_with)
-        total_queries_admitted = queries_to_start_in_queue_with
+        #concurrency_engine.append_next(queries_to_start_in_queue_with)
+        total_queries_admitted = 0
         print("Done Prepopulating Queue")
 
         ### Start client threads to push queries to the database

@@ -16,3 +16,8 @@ class MySQLClient(AbstractClient):
         print("admitting {}".format(query_text))
         self.cursor.execute(query_text)
         self.connection.commit()
+        return "\n".join(self._result_to_string())
+
+    def _result_to_string(self):
+        for row in self.cursor.fetchall():
+            yield row

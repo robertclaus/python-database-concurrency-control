@@ -58,6 +58,7 @@ class QueryGeneratorConnector(AbstractConnector):
     def end_processes(self):
         for p in self.threads:
             p.terminate()
+        self.print_stats()
 
     def add_generator(self):
         p = multiprocessing.Process(target=QueryGeneratorConnector.worker, args=(

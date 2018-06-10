@@ -40,7 +40,7 @@ class DIBSEngine:
                                               bundle_size,
                                               connector)
 
-        #concurrency_engine.append_next(queries_to_start_in_queue_with)
+        concurrency_engine.append_next(config.MAX_QUERIES_IN_ENGINE)
         total_queries_admitted = 0
         print("Done Prepopulating Queue")
 

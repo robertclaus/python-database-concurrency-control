@@ -10,12 +10,10 @@ class ClientConnectorManager:
         self.complete_queue = complete_queue
         self.query_completed_condition = query_completed_condition
         self.next_process_id = 1
-        print("start clients")
         for i in range(num_worker_threads):
             self.add_process()
 
     def add_process(self):
-        print("add worker")
         p = multiprocessing.Process(target=ClientConnectorManager.worker,
                                     args=(self.client_connector,
                                           self.waiting_queue,
@@ -31,14 +29,11 @@ class ClientConnectorManager:
 
     @staticmethod
     def worker(client_connector, waiting_queue, complete_queue, cv, worker_id):
-        print("start worker")
         connector = client_connector()
 
         while True:
             start_wait = time.time()
-            print("Client waiting")
             query_bundle = waiting_queue.get()
-            print("Client got queries")
             end_wait = time.time()
 
             for query in query_bundle:
@@ -47,7 +42,6 @@ class ClientConnectorManager:
                 try:
                     query.result = connector.execute(query.query_text)
                 except Exception as e:
-                    #print("Error with query: {}".format(query))
                     query.log_error("ERROR: {}".format(str(e)))
 
                 query.complete()

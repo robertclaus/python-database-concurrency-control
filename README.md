@@ -6,11 +6,11 @@ This project is a python query pre-processing engine to allow running database q
 ## Project Architecture
 The project is broken into a few main pieces:
 
-1. QueryFlowTester - This is the main driver for the project and starts up the necessary threads as well as managing the ConcurrencyEngine and ending the test once enough time or queries have passed.
-2. ConcurrencyEngine - Manages taking in queries and passing them to Clients only when they are gauranteed to execute serializably.
+1. DIBSEngine - This is the main driver for the project and starts up the necessary threads as well as managing the IsolationManager and ending the test once enough time or queries have passed.
+2. IsolationManager - Manages taking in queries and passing them to Clients only when they are gauranteed to execute serializably.
 3. Query - Takes an SQL query and parses it into predicates describing what data sets the query could affect in the database.  Also contains the necessary methods for seeing if any of those data sets could conflict with another query.
-4. QueryGenerator - Generates queries from a template (QuerySets) and queues them up for the ConcurrencyEngine.  Could be replaced with an incoming SQL feed from an actual application.
-5. ClientManager - Starts database client threads that pass the SQL query to the database when the ConcurrencyEngine says it is safe.
+4. QueryGenerator - Generates queries from a template (QuerySets) and queues them up for the IsolationManager.  Could be replaced with an incoming SQL feed from an actual application.
+5. ClientManager - Starts database client threads that pass the SQL query to the database when the IsolationManager says it is safe.
 6. QuerySets - A list of queries with wildcards that the QueryGenerator uses.
 
 See PCC.pdf for a summary of how these pieces interact and what Queues they depend on.

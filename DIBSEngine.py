@@ -1,15 +1,15 @@
 from clients.ClientManager import ClientConnectorManager
-from isolation.ConcurrencyEngine import ConcurrencyEngine
+from isolation.IsolationManager import IsolationManager
 import multiprocessing
 
 import time
 import sys
 import math
 
-class QueryFlowTester:
+class DIBSEngine:
     @staticmethod
     def run(dibs_policy, client_connector_class, connector_class, seconds_to_run=10, worker_num=4, max_queries_total=10000):
-        QueryFlowTester.worker_num = worker_num
+        DIBSEngine.worker_num = worker_num
 
         print("Running for {} seconds with {} workers. In concurrency mode: {} ".format(seconds_to_run, worker_num,
                                                                                         str(dibs_policy)))
@@ -17,7 +17,7 @@ class QueryFlowTester:
         ### Load Settings
 
         # Minimum queries in incoming waiting query queue to allow before generating more
-        min_queries_in_queue = 1500 #min(max_queries_total, 800 + worker_num * 300)
+        min_queries_in_queue = 2000 #min(max_queries_total, 800 + worker_num * 300)
 
         # Minimum queries in sidetrack to consider admitting
         min_queries_in_sidetrack = 0
@@ -42,10 +42,10 @@ class QueryFlowTester:
 
         query_completed_condition = multiprocessing.Condition()
 
-        concurrency_engine = ConcurrencyEngine(dibs_policy,
-                                               query_completed_condition,
-                                               bundle_size,
-                                               connector)
+        concurrency_engine = IsolationManager(dibs_policy,
+                                              query_completed_condition,
+                                              bundle_size,
+                                              connector)
 
         #concurrency_engine.append_next(queries_to_start_in_queue_with)
         total_queries_admitted = 0

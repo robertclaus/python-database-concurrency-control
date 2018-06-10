@@ -2,7 +2,7 @@ import os
 import sys
 
 from IsolationLevelSetter import IsolationLevelSetter
-from QueryFlowTester import QueryFlowTester
+from DIBSEngine import DIBSEngine
 from clients.MySQLClient import MySQLClient
 from connectors.QueryGeneratorConnector import QueryGeneratorConnector
 from connectors.QuerySets import query_sets
@@ -17,9 +17,9 @@ for query_set in [4]:
         for isolation_level in ['ru-phased','ru']:# 'ru-directcomparison', 'ru-zerocc', 'ru', 's']:
             dibs_policy = IsolationLevelSetter.run(isolation_level)
 
-            print("QueryFlowTester.run({}, {}, {}, {})".format(dibs_policy, time_to_run, workers, max_queries))
+            print("DIBSEngine.run({}, {}, {}, {})".format(dibs_policy, time_to_run, workers, max_queries))
             try:
-                QueryFlowTester.run(dibs_policy, MySQLClient, QueryGeneratorConnector, time_to_run, workers, max_queries)
+                DIBSEngine.run(dibs_policy, MySQLClient, QueryGeneratorConnector, time_to_run, workers, max_queries)
             except IOError:
                 sys.stdout.write("\n\nIO ERROR ENDED TEST\n\n")
 

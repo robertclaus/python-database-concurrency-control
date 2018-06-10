@@ -4,9 +4,9 @@ import random
 import sys
 from time import sleep, time
 
-from QueryFlowTester import QueryFlowTester
+from DIBSEngine import DIBSEngine
 from connectors.AbstractConnector import AbstractConnector
-from isolation.ConcurrencyEngine import ConcurrencyEngine
+from isolation.IsolationManager import IsolationManager
 from queries.Query import dbQuery
 import config
 
@@ -133,17 +133,17 @@ class QueryGeneratorConnector(AbstractConnector):
         total_time_executing = 0
         for query_id in type_index_sum:
             total_time_executing += type_index_sum[query_id]
-        total_utilization = (total_time_executing / QueryFlowTester.worker_num) / total_time
+        total_utilization = (total_time_executing / DIBSEngine.worker_num) / total_time
 
         for query_id in type_index_sum:
             print("Type [{}] Count: {} Average Execution Time: {} [admit[{:1f}] max[{:1f}] +/- {:1f}]".format(
                 str(query_id), str(type_index_count[query_id]),
                 str(type_index_sum[query_id] / type_index_count[query_id]), admit_time[query_id], max[query_id],
                 math.sqrt(std_devs[query_id])))
-        print("Average Worker Wait Time: {}".format(total_wait_time / QueryFlowTester.worker_num))
-        print("Time spent processing completed queries {}".format(ConcurrencyEngine.time_processing_completed))
+        print("Average Worker Wait Time: {}".format(total_wait_time / DIBSEngine.worker_num))
+        print("Time spent processing completed queries {}".format(IsolationManager.time_processing_completed))
         print("Total Time: {}".format(total_time))
-        print("Number of scheduling cycles: {}".format(ConcurrencyEngine.cycle_count))
+        print("Number of scheduling cycles: {}".format(IsolationManager.cycle_count))
         print("Completed: {}".format(completed))
         print("Utilization %: {}".format(total_utilization * 100))
         if total_utilization < .98:
@@ -151,7 +151,7 @@ class QueryGeneratorConnector(AbstractConnector):
         print("Throughput (Q/s) : " + str(completed / total_time))
 
         sys.stdout.write(
-            "\n csv,{},{},{},{}".format(total_time, QueryFlowTester.worker_num, completed, str(completed / total_time),
+            "\n csv,{},{},{},{}".format(total_time, DIBSEngine.worker_num, completed, str(completed / total_time),
                                         total_utilization * 100))
 
         for query_type in sorted(type_index_sum.iterkeys()):

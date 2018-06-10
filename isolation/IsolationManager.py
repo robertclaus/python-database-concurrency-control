@@ -8,14 +8,9 @@ from collections import defaultdict
 from isolation.indexes.GlobalLockIndex import GlobalLockIndex
 from isolation.indexes.SidetrackQueryIndex import SidetrackQueryIndex
 
-
-import cPickle
-import zlib
-
 from policies.PhasedPolicy import PhasedPolicy
 
-
-class ConcurrencyEngine:
+class IsolationManager:
 
     def __init__(self, dibs_policy, query_completed_condition, send_bundle_size, connector):
         manager = multiprocessing.Manager()
@@ -37,12 +32,12 @@ class ConcurrencyEngine:
         self.query_processed_cv = query_completed_condition
 
         self.query_count = 0
-        ConcurrencyEngine.cycle_count = 0
+        IsolationManager.cycle_count = 0
 
         self.dibs_policy = dibs_policy
         self.last_scheduler_change = time.time()
 
-        ConcurrencyEngine.time_processing_completed = 0
+        IsolationManager.time_processing_completed = 0
 
         self.send_bundle_size = send_bundle_size
 
@@ -133,7 +128,7 @@ class ConcurrencyEngine:
             if query_bundle:
                 self.waiting_queries.put(query_bundle)
 
-            ConcurrencyEngine.time_processing_completed += (time.time()-start)
+            IsolationManager.time_processing_completed += (time.time() - start)
         except IOError:
             print("#### IO ERROR - Likely Broken Pipe")
 
@@ -173,7 +168,7 @@ class ConcurrencyEngine:
                     ['call_forwarding.start_time','subscriber.sub_nbr'], # Delete
                     ['subscriber.sub_nbr'], # High Volume Update
                 ]
-                ConcurrencyEngine.cycle_count += 1
+                IsolationManager.cycle_count += 1
                 for combination in lock_combinations:
                     column_reference = defaultdict(list)
                     value = None

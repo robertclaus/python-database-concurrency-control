@@ -7,20 +7,20 @@ from clients.MySQLClient import MySQLClient
 from connectors.QueryGeneratorConnector import QueryGeneratorConnector
 from connectors.QuerySets import query_sets
 
-time_to_run = 10
-max_queries = 25000
+import config
+
+config.MAX_SECONDS_TO_RUN = 10
+config.MAX_QUERIES_TO_RUN = 25000
 
 # Run #1 - Vary Write %
 for query_set in [4]:
     QueryGeneratorConnector.possible_query_sets = query_sets[query_set]
     for workers in [2, 4, 6, 8, 10, 12, 14, 16]:
+        config.NUMBER_OF_DATABASE_CLIENTS = workers
         for isolation_level in ['ru-phased','ru']:# 'ru-directcomparison', 'ru-zerocc', 'ru', 's']:
             dibs_policy = IsolationLevelSetter.run(isolation_level)
 
-            print("DIBSEngine.run({}, {}, {}, {})".format(dibs_policy, time_to_run, workers, max_queries))
             try:
-                DIBSEngine.run(dibs_policy, MySQLClient, QueryGeneratorConnector, time_to_run, workers, max_queries)
+                DIBSEngine.run(dibs_policy, MySQLClient, QueryGeneratorConnector)
             except IOError:
                 sys.stdout.write("\n\nIO ERROR ENDED TEST\n\n")
-
-            sys.stdout.write(", {}, {}, {} \n\n\n\n".format(isolation_level, workers, query_set))

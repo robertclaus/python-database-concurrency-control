@@ -38,6 +38,7 @@ class dbQuery:
         self.time_to_admit = 0
         self.readonly = True
         self.was_admitted = False
+        self.completed_at = None
 
     def copy_light(self):
         small_query = dbQuery(self.query_text, self.query_type_id)
@@ -72,7 +73,8 @@ class dbQuery:
         self.error = error
 
     def complete(self):
-        self.total_time = time.time() - self.created_at
+        self.completed_at = time.time()
+        self.total_time = self.completed_at - self.created_at
         self.completed = True
 
     def done_waiting(self):

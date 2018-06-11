@@ -1,16 +1,17 @@
 import multiprocessing
 import time
+import config
 
 class ClientConnectorManager:
 
-    def __init__(self,client_connector, num_worker_threads, waiting_queue, complete_queue, query_completed_condition):
+    def __init__(self,client_connector, waiting_queue, complete_queue, query_completed_condition):
         self.client_connector = client_connector
         self.threads = []
         self.waiting_queue = waiting_queue
         self.complete_queue = complete_queue
         self.query_completed_condition = query_completed_condition
         self.next_process_id = 1
-        for i in range(num_worker_threads):
+        for i in range(config.NUMBER_OF_DATABASE_CLIENTS):
             self.add_process()
 
     def add_process(self):

@@ -16,6 +16,8 @@ from Queue import Empty
 import cPickle
 import zlib
 
+from tests.IsolationLevelSetter import IsolationLevelSetter
+
 
 class QueryGeneratorConnector(AbstractConnector):
 
@@ -42,8 +44,6 @@ class QueryGeneratorConnector(AbstractConnector):
             sleep(.5)
             self.notify_all()
             self.add_generator()
-
-        self.start_time = time()
 
 
     def next_queries(self):
@@ -77,8 +77,17 @@ class QueryGeneratorConnector(AbstractConnector):
             else:
                 return '0'
 
-        end_time = time()
-        total_time = end_time - self.start_time
+        end_time = -1
+        for query in self.finished_list:
+            if query.completed_at > end_time:
+                end_time = query.completed_at
+
+        start_time = self.finished_list[0].start_admit_time
+        for query in self.finished_list:
+            if query.start_admit_time < start_time:
+                start_time = query.start_admit_time
+
+        total_time = end_time - start_time
 
         # Print any data that might be interesting (primarily concurrency_engine._archive_completed_queries)
         type_index_sum = {}
@@ -163,7 +172,7 @@ class QueryGeneratorConnector(AbstractConnector):
                 ",{},{},{}".format(query_type, microseconds_used(type_index_sum, type_index_count, query_type),
                                    type_index_count[query_type]))
 
-
+        sys.stdout.write(", {}, {}, {} \n\n\n\n".format(IsolationLevelSetter.last_isolation_level, DIBSEngine.worker_num, QueryGeneratorConnector.possible_query_sets))
 
     class replacePattern:
         def __init__(self, pattern, lambda_function):

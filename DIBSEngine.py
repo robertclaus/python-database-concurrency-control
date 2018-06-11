@@ -1,5 +1,5 @@
 import config
-from clients.ClientManager import ClientConnectorManager
+from clients.ClientConnectorManager import ClientConnectorManager
 from isolation.IsolationManager import IsolationManager
 import multiprocessing
 
@@ -7,10 +7,13 @@ import time
 
 class DIBSEngine:
     @staticmethod
-    def run(dibs_policy, client_connector_class, connector_class, seconds_to_run=10, worker_num=4, max_queries_total=10000):
-        DIBSEngine.worker_num = worker_num
+    def run(dibs_policy, client_connector_class, connector_class):
+        DIBSEngine.worker_num = config.NUMBER_OF_DATABASE_CLIENTS
+        DIBSEngine.max_queries_total = config.MAX_QUERIES_TO_RUN
+        DIBSEngine.max_seconds_to_run = config.MAX_SECONDS_TO_RUN
 
-        print("Running for {} seconds with {} workers. In concurrency mode: {} ".format(seconds_to_run, worker_num,
+        print("Running for {} seconds with {} workers. In concurrency mode: {} ".format(DIBSEngine.max_seconds_to_run,
+                                                                                        DIBSEngine.worker_num,
                                                                                         str(dibs_policy)))
 
         ### Load Settings
@@ -45,8 +48,10 @@ class DIBSEngine:
         print("Done Prepopulating Queue")
 
         ### Start client threads to push queries to the database
-        clientManager = ClientConnectorManager(client_connector_class, worker_num, concurrency_engine.waiting_queries, concurrency_engine.completed_queries,
-                                      query_completed_condition)
+        clientManager = ClientConnectorManager(client_connector_class,
+                                               concurrency_engine.waiting_queries,
+                                               concurrency_engine.completed_queries,
+                                               query_completed_condition)
 
         start = time.time()
 
@@ -55,8 +60,8 @@ class DIBSEngine:
                 queries_to_accept = config.MAX_QUERIES_IN_ENGINE - concurrency_engine.queries_left()
 
                 # Don't go over max_queries_total when admitting more queries
-                if queries_to_accept + total_queries_admitted > max_queries_total:
-                    queries_to_accept = max_queries_total - total_queries_admitted
+                if queries_to_accept + total_queries_admitted > DIBSEngine.max_queries_total:
+                    queries_to_accept = DIBSEngine.max_queries_total - total_queries_admitted
 
                 # If we haven't hit max_queries_total, admit more queries
                 if queries_to_accept > 0:
@@ -76,7 +81,7 @@ class DIBSEngine:
 
             # If we're done, wrap up and print results.
             total_time = time.time() - start
-            if (total_time > seconds_to_run) or (concurrency_engine.total_completed_queries() >= max_queries_total):
+            if (total_time > DIBSEngine.max_seconds_to_run) or (concurrency_engine.total_completed_queries() >= DIBSEngine.max_queries_total):
 
                 print("Stopping Engine")
 

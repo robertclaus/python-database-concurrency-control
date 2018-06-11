@@ -10,6 +10,9 @@ from policies.DirectPredicatePolicy import DirectPredicatePolicy
 class IsolationLevelSetter:
     @staticmethod
     def run(isolation_level):
+
+            IsolationLevelSetter.last_isolation_level = isolation_level
+
             policy = 0
 
             if isolation_level == 'ru':

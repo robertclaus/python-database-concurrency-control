@@ -39,7 +39,6 @@ class ClientConnectorManager:
 
             for query in query_bundle:
                 query.waiting_time = time.time() - query.created_at
-                query.done_waiting()
 
                 try:
                     query.result = connector.execute(query.query_text)

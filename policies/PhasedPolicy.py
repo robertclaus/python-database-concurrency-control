@@ -28,9 +28,9 @@ class PhasedPolicy(AbstractPolicy):
         query.parse(True)
 
     def new_query(self, query):
-        #if self.lock_combination_index == -1 and query.readonly:
-        #    self.admitted_query_count += 1
-        #    return [query]
+        if self.lock_combination_index == -1 and query.readonly:
+            self.admitted_query_count += 1
+            return [query]
 
         self.new_queries.append(query)
 

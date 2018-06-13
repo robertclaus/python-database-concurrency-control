@@ -33,7 +33,8 @@ class PhasedPolicy(AbstractPolicy):
         self.lock_index.add_query(query)
 
         if self.admitted_query_count == 0:
-            self.consider_changing_lock_mode()
+            if len(self.sidetrack_index) > 1000:
+                self.consider_changing_lock_mode()
 
             return self.admit_from_phase(already_on_sidetrack=True)
 
@@ -45,7 +46,8 @@ class PhasedPolicy(AbstractPolicy):
             self.lock_index.remove_query(query)
 
         if self.admitted_query_count == 0:
-            self.consider_changing_lock_mode()
+            if len(self.sidetrack_index) > 1000:
+                self.consider_changing_lock_mode()
 
         return self.admit_from_phase(already_on_sidetrack=True)
 
@@ -94,7 +96,7 @@ class PhasedPolicy(AbstractPolicy):
 
     def consider_changing_lock_mode(self):
         self.lock_combination_index = self.lock_combination_index + 1
-        if self.lock_combination_index>len(self.lock_combinations):
+        if self.lock_combination_index == len(self.lock_combinations):
             self.lock_combination_index = -1
 
         if self.lock_combination_index == -1:

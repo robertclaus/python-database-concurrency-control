@@ -70,6 +70,9 @@ class PhasedPolicy(AbstractPolicy):
                     self.queries_this_phase.remove(query)
                     self.sidetrack_index.remove_query(query)
                     self.lock_index.add_query(query)
+        else:
+            self.new_queries = list(self.queries_this_phase)
+            self.queries_this_phase = []
         print("Admitting {} queries, with {} remaining.".format(self.admitted_query_count, len(self.queries_this_phase)))
         return queries_to_return
 

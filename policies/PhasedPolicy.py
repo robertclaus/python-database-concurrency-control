@@ -61,6 +61,7 @@ class PhasedPolicy(AbstractPolicy):
 
         queries_to_return = []
         for query in self.queries_this_phase:
+            query.start_admit() # Override admit time on the query
             if self.try_admit_query(query):
                 queries_to_return.append(query)
                 self.admitted_query_count += 1

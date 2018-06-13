@@ -22,6 +22,7 @@ class PhasedPolicy(AbstractPolicy):
                     ['subscriber.sub_nbr'], # High Volume Update
                 ]
         self.lock_combination_index = -2 # -1 is readonly, so the first phase will be -1.
+        self.new_queries = []
 
     def parse_query(self,query):
         query.parse(True)
@@ -31,7 +32,7 @@ class PhasedPolicy(AbstractPolicy):
             self.admitted_query_count += 1
             return [query]
 
-        self.sidetrack_index.add_query(query)
+        self.new_queries.append(query)
 
         if self.admitted_query_count == 0:
             self.consider_changing_lock_mode()
@@ -50,9 +51,10 @@ class PhasedPolicy(AbstractPolicy):
         return self.admit_from_phase()
 
 
-
-
     def admit_from_phase(self):
+        if self.lock_combination_index == -1:
+            return self.queries_this_phase
+
         queries_to_return = []
         for query in self.queries_this_phase:
             if self.try_admit_query(query):
@@ -68,12 +70,15 @@ class PhasedPolicy(AbstractPolicy):
         print("Readonly Start Admitting. {} ".format(time.time()))
         self.lock_index.read_only_mode(True)
         self.lock_index.set_scheduled_columns({})
+        self.sidetrack_index.add_queries(self.new_queries)
+        self.new_queries = []
         self.queries_this_phase = self.sidetrack_index.take_read_only_queries()
 
 
     def start_column_phase(self, combination, column_reference, query_list):
         print("Start Admitting {} queries at {} on columns: {}".format(len(query_list), time.time(),
                                                                        ",".join(combination)))
+
         self.lock_index.read_only_mode(False)
         # Change conflict function to be column-specific
         self.lock_index.set_scheduled_columns(column_reference)
@@ -85,14 +90,14 @@ class PhasedPolicy(AbstractPolicy):
         sidetrack_if_not_readonly = self.lock_index.readonly
         try:
             if (not admit_as_readonly) and (sidetrack_if_not_readonly or self.lock_index.does_conflict(query)):
-                return []
+                return False
             else:
                 self.lock_index.add_query(query)
-                return [query]
+                return True
         except NotSchedulableException:
             self.queries_this_phase.remove(query)
             print("Scheduling conflict")
-            return []
+            return False
 
     def consider_changing_lock_mode(self):
         print("Changing Phases {}".format(time.time()))

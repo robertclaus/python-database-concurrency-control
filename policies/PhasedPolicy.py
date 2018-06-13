@@ -4,6 +4,7 @@ import time
 from isolation.indexes.GlobalLockIndex import GlobalLockIndex
 from isolation.indexes.SidetrackQueryIndex import SidetrackQueryIndex
 from policies.AbstractPolicy import AbstractPolicy
+from queries.PredicateLock import NotSchedulableException
 
 
 class PhasedPolicy(AbstractPolicy):
@@ -82,17 +83,22 @@ class PhasedPolicy(AbstractPolicy):
     def try_admit_query(self, query, already_on_sidetrack):
         admit_as_readonly = self.lock_index.readonly and query.readonly
         sidetrack_if_not_readonly = self.lock_index.readonly
-
-        if (not admit_as_readonly) and (sidetrack_if_not_readonly or self.lock_index.does_conflict(query)):
+        try:
+            if (not admit_as_readonly) and (sidetrack_if_not_readonly or self.lock_index.does_conflict(query)):
+                if not already_on_sidetrack:
+                    self.sidetrack_index.add_queries([query])
+                return []
+            else:
+                if not admit_as_readonly:
+                    self.lock_index.add_query(query)
+                if already_on_sidetrack:
+                    self.sidetrack_index.remove_query(query)
+                return [query]
+        except NotSchedulableException:
             if not already_on_sidetrack:
                 self.sidetrack_index.add_queries([query])
+            self.queries_this_phase.remove(query)
             return []
-        else:
-            if not admit_as_readonly:
-                self.lock_index.add_query(query)
-            if already_on_sidetrack:
-                self.sidetrack_index.remove_query(query)
-            return [query]
 
     def consider_changing_lock_mode(self):
         print("Changing Phases {}".format(time.time()))

@@ -19,7 +19,7 @@ for query_set in [4]:
         config.NUMBER_OF_DATABASE_CLIENTS = workers
         for isolation_level in ['ru-phased','ru']:# 'ru-directcomparison', 'ru-zerocc', 'ru', 's']:
             dibs_policy = IsolationLevelSetter.run(isolation_level)
-
+            QueryGeneratorConnector.last_isolation_level = isolation_level
             try:
                 DIBSEngine.run(dibs_policy, MySQLClient, QueryGeneratorConnector)
             except IOError:

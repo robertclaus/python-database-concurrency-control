@@ -8,12 +8,8 @@ from policies.DirectPredicatePolicy import DirectPredicatePolicy
 
 
 class IsolationLevelSetter:
-    last_isolation_level = None
-
     @staticmethod
     def run(isolation_level):
-
-            IsolationLevelSetter.last_isolation_level = isolation_level
 
             policy = 0
 

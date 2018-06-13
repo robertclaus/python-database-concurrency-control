@@ -21,7 +21,7 @@ class PhasedPolicy(AbstractPolicy):
                     ['call_forwarding.start_time','subscriber.sub_nbr'], # Delete
                     ['subscriber.sub_nbr'], # High Volume Update
                 ]
-        self.lock_combination_index = -2 # -1 is readonly
+        self.lock_combination_index = -2 # -1 is readonly, so the first phase will be -1.
 
     def parse_query(self,query):
         query.parse(True)
@@ -34,10 +34,8 @@ class PhasedPolicy(AbstractPolicy):
         self.sidetrack_index.add_query(query)
 
         if self.admitted_query_count == 0:
-            if len(self.sidetrack_index) > 1000:
-                self.consider_changing_lock_mode()
-
-            return self.admit_from_phase(already_on_sidetrack=True)
+            self.consider_changing_lock_mode()
+            return self.admit_from_phase()
 
         return []
 
@@ -47,27 +45,28 @@ class PhasedPolicy(AbstractPolicy):
             self.lock_index.remove_query(query)
 
         if self.admitted_query_count == 0:
-            if len(self.sidetrack_index) > 1000:
-                self.consider_changing_lock_mode()
+            self.consider_changing_lock_mode()
 
-        return self.admit_from_phase(already_on_sidetrack=True)
-
+        return self.admit_from_phase()
 
 
 
-    def admit_from_phase(self, already_on_sidetrack):
+
+    def admit_from_phase(self):
         queries_to_return = []
         for query in self.queries_this_phase:
-            if self.try_admit_query(query, already_on_sidetrack):
+            if self.try_admit_query(query):
                 queries_to_return.append(query)
                 self.admitted_query_count += 1
                 self.queries_this_phase.remove(query)
+                self.sidetrack_index.remove_query(query)
         return queries_to_return
 
     def start_read_only_phase(self):
         # Admit all readonly queries - Happens automatically when admitting queries the first time, but may as well leave it
         print("Readonly Start Admitting. {} ".format(time.time()))
         self.lock_index.read_only_mode(True)
+        self.lock_index.set_scheduled_columns({})
         self.queries_this_phase = self.sidetrack_index.take_read_only_queries()
 
 
@@ -80,23 +79,16 @@ class PhasedPolicy(AbstractPolicy):
         # Admit queries from this set
         self.queries_this_phase = list(query_list)
 
-    def try_admit_query(self, query, already_on_sidetrack):
+    def try_admit_query(self, query):
         admit_as_readonly = self.lock_index.readonly and query.readonly
         sidetrack_if_not_readonly = self.lock_index.readonly
         try:
             if (not admit_as_readonly) and (sidetrack_if_not_readonly or self.lock_index.does_conflict(query)):
-                if not already_on_sidetrack:
-                    self.sidetrack_index.add_queries([query])
                 return []
             else:
-                if not admit_as_readonly:
-                    self.lock_index.add_query(query)
-                if already_on_sidetrack:
-                    self.sidetrack_index.remove_query(query)
+                self.lock_index.add_query(query)
                 return [query]
         except NotSchedulableException:
-            if not already_on_sidetrack:
-                self.sidetrack_index.add_queries([query])
             self.queries_this_phase.remove(query)
             return []
 
@@ -107,9 +99,7 @@ class PhasedPolicy(AbstractPolicy):
             self.lock_combination_index = -1
 
         if self.lock_combination_index == -1:
-            print("Start Read Only {}".format(time.time()))
-            self.lock_index.read_only_mode(True)
-            self.lock_index.set_scheduled_columns({})
+            self.start_read_only_phase()
         else:
             combination = self.lock_combinations[self.lock_combination_index]
 

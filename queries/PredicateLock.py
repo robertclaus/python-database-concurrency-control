@@ -87,14 +87,14 @@ class PredicateLock:
                         self.remove_value(other_value)
 
     def do_locks_conflict(self, other_lock, columns_to_consider={}):
-        columns_that_conflict = defaultdict(list)
+
 
         if columns_to_consider is not None:
+            columns_that_conflict = defaultdict(list)
+
             for table_accessed in self.tableandcolumnindex:
                 if table_accessed not in columns_to_consider:
                     raise NotSchedulableException()
-                    print("Attempted to schedule a query while one of it's tables wasn't touched by scheduled locks.\nQuery:\n{}\nLocks:\n{}".format(self, columns_to_consider))
-                    return True
 
             for table in columns_to_consider:
                 for column in columns_to_consider[table]:

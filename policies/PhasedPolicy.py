@@ -62,22 +62,22 @@ class PhasedPolicy(AbstractPolicy):
         queries_to_return = []
         for query in self.queries_this_phase:
             query.start_admit() # Override admit time on the query
-            if self.try_admit_query(query):
+            if self.can_admit_query(query):
                 queries_to_return.append(query)
                 self.admitted_query_count += 1
                 self.queries_this_phase.remove(query)
-                if self.lock_combination_index != -1:
-                    self.sidetrack_index.remove_query(query)
+                self.sidetrack_index.remove_query(query)
+                self.lock_index.add_query(query)
+        print("Admitting {} queries, with {} remaining.".format(self.admitted_query_count, len(self.queries_this_phase)))
         return queries_to_return
 
-    def try_admit_query(self, query):
+    def can_admit_query(self, query):
         admit_as_readonly = self.lock_index.readonly and query.readonly
         sidetrack_if_not_readonly = self.lock_index.readonly
         try:
             if (not admit_as_readonly) and (sidetrack_if_not_readonly or self.lock_index.does_conflict(query)):
                 return False
             else:
-                self.lock_index.add_query(query)
                 return True
         except NotSchedulableException:
             self.queries_this_phase.remove(query)

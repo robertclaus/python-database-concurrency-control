@@ -157,7 +157,7 @@ class QueryGeneratorConnector(AbstractConnector):
         print("Throughput (Q/s) : " + str(completed / total_time))
 
         sys.stdout.write(
-            "\n csv,{},{},{},{}".format(total_time, DIBSEngine.worker_num, completed, str(completed / total_time),
+            "\n csv,{},{},{},{},{}".format(total_time, DIBSEngine.worker_num, completed, str(completed / total_time),
                                         total_utilization * 100))
 
         for query_type in sorted(type_index_sum.iterkeys()):

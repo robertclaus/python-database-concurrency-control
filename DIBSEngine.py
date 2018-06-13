@@ -38,26 +38,26 @@ class DIBSEngine:
 
         query_completed_condition = multiprocessing.Condition()
 
-        concurrency_engine = IsolationManager(dibs_policy,
+        isolation_engine = IsolationManager(dibs_policy,
                                               query_completed_condition,
                                               bundle_size,
                                               connector)
 
-        concurrency_engine.append_next(config.MAX_QUERIES_IN_ENGINE)
+        isolation_engine.append_next(config.MAX_QUERIES_IN_ENGINE)
         total_queries_admitted = 0
         print("Done Prepopulating Queue")
 
         ### Start client threads to push queries to the database
         clientManager = ClientConnectorManager(client_connector_class,
-                                               concurrency_engine.waiting_queries,
-                                               concurrency_engine.completed_queries,
+                                               isolation_engine.waiting_queries,
+                                               isolation_engine.completed_queries,
                                                query_completed_condition)
 
         start = time.time()
 
         while (True):
-            if concurrency_engine.queries_left() < config.MAX_QUERIES_IN_ENGINE:
-                queries_to_accept = config.MAX_QUERIES_IN_ENGINE - concurrency_engine.queries_left()
+            if isolation_engine.queries_left() < config.MAX_QUERIES_IN_ENGINE:
+                queries_to_accept = config.MAX_QUERIES_IN_ENGINE - isolation_engine.queries_left()
 
                 # Don't go over max_queries_total when admitting more queries
                 if queries_to_accept + total_queries_admitted > DIBSEngine.max_queries_total:
@@ -65,23 +65,23 @@ class DIBSEngine:
 
                 # If we haven't hit max_queries_total, admit more queries
                 if queries_to_accept > 0:
-                    concurrency_engine.append_next(queries_to_accept)
+                    isolation_engine.append_next(queries_to_accept)
                     total_queries_admitted = total_queries_admitted + queries_to_accept
 
             # Flag queries as complete - Can all be done at end for no-cc case.
-            # concurrency_engine.proccess_completed_queries()
+            # isolation_engine.proccess_completed_queries()
 
-            if concurrency_engine.run_phased_policy:
-                concurrency_engine.consider_changing_lock_mode(min_queries_in_sidetrack, min_queries_from_sidetrack,
+            if isolation_engine.run_phased_policy:
+                isolation_engine.consider_changing_lock_mode(min_queries_in_sidetrack, min_queries_from_sidetrack,
                                                                max_queries_from_sidetrack)
             else:
-                concurrency_engine.proccess_completed_queries()
+                isolation_engine.proccess_completed_queries()
                 with query_completed_condition:
                     query_completed_condition.wait(.01)
 
             # If we're done, wrap up and print results.
             total_time = time.time() - start
-            if (total_time > DIBSEngine.max_seconds_to_run) or (concurrency_engine.total_completed_queries() >= DIBSEngine.max_queries_total):
+            if (total_time > DIBSEngine.max_seconds_to_run) or (isolation_engine.total_completed_queries() >= DIBSEngine.max_queries_total):
 
                 print("Stopping Engine")
 
@@ -92,7 +92,7 @@ class DIBSEngine:
                 print("  Connectors Finishing Queries")
 
                 # Process all completed queries
-                concurrency_engine.proccess_completed_queries()
+                isolation_engine.proccess_completed_queries()
 
                 print("  Stopping Connectors")
 

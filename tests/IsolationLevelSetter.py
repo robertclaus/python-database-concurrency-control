@@ -5,6 +5,7 @@ from policies.NoIsolationPolicy import NoIsolationPolicy
 from policies.PhasedPolicy import PhasedPolicy
 from policies.ZeroConcurrencyPolicy import ZeroConcurrencyPolicy
 from policies.DirectPredicatePolicy import DirectPredicatePolicy
+from policies.NoIsolationPolicyWithParsing import  NoIsolationPolicyWithParsing
 
 
 class IsolationLevelSetter:
@@ -32,6 +33,9 @@ class IsolationLevelSetter:
               policy = 3
             if isolation_level == 'd':
               isolation_level = 4
+            if isolation_level == 'ru-p':
+              isolation_level = 0
+              policy = 4
 
             query_text = [
             "SET GLOBAL TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;",
@@ -46,6 +50,7 @@ class IsolationLevelSetter:
                 PhasedPolicy(),
                 ZeroConcurrencyPolicy(),
                 DirectPredicatePolicy(),
+                NoIsolationPolicyWithParsing(),
             ]
 
             conn = MySQLdb.connect(host=config.MYSQL_HOST,user=config.MYSQL_USER,passwd=config.MYSQL_PASSWORD,db=config.MYSQL_DB_NAME)

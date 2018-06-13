@@ -16,9 +16,6 @@ from Queue import Empty
 import cPickle
 import zlib
 
-from tests.IsolationLevelSetter import IsolationLevelSetter
-
-
 class QueryGeneratorConnector(AbstractConnector):
 
     possible_query_sets =[]

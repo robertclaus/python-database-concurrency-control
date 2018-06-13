@@ -71,14 +71,17 @@ class PhasedPolicy(AbstractPolicy):
             return read_only_queries
 
         queries_to_return = []
+        queries_to_remove = []
 
         for query in self.queries_this_phase:
             query.start_admit() # Override admit time on the query
             if self.can_admit_query(query):
                 queries_to_return.append(query)
                 self.admitted_query_count += 1
-                self.queries_this_phase.remove(query)
+                queries_to_remove.append(query)
                 self.lock_index.add_query(query)
+
+        self.queries_this_phase = list(set(self.queries_this_phase)-set(queries_to_remove))
         print("Admitting {} queries, with {} remaining.".format(self.admitted_query_count, len(self.queries_this_phase)))
         return queries_to_return
 

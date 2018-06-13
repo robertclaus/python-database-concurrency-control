@@ -53,6 +53,7 @@ class PhasedPolicy(AbstractPolicy):
 
     def admit_from_phase(self):
         if self.lock_combination_index == -1:
+            self.admitted_query_count += len(self.queries_this_phase)
             return self.queries_this_phase
 
         queries_to_return = []

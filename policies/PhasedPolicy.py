@@ -30,7 +30,7 @@ class PhasedPolicy(AbstractPolicy):
             self.admitted_query_count += 1
             return [query]
 
-        self.lock_index.add_query(query)
+        self.sidetrack_index.add_query(query)
 
         if self.admitted_query_count == 0:
             if len(self.sidetrack_index) > 1000:

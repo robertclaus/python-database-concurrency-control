@@ -58,8 +58,10 @@ class PhasedPolicy(AbstractPolicy):
             read_only_queries = list(self.queries_this_phase)
             self.queries_this_phase = []
             return read_only_queries
+
+        queries_to_return = []
+
         if len(self.queries_this_phase)>10:
-            queries_to_return = []
             for query in self.queries_this_phase:
                 query.start_admit() # Override admit time on the query
                 if self.can_admit_query(query):

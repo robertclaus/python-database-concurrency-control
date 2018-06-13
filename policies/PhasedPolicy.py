@@ -49,11 +49,14 @@ class PhasedPolicy(AbstractPolicy):
             self.consider_changing_lock_mode()
             return self.admit_from_phase()
 
-        if self.admitted_query_count < 10 or self.admitted_query_count < (len(self.queries_this_phase)*2):
-            return self.admit_from_phase()
+        if self.admitted_query_count < 20:
+            self.delay_remaining_queries()
 
         return []
 
+    def delay_remaining_queries(self):
+        self.new_queries.extend(self.queries_this_phase)
+        self.queries_this_phase = []
 
 
     def admit_from_phase(self):
@@ -71,7 +74,6 @@ class PhasedPolicy(AbstractPolicy):
                 queries_to_return.append(query)
                 self.admitted_query_count += 1
                 self.queries_this_phase.remove(query)
-                self.sidetrack_index.remove_query(query)
                 self.lock_index.add_query(query)
         print("Admitting {} queries, with {} remaining.".format(self.admitted_query_count, len(self.queries_this_phase)))
         return queries_to_return
@@ -127,7 +129,9 @@ class PhasedPolicy(AbstractPolicy):
         self.lock_index.read_only_mode(True)
         self.lock_index.set_scheduled_columns({})
 
+        # Only add queries right before read phase so that phasing is isolated for locality reasons
         self.sidetrack_index.add_queries(self.new_queries)
+
         self.new_queries = []
         self.queries_this_phase = self.sidetrack_index.take_read_only_queries()
 
@@ -138,3 +142,4 @@ class PhasedPolicy(AbstractPolicy):
         self.lock_index.read_only_mode(False)
         self.lock_index.set_scheduled_columns(column_reference)
         self.queries_this_phase = list(query_list)
+        self.sidetrack_index.remove_queries(self.queries_this_phase)

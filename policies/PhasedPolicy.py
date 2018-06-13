@@ -1,5 +1,5 @@
 from collections import defaultdict
-from datetime import time
+import time
 
 from isolation.indexes.GlobalLockIndex import GlobalLockIndex
 from isolation.indexes.SidetrackQueryIndex import SidetrackQueryIndex

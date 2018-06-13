@@ -73,9 +73,10 @@ class IsolationManager:
             query_bundle = []
             while True:
                 try:
-                    complete_query = self.completed_queries.get_nowait()
+                    complete_micro_query = self.completed_queries.get_nowait()
                     self.completed_count += 1
-                    complete_query = self.active_queries[complete_query.query_id]
+                    complete_query = self.active_queries[complete_micro_query.query_id]
+                    complete_query.merge_micro(complete_micro_query)
 
                     self.connector.complete_query(complete_query)
                     queries_to_admit = self.dibs_policy.complete_query(complete_query)

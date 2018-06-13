@@ -58,6 +58,16 @@ class dbQuery:
     def copy_micro(self):
         return microQuery(self.query_id, self.query_text, self.created_at)
 
+    def merge_micro(self, micro):
+        self.result = micro.result
+        self.error = micro.error
+
+        self.worker_waited_time = micro.worker_waited_time
+        self.worker = micro.worker
+        self.completed_at = micro.completed_at
+        self.total_time = micro.total_time
+        self.waiting_time = micro.waiting_time
+
     def __eq__(self, other):
         return self.query_id == other.query_id
 

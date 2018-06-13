@@ -41,7 +41,8 @@ class PhasedPolicy(AbstractPolicy):
 
     def complete_query(self, query):
         self.admitted_query_count -= 1
-        self.lock_index.remove_query(query)
+        if not (self.lock_combination_index == -1 and query.readonly):
+            self.lock_index.remove_query(query)
 
         if self.admitted_query_count == 0:
             self.consider_changing_lock_mode()

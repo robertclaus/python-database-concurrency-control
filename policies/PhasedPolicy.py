@@ -1,8 +1,8 @@
 from collections import defaultdict
 from datetime import time
 
-import config
 from isolation.indexes.GlobalLockIndex import GlobalLockIndex
+from isolation.indexes.SidetrackQueryIndex import SidetrackQueryIndex
 from policies.AbstractPolicy import AbstractPolicy
 
 
@@ -10,6 +10,7 @@ class PhasedPolicy(AbstractPolicy):
 
     def __init__(self):
         self.lock_index = GlobalLockIndex()
+        self.sidetrack_index = SidetrackQueryIndex()
         self.queries_this_phase = []
         self.admitted_query_count = 0
 

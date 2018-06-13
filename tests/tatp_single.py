@@ -17,7 +17,7 @@ for query_set in [4]:
     QueryGeneratorConnector.possible_query_sets = query_sets[query_set]
     for workers in [16]:
         config.NUMBER_OF_DATABASE_CLIENTS = workers
-        for isolation_level in ['ru-phased','ru', 'ru-p']:
+        for isolation_level in ['ru-phased','ru-phased-integrated','ru', 'ru-p']:
             dibs_policy = IsolationLevelSetter.run(isolation_level)
             QueryGeneratorConnector.last_isolation_level = isolation_level
             try:

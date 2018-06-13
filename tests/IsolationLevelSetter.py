@@ -6,6 +6,7 @@ from policies.PhasedPolicy import PhasedPolicy
 from policies.ZeroConcurrencyPolicy import ZeroConcurrencyPolicy
 from policies.DirectPredicatePolicy import DirectPredicatePolicy
 from policies.NoIsolationPolicyWithParsing import  NoIsolationPolicyWithParsing
+from policies.PhasedIntegratedPolicy import PhasedIntegratedPolicy
 
 
 class IsolationLevelSetter:
@@ -23,6 +24,9 @@ class IsolationLevelSetter:
             if isolation_level == 'rr':
               isolation_level = 3
             if isolation_level == 'ru-phased':
+              isolation_level = 0
+              policy = 5
+            if isolation_level == 'ru-phased-integrated':
               isolation_level = 0
               policy = 1
             if isolation_level == 'ru-zerocc':
@@ -51,6 +55,7 @@ class IsolationLevelSetter:
                 ZeroConcurrencyPolicy(),
                 DirectPredicatePolicy(),
                 NoIsolationPolicyWithParsing(),
+                PhasedIntegratedPolicy(),
             ]
 
             conn = MySQLdb.connect(host=config.MYSQL_HOST,user=config.MYSQL_USER,passwd=config.MYSQL_PASSWORD,db=config.MYSQL_DB_NAME)

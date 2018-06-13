@@ -8,7 +8,7 @@ from collections import defaultdict
 from isolation.indexes.GlobalLockIndex import GlobalLockIndex
 from isolation.indexes.SidetrackQueryIndex import SidetrackQueryIndex
 
-from policies.PhasedPolicy import PhasedPolicy
+from policies.PhasedIntegratedPolicy import PhasedIntegratedPolicy
 
 class IsolationManager:
 
@@ -41,7 +41,7 @@ class IsolationManager:
 
         self.send_bundle_size = send_bundle_size
 
-        self.run_phased_policy = isinstance(self.dibs_policy, PhasedPolicy)
+        self.run_phased_policy = isinstance(self.dibs_policy, PhasedIntegratedPolicy)
 
     # Return the number of queries that have been admitted but not completed
     def queries_left(self):

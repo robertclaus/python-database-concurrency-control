@@ -19,12 +19,12 @@ class DIBSEngine:
         ### Load Settings
 
         # Minimum queries in sidetrack to consider admitting
-        min_queries_in_sidetrack = 0
+        min_queries_in_sidetrack = config.MIN_QUERIES_IN_SIDETRACK
 
         # Minimum queries to consider admitting from a sidetrack
-        min_queries_from_sidetrack = 0
+        min_queries_from_sidetrack = config.MIN_QUERIES_FROM_SIDETRACK
         # Maximum queries to leave in a sidetrack
-        max_queries_from_sidetrack = 0
+        max_queries_from_sidetrack = config.MAX_QUERIES_FROM_SIDETRACK
 
         bundle_size = 4
 

@@ -6,7 +6,7 @@ from isolation.indexes.GlobalLockIndex import GlobalLockIndex
 from policies.AbstractPolicy import AbstractPolicy
 
 
-class PhasedPolicy(AbstractPolicy):
+class PhasedIntegratedPolicy(AbstractPolicy):
 
     def __init__(self):
         self.lock_index = GlobalLockIndex()

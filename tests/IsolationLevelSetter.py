@@ -25,10 +25,10 @@ class IsolationLevelSetter:
               isolation_level = 3
             if isolation_level == 'ru-phased':
               isolation_level = 0
-              policy = 5
+              policy = 1
             if isolation_level == 'ru-phased-integrated':
               isolation_level = 0
-              policy = 1
+              policy = 5
             if isolation_level == 'ru-zerocc':
               isolation_level = 0
               policy = 2

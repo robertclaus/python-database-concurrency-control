@@ -12,37 +12,27 @@ class DIBSEngine:
         DIBSEngine.max_queries_total = config.MAX_QUERIES_TO_RUN
         DIBSEngine.max_seconds_to_run = config.MAX_SECONDS_TO_RUN
 
-        print("Running for {} seconds with {} workers. In concurrency mode: {} ".format(DIBSEngine.max_seconds_to_run,
-                                                                                        DIBSEngine.worker_num,
-                                                                                        str(dibs_policy)))
-
-        ### Load Settings
-
-        # Minimum queries in sidetrack to consider admitting
-        min_queries_in_sidetrack = config.MIN_QUERIES_IN_SIDETRACK
-
-        # Minimum queries to consider admitting from a sidetrack
-        min_queries_from_sidetrack = config.MIN_QUERIES_FROM_SIDETRACK
-        # Maximum queries to leave in a sidetrack
-        max_queries_from_sidetrack = config.MAX_QUERIES_FROM_SIDETRACK
+        print("Running for {} seconds or {} queries with {} workers. "
+              "In concurrency mode: {} ".format(DIBSEngine.max_seconds_to_run,
+                                                DIBSEngine.max_queries_total,
+                                                DIBSEngine.worker_num,
+                                                str(dibs_policy)))
 
         manager = multiprocessing.Manager()
         incoming_queue = manager.Queue()
         complete_list = manager.list()
 
-        print("Starting Connectors")
+        print("  Starting Connectors")
         connector = connector_class(incoming_queue, complete_list, dibs_policy)
-        print("Connectors Started")
 
         query_completed_condition = multiprocessing.Condition()
 
-        isolation_engine = IsolationManager(dibs_policy,
-                                              query_completed_condition,
-                                              connector)
+        print("  Starting Isolation Engine")
+        isolation_engine = IsolationManager(dibs_policy, connector)
 
         isolation_engine.append_next(config.MAX_QUERIES_IN_ENGINE)
         total_queries_admitted = 0
-        print("Done Prepopulating Queue")
+        print("  Starting Database Clients")
 
         ### Start client threads to push queries to the database
         clientManager = ClientConnectorManager(client_connector_class,
@@ -82,7 +72,7 @@ class DIBSEngine:
                 # End client threads sending queries to the database
                 clientManager.end_processes()
 
-                print("  Connectors Finishing Queries")
+                print("  Connectors Clearing Completed Queries")
 
                 # Process all completed queries
                 isolation_engine.proccess_completed_queries()
@@ -91,4 +81,5 @@ class DIBSEngine:
 
                 connector.end_processes()
 
+                print("Engine Stopped")
                 break

@@ -149,7 +149,6 @@ class QueryGeneratorConnector(AbstractConnector):
         print("Average Worker Wait Time: {}".format(total_wait_time / DIBSEngine.worker_num))
         print("Time spent processing completed queries {}".format(IsolationManager.time_processing_completed))
         print("Total Time: {}".format(total_time))
-        print("Number of scheduling cycles: {}".format(IsolationManager.cycle_count))
         print("Completed: {}".format(completed))
         print("Utilization %: {}".format(total_utilization * 100))
         if total_utilization < .98:

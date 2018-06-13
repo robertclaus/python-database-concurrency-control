@@ -26,8 +26,6 @@ class DIBSEngine:
         # Maximum queries to leave in a sidetrack
         max_queries_from_sidetrack = config.MAX_QUERIES_FROM_SIDETRACK
 
-        bundle_size = 4
-
         manager = multiprocessing.Manager()
         incoming_queue = manager.Queue()
         complete_list = manager.list()
@@ -40,7 +38,6 @@ class DIBSEngine:
 
         isolation_engine = IsolationManager(dibs_policy,
                                               query_completed_condition,
-                                              bundle_size,
                                               connector)
 
         isolation_engine.append_next(config.MAX_QUERIES_IN_ENGINE)

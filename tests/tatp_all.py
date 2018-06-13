@@ -9,7 +9,7 @@ from connectors.QuerySets import query_sets
 
 import config
 
-config.MAX_SECONDS_TO_RUN = 10
+config.MAX_SECONDS_TO_RUN = 120
 config.MAX_QUERIES_TO_RUN = 25000
 
 # Run #1 - Vary Write %

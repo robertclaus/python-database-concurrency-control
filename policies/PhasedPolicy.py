@@ -89,6 +89,10 @@ class PhasedPolicy(AbstractPolicy):
 
 
     def consider_changing_lock_mode(self):
+        if len(self.queries_this_phase)<20:
+            self.new_queries.extend(self.queries_this_phase)
+            self.queries_this_phase = []
+
         while not self.queries_this_phase:
             print("Changing Phases {}".format(time.time()))
             self.lock_combination_index += 1

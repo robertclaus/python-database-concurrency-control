@@ -80,7 +80,10 @@ class IsolationManager:
                 try:
                     complete_query = self.completed_queries.get_nowait()
                     self.completed_count += 1
+
+                    self.connector.complete_query(complete_query)
                     queries_to_admit = self.dibs_policy.complete_query(complete_query)
+
                     for query in queries_to_admit:
                         query.finish_admit()
                         query_bundle.append(query.copy_light())

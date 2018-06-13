@@ -53,6 +53,9 @@ class QueryGeneratorConnector(AbstractConnector):
             sleep(.1)
             return []
 
+    def complete_query(self, query):
+        self.finished_list.append(query)
+
     def end_processes(self):
         for p in self.threads:
             p.terminate()

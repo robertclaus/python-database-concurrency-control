@@ -14,3 +14,7 @@ class AbstractConnector:
     @abstractmethod
     def next_queries(self):
         pass
+
+    @abstractmethod
+    def complete_query(self, query):
+        pass

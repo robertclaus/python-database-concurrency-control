@@ -30,6 +30,8 @@ class WebConnector(AbstractConnector):
         except Empty:
             return []
 
+    def complete_query(self, query):
+        self.finished_list.append(query)
 
     @staticmethod
     def worker():

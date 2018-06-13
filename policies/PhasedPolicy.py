@@ -59,7 +59,8 @@ class PhasedPolicy(AbstractPolicy):
                 queries_to_return.append(query)
                 self.admitted_query_count += 1
                 self.queries_this_phase.remove(query)
-                self.sidetrack_index.remove_query(query)
+                if self.lock_combination_index != -1:
+                    self.sidetrack_index.remove_query(query)
         return queries_to_return
 
     def start_read_only_phase(self):

@@ -68,13 +68,9 @@ class DIBSEngine:
             # Flag queries as complete - Can all be done at end for no-cc case.
             # isolation_engine.proccess_completed_queries()
 
-            if isolation_engine.run_phased_policy:
-                isolation_engine.consider_changing_lock_mode(min_queries_in_sidetrack, min_queries_from_sidetrack,
-                                                               max_queries_from_sidetrack)
-            else:
-                isolation_engine.proccess_completed_queries()
-                with query_completed_condition:
-                    query_completed_condition.wait(.01)
+            isolation_engine.proccess_completed_queries()
+            with query_completed_condition:
+                query_completed_condition.wait(.01)
 
             # If we're done, wrap up and print results.
             total_time = time.time() - start

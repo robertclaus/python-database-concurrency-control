@@ -101,7 +101,7 @@ class PhasedPolicy(AbstractPolicy):
             self.lock_combination_index = -1
 
         if self.lock_combination_index == -1:
-            print("Start Read Only {}".fromat(time.time()))
+            print("Start Read Only {}".format(time.time()))
             self.lock_index.read_only_mode(True)
             self.lock_index.set_scheduled_columns({})
         else:

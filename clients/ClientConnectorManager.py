@@ -43,7 +43,7 @@ class ClientConnectorManager:
                 try:
                     query.result = connector.execute(query.query_text)
                 except Exception as e:
-                    query.log_error("ERROR: {}".format(str(e)))
+                    query.error = "ERROR: {}".format(str(e))
 
                 query.completed_at = time.time()
                 query.total_time = query.completed_at - query.created_at

@@ -13,6 +13,7 @@ class IsolationManager:
         manager = multiprocessing.Manager()
         # A Queue of admitted queries
         self.waiting_queries = manager.Queue()
+        self.active_queries = {}
         # A Queue of completed queries (Queries are moved from waiting to completed by client threads)
         self.completed_queries = manager.Queue()
 
@@ -41,8 +42,9 @@ class IsolationManager:
 
             for query in queries_to_admit:
                 admitted.append(query)
+                self.active_queries[query.query_id]=query
                 query.finish_admit()
-                query_bundle.append(query.copy_light())
+                query_bundle.append(query.copy_micro())
                 if len(query_bundle) > self.send_bundle_size:
                     self.waiting_queries.put(query_bundle)
                     query_bundle = []
@@ -73,6 +75,7 @@ class IsolationManager:
                 try:
                     complete_query = self.completed_queries.get_nowait()
                     self.completed_count += 1
+                    complete_query = self.active_queries[complete_query.query_id]
 
                     self.connector.complete_query(complete_query)
                     queries_to_admit = self.dibs_policy.complete_query(complete_query)

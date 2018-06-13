@@ -6,6 +6,21 @@ import random
 
 from PredicateLock import PredicateLock
 
+class microQuery:
+    def __init__(self, query_id, query_text, created_at):
+        self.id = query_id
+        self.query_id = query_id
+        self.query_text = query_text
+        self.created_at = created_at
+        self.result = None
+        self.error = None
+
+        self.worker_waited_time = 0
+        self.worker = -1
+        self.completed_at = -1
+        self.total_time = -1
+        self.waiting_time = -1
+
 
 class dbQuery:
     READ = 1
@@ -40,20 +55,8 @@ class dbQuery:
         self.was_admitted = False
         self.completed_at = None
 
-    def copy_light(self):
-        small_query = dbQuery(self.query_text, self.query_type_id)
-        small_query.query_id = self.query_id
-        small_query.id = self.query_id
-        small_query.query_text = self.query_text
-        small_query.created_at = self.created_at
-        small_query.waiting_time = self.waiting_time
-        small_query.admitted_at = self.admitted_at
-        small_query.start_admit_time = self.start_admit_time
-        small_query.finish_admit_time = self.finish_admit_time
-        small_query.time_to_admit = self.time_to_admit
-        small_query.was_admitted = self.was_admitted
-        small_query.result = self.result
-        return small_query
+    def copy_micro(self):
+        return microQuery(self.query_id, self.query_text, self.created_at)
 
     def __eq__(self, other):
         return self.query_id == other.query_id

@@ -38,6 +38,7 @@ class ClientConnectorManager:
             end_wait = time.time()
 
             for query in query_bundle:
+                query.waiting_time = time.time() - query.created_at
                 query.done_waiting()
 
                 try:
@@ -46,6 +47,8 @@ class ClientConnectorManager:
                     query.log_error("ERROR: {}".format(str(e)))
 
                 query.complete()
+                query.completed_at = time.time()
+                query.total_time = query.completed_at - query.created_at
                 query.worker = worker_id
                 query.worker_waited_time = (end_wait - start_wait)/len(query_bundle)
                 complete_queue.put(query)

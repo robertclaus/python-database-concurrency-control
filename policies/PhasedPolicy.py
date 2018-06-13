@@ -49,6 +49,9 @@ class PhasedPolicy(AbstractPolicy):
             self.consider_changing_lock_mode()
             return self.admit_from_phase()
 
+        if self.admitted_query_count < (len(self.queries_this_phase)*2):
+            return self.admit_from_phase()
+
         if self.admitted_query_count < 20:
             self.delay_remaining_queries()
 

@@ -89,6 +89,7 @@ class PredicateLock:
         if columns_to_consider is not None:
             for table_accessed in self.tableandcolumnindex:
                 if table_accessed not in columns_to_consider:
+                    raise Exception()
                     print("Attempted to schedule a query while one of it's tables wasn't touched by scheduled locks.\nQuery:\n{}\nLocks:\n{}".format(self, columns_to_consider))
                     return True
 

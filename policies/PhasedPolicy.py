@@ -20,7 +20,7 @@ class PhasedPolicy(AbstractPolicy):
                     ['call_forwarding.start_time','subscriber.sub_nbr'], # Delete
                     ['subscriber.sub_nbr'], # High Volume Update
                 ]
-        self.lock_combination_index = -1 # -1 is readonly
+        self.lock_combination_index = -2 # -1 is readonly
 
     def parse_query(self,query):
         query.parse(True)
@@ -96,7 +96,7 @@ class PhasedPolicy(AbstractPolicy):
 
     def consider_changing_lock_mode(self):
         print("Changing Phases {}".format(time.time()))
-        self.lock_combination_index = self.lock_combination_index + 1
+        self.lock_combination_index += 1
         if self.lock_combination_index == len(self.lock_combinations):
             self.lock_combination_index = -1
 

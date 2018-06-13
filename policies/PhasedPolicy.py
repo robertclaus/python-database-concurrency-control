@@ -82,7 +82,7 @@ class PhasedPolicy(AbstractPolicy):
                 queries_to_remove.append(query)
                 self.lock_index.add_query(query)
                 queries_added+=1
-                if queries_added > 100:
+                if queries_added > config.QUERIES_TO_ADMIT_AT_TIME:
                     break
 
         self.queries_this_phase = [query for query in self.queries_this_phase if query not in queries_to_remove]

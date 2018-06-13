@@ -82,7 +82,8 @@ class IsolationManager:
 
                     for query in queries_to_admit:
                         query.finish_admit()
-                        query_bundle.append(query.copy_light())
+                        self.active_queries[query.query_id] = query
+                        query_bundle.append(query.copy_micro())
                         if len(query_bundle) > self.send_bundle_size:
                             self.waiting_queries.put(query_bundle)
                             query_bundle = []

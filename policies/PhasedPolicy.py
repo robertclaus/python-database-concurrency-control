@@ -49,6 +49,9 @@ class PhasedPolicy(AbstractPolicy):
             self.consider_changing_lock_mode()
             return self.admit_from_phase()
 
+        if self.admitted_query_count < 10 or self.admitted_query_count < (len(self.queries_this_phase)*2):
+            return self.admit_from_phase()
+
         return []
 
 
@@ -89,10 +92,6 @@ class PhasedPolicy(AbstractPolicy):
 
 
     def consider_changing_lock_mode(self):
-        if len(self.queries_this_phase)<20:
-            self.new_queries.extend(self.queries_this_phase)
-            self.queries_this_phase = []
-
         while not self.queries_this_phase:
             print("Changing Phases {}".format(time.time()))
             self.lock_combination_index += 1

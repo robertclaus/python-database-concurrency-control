@@ -95,12 +95,13 @@ class PhasedPolicy(AbstractPolicy):
             return [query]
 
     def consider_changing_lock_mode(self):
-        print("Changing Phases")
+        print("Changing Phases {}".format(time.time()))
         self.lock_combination_index = self.lock_combination_index + 1
         if self.lock_combination_index == len(self.lock_combinations):
             self.lock_combination_index = -1
 
         if self.lock_combination_index == -1:
+            print("Start Read Only {}".fromat(time.time()))
             self.lock_index.read_only_mode(True)
             self.lock_index.set_scheduled_columns({})
         else:

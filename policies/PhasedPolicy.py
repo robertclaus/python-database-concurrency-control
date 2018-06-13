@@ -91,6 +91,7 @@ class PhasedPolicy(AbstractPolicy):
                 return [query]
         except NotSchedulableException:
             self.queries_this_phase.remove(query)
+            print("Scheduling conflict")
             return []
 
     def consider_changing_lock_mode(self):

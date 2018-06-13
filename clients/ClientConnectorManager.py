@@ -45,7 +45,6 @@ class ClientConnectorManager:
                 except Exception as e:
                     query.log_error("ERROR: {}".format(str(e)))
 
-                query.complete()
                 query.completed_at = time.time()
                 query.total_time = query.completed_at - query.created_at
                 query.worker = worker_id

@@ -47,8 +47,9 @@ class PhasedPolicy(AbstractPolicy):
 
         if self.admitted_query_count == 0:
             self.consider_changing_lock_mode()
+            return self.admit_from_phase()
 
-        return self.admit_from_phase()
+        return []
 
 
 
@@ -61,18 +62,14 @@ class PhasedPolicy(AbstractPolicy):
 
         queries_to_return = []
 
-        if len(self.queries_this_phase)>20:
-            for query in self.queries_this_phase:
-                query.start_admit() # Override admit time on the query
-                if self.can_admit_query(query):
-                    queries_to_return.append(query)
-                    self.admitted_query_count += 1
-                    self.queries_this_phase.remove(query)
-                    self.sidetrack_index.remove_query(query)
-                    self.lock_index.add_query(query)
-        else:
-            self.new_queries.extend(self.queries_this_phase)
-            self.queries_this_phase = []
+        for query in self.queries_this_phase:
+            query.start_admit() # Override admit time on the query
+            if self.can_admit_query(query):
+                queries_to_return.append(query)
+                self.admitted_query_count += 1
+                self.queries_this_phase.remove(query)
+                self.sidetrack_index.remove_query(query)
+                self.lock_index.add_query(query)
         print("Admitting {} queries, with {} remaining.".format(self.admitted_query_count, len(self.queries_this_phase)))
         return queries_to_return
 

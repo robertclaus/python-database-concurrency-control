@@ -39,6 +39,7 @@ class PhasedIntegratedPolicy(AbstractPolicy):
         return []
 
     def complete_query(self, query):
+        return []
         self.admitted_query_count -= 1
         self.lock_index.remove_query(query)
 

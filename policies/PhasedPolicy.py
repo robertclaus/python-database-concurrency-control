@@ -61,7 +61,7 @@ class PhasedPolicy(AbstractPolicy):
 
         queries_to_return = []
 
-        if len(self.queries_this_phase)<20:
+        if len(self.queries_this_phase)>20:
             for query in self.queries_this_phase:
                 query.start_admit() # Override admit time on the query
                 if self.can_admit_query(query):

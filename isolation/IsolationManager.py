@@ -92,4 +92,4 @@ class IsolationManager:
 
             if len(query_bundle) > self.send_bundle_size:
                 self.waiting_queries.put(query_bundle)
-                query_bundle.clear()
+                del query_bundle[:]

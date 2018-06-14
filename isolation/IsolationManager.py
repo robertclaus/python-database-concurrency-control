@@ -33,37 +33,24 @@ class IsolationManager:
     # Try to admit a list of new queries to the database clients
     def admit_multiple(self, new_queries):
         query_bundle = []
-        admitted = []
 
         for new_query in new_queries:
-            new_query.start_admit()
-
+            new_query.start_admit_time = time.time()
             queries_to_admit = self.dibs_policy.new_query(new_query)
-
-            for query in queries_to_admit:
-                admitted.append(query)
-                self.active_queries[query.query_id]=query
-                query.finish_admit()
-                query_bundle.append(query.copy_micro())
-                if len(query_bundle) > self.send_bundle_size:
-                    self.waiting_queries.put(query_bundle)
-                    query_bundle = []
+            self.add_queries_to_bundle(queries_to_admit, query_bundle)
 
         if query_bundle:
             self.waiting_queries.put(query_bundle)
 
-        self.query_count += len(admitted)
-
-        return admitted
+        return
 
     # Admit the next queries from the connector
     def append_next(self, queries_to_generate_at_a_time):
-        queries_admitted = 0
+        previous_query_count= self.query_count
 
-        while queries_admitted < queries_to_generate_at_a_time:
+        while (self.query_count - previous_query_count) < queries_to_generate_at_a_time:
             queries = self.connector.next_queries()
             self.admit_multiple(queries)
-            queries_admitted += len(queries)
             self.proccess_completed_queries()
 
     # Process any queries completed by the database clients so the connector can complete them
@@ -81,13 +68,7 @@ class IsolationManager:
                     self.connector.complete_query(complete_query)
                     queries_to_admit = self.dibs_policy.complete_query(complete_query)
 
-                    for query in queries_to_admit:
-                        query.finish_admit()
-                        self.active_queries[query.query_id] = query
-                        query_bundle.append(query.copy_micro())
-                        if len(query_bundle) > self.send_bundle_size:
-                            self.waiting_queries.put(query_bundle)
-                            query_bundle = []
+                    self.add_queries_to_bundle(queries_to_admit, query_bundle)
                 except Empty:
                     break
 
@@ -97,3 +78,17 @@ class IsolationManager:
             IsolationManager.time_processing_completed += (time.time() - start)
         except IOError:
             print("#### IO ERROR - Likely Broken Pipe Between Processes")
+
+
+    def add_queries_to_bundle(self,queries, query_bundle):
+        for query in queries:
+            query.finish_admit_time = time.time()
+            query.time_to_admit = query.finish_admit_time - query.start_admit_time
+            query.was_admitted = True
+
+            self.active_queries[query.query_id] = query
+            query_bundle.append(query.copy_micro())
+            self.query_count+=1
+            if len(query_bundle) > self.send_bundle_size:
+                self.waiting_queries.put(query_bundle)
+                query_bundle = []

@@ -27,7 +27,7 @@ class DirectPredicatePolicy(AbstractPolicy):
         if self.sidetracked_queries:
             next_sidetracked_query = self.sidetracked_queries[0]
 
-            if next_sidetracked_query.time_since_admit() < self.max_sidetrack_wait:
+            if time.time() - next_sidetracked_query.start_admit_time < self.max_sidetrack_wait:
                 # No conflicts and fair to admit ahead of the sidetrack
                 self.running_queries.append(query)
                 return [query]
@@ -51,7 +51,7 @@ class DirectPredicatePolicy(AbstractPolicy):
         if self.sidetracked_queries:
             next_sidetracked_query = self.sidetracked_queries[0]
 
-            if next_sidetracked_query.time_since_admit > self.max_sidetrack_wait:
+            if time.time() - next_sidetracked_query.start_admit_time > self.max_sidetrack_wait:
                 queries_to_consider = [next_sidetracked_query]
             else:
                 queries_to_consider = self.sidetracked_queries

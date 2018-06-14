@@ -51,7 +51,7 @@ class QueryGeneratorConnector(AbstractConnector):
         try:
             queries = self.received_queue.get_nowait()
             pickled_queries = cPickle.loads(zlib.decompress(queries))
-            self.total_query_sizes += sys.getsizeof(pickled_queries)
+            self.total_query_sizes += len(pickled_queries)
             self.total_query_count += self.bundle_size
             return pickled_queries
         except Empty:

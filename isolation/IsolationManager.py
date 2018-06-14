@@ -62,7 +62,7 @@ class IsolationManager:
                 try:
                     complete_micro_query = self.completed_queries.get_nowait()
                     self.completed_count += 1
-                    print("Completed query {}".format(complete_micro_query.query_id))
+                    print("Completed query {} {}".format(complete_micro_query.query_id, complete_micro_query.query_text))
                     complete_query = self.active_queries.pop(complete_micro_query.query_id)
                     complete_query.merge_micro(complete_micro_query)
 
@@ -86,7 +86,6 @@ class IsolationManager:
             query.finish_admit_time = time.time()
             query.time_to_admit = query.finish_admit_time - query.start_admit_time
             query.was_admitted = True
-            print("Admit query {}".format(query.query_id))
             self.active_queries[query.query_id] = query
             query_bundle.append(query.copy_micro())
             self.query_count+=1

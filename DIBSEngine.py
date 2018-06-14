@@ -18,19 +18,15 @@ class DIBSEngine:
                                                 DIBSEngine.worker_num,
                                                 str(dibs_policy)))
 
-        manager = multiprocessing.Manager()
-        incoming_queue = manager.Queue()
-        complete_list = manager.list()
-
         print("  Starting Connectors")
-        connector = connector_class(incoming_queue, complete_list, dibs_policy)
+        connector = connector_class(dibs_policy)
 
         query_completed_condition = multiprocessing.Condition()
 
         print("  Starting Isolation Engine")
         isolation_engine = IsolationManager(dibs_policy, connector)
 
-        isolation_engine.append_next(config.MAX_QUERIES_IN_ENGINE)
+        isolation_engine.append_next(3000)
         total_queries_admitted = 0
         print("  Starting Database Clients")
 

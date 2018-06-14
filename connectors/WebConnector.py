@@ -11,9 +11,10 @@ from queries.Query import dbQuery
 
 
 class WebConnector(AbstractConnector):
-    def __init__(self, received_queue, finished_list, policy):
-        WebConnector.received_queue = received_queue
-        WebConnector.finished_list = finished_list
+    def __init__(self, policy):
+        manager = multiprocessing.Manager()
+        WebConnector.received_queue = manager.Queue()
+        WebConnector.finished_list = []
         WebConnector.policy = policy
         p = multiprocessing.Process(target=WebConnector.worker, args=())
         p.daemon = True

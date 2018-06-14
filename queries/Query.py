@@ -27,7 +27,7 @@ class dbQuery:
     WRITE = 2
 
     def __init__(self, query_text, query_type_id):
-        self.query_id = random.randint(0, 100000000)
+        self.query_id = random.randint(0, 223372036854775807)
         self.id = self.query_id
         self.query_text = query_text
         self.predicatelock = PredicateLock()

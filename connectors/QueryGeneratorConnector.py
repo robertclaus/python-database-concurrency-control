@@ -21,12 +21,13 @@ class QueryGeneratorConnector(AbstractConnector):
     possible_query_sets =[]
     last_isolation_level = None
 
-    def __init__(self, received_queue, finished_list, policy):
-        self.finished_list = finished_list
+    def __init__(self, policy):
+        self.finished_list = []
         self.dibs_policy = policy
         self.condition_variable = multiprocessing.Condition()
 
-        self.received_queue = received_queue
+        manager = multiprocessing.Manager()
+        self.received_queue = manager.Queue()
 
         self.threads = []
         self.total_thread_count = 0
@@ -143,14 +144,15 @@ class QueryGeneratorConnector(AbstractConnector):
         for query_id in type_index_sum:
             total_time_executing += type_index_sum[query_id]
         total_utilization = (total_time_executing / DIBSEngine.worker_num) / total_time
-
+        total_utilization = 1 - ((total_wait_time/DIBSEngine.worker_num) / total_time)
         for query_id in type_index_sum:
-            print("Type [{}] Count: {} Average Execution Time: {} [admit[{:1f}] max[{:1f}] +/- {:1f}]".format(
-                str(query_id), str(type_index_count[query_id]),
+            print("Type [{}] Count: {} [{:d}%] Average Execution Time: {} [admit[{:1f}] max[{:1f}] +/- {:1f}]".format(
+                str(query_id), str(type_index_count[query_id]), 100*type_index_count[query_id]/completed,
                 str(type_index_sum[query_id] / type_index_count[query_id]), admit_time[query_id], max[query_id],
                 math.sqrt(std_devs[query_id])))
         print("Average Worker Wait Time: {}".format(total_wait_time / DIBSEngine.worker_num))
         print("Time spent processing completed queries {}".format(IsolationManager.time_processing_completed))
+        print("Total Generator Count: {}".format(self.total_thread_count))
         print("Total Time: {}".format(total_time))
         print("Completed: {}".format(completed))
         print("Utilization %: {}".format(total_utilization * 100))

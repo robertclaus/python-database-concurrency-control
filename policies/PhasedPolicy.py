@@ -142,10 +142,12 @@ class PhasedPolicy(AbstractPolicy):
         self.lock_index.set_scheduled_columns({})
 
         # Only add queries right before read phase so that phasing is isolated for locality reasons
-        self.sidetrack_index.add_queries(self.new_queries)
+        slice_of_new_queries = self.new_queries[:config.MAX_QUERIES_PER_PHASE]
+        self.new_queries = self.new_queries[config.MAX_QUERIES_PER_PHASE:]
 
-        self.new_queries = []
+        self.sidetrack_index.add_queries(slice_of_new_queries)
         self.queries_this_phase = self.sidetrack_index.take_read_only_queries()
+        print("Readonly {} Queries".format(len(self.queries_this_phase)))
 
 
     def start_column_phase(self, combination, column_reference, query_list):

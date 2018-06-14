@@ -147,6 +147,7 @@ class PhasedPolicy(AbstractPolicy):
 
         self.sidetrack_index.add_queries(slice_of_new_queries)
         self.queries_this_phase = self.sidetrack_index.take_read_only_queries()
+        print("Readonly {} Queries".format(len(self.queries_this_phase)))
 
 
     def start_column_phase(self, combination, column_reference, query_list):

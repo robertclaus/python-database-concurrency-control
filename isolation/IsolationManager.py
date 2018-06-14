@@ -91,8 +91,7 @@ class IsolationManager:
             query_bundle.append(query.copy_micro())
             self.query_count+=1
 
-            #print("Adding query {} {} {} {}".format(query.query_id, query.ps_id,
-                                                       query.worker, query.query_text))
+            #print("Adding query {} {} {} {}".format(query.query_id, query.ps_id, query.worker, query.query_text))
 
             if len(query_bundle) > self.send_bundle_size:
                 self.waiting_queries.put(query_bundle)

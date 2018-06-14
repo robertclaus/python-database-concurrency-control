@@ -37,7 +37,7 @@ class IsolationManager:
         for new_query in new_queries:
             new_query.start_admit_time = time.time()
             queries_to_admit = self.dibs_policy.new_query(new_query)
-            self.add_queries_to_bundle(queries_to_admit, query_bundle)
+            query_bundle = self.add_queries_to_bundle(queries_to_admit, query_bundle)
 
         if query_bundle:
             self.waiting_queries.put(query_bundle)
@@ -95,4 +95,6 @@ class IsolationManager:
 
             if len(query_bundle) > self.send_bundle_size:
                 self.waiting_queries.put(query_bundle)
-                query_bundle[:] = []
+                query_bundle = []
+
+        return query_bundle

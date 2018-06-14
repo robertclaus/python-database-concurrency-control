@@ -62,7 +62,6 @@ class IsolationManager:
                 try:
                     complete_micro_query = self.completed_queries.get_nowait()
                     self.completed_count += 1
-                    print("Completed query {} {} {} {}".format(complete_micro_query.query_id, complete_micro_query.ps_id, complete_micro_query.worker, complete_micro_query.query_text))
                     complete_query = self.active_queries.pop(complete_micro_query.query_id)
                     complete_query.merge_micro(complete_micro_query)
 
@@ -90,9 +89,6 @@ class IsolationManager:
             self.active_queries[query.query_id] = query
             query_bundle.append(query.copy_micro())
             self.query_count+=1
-
-            print("Adding query {} {} {} {}".format(query.query_id, query.ps_id,
-                                                       query.worker, query.query_text))
 
             if len(query_bundle) > self.send_bundle_size:
                 self.waiting_queries.put(query_bundle)

@@ -26,7 +26,7 @@ class DIBSEngine:
         print("  Starting Isolation Engine")
         isolation_engine = IsolationManager(dibs_policy, connector)
 
-        isolation_engine.append_next(config.MAX_QUERIES_IN_ENGINE)
+        #isolation_engine.append_next(config.MAX_QUERIES_IN_ENGINE)
         total_queries_admitted = 0
         print("  Starting Database Clients")
 

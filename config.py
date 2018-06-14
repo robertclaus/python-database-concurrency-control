@@ -31,8 +31,8 @@ USE_NON_UNIFORM_RANDOM = True
 
 # Generator
 DEFAULT_TARGET_DEPTH = 1000
-GENERATOR_BUNDLE_SIZE = 8
-DEFAULT_GENERATOR_WORKER_COUNT = 10
+GENERATOR_BUNDLE_SIZE = 10
+DEFAULT_GENERATOR_WORKER_COUNT = 5
 
 # Phased Policy
 # Minimum queries to admit for a column key within a phase (will always admit at least once before checking this)
@@ -40,4 +40,4 @@ MIN_QUERIES_TO_ADMIT = 100
 # Maximum queries to run in one phase.  Note MAX_ENGINES_IN_ENGINE may restrict this anyways.
 MAX_QUERIES_PER_PHASE = 10000
 # Number of queries to try and admit at once before checking if we should move onto a different phase.
-QUERIES_TO_ADMIT_AT_TIME = 125
+QUERIES_TO_ADMIT_AT_TIME = 150

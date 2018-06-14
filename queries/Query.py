@@ -21,6 +21,9 @@ class microQuery:
         self.total_time = -1
         self.waiting_time = -1
 
+class compressedQuery:
+    def __init__(self):
+
 class dbQuery:
     READ = 1
     WRITE = 2
@@ -42,9 +45,6 @@ class dbQuery:
         self.tables_locked = []
         self.result = None
         self.lock_indexes = {'columns_locked': [],
-                             'columns_locked_not_all': [],
-                             'columns_locked_write': [],
-                             'mode': [],
                              }
         self.error = None
         self.start_admit_time = 0
@@ -73,22 +73,13 @@ class dbQuery:
     def parse(self,skip_read_only=False):
         self.sql_obj = sqlparse.parse(self.query_text)[0]  # Assumes only one query at a time for now
         Parser.generate_locks(self,skip_read_only)
-        self.strip_fluff()
+        self.sql_obj = None
         self.predicatelock.merge_values()
         self.generate_lock_indexes()
-
-    def strip_fluff(self):
-        self.sql_obj = None
-
-    def compress(self):
-        self.predicatelock = None
-        self.lock_indexes = None
 
     def generate_lock_indexes(self):
         for tabledotcolumn in self.predicatelock.tabledotcolumnindex:
             self.lock_indexes['columns_locked'].append(tabledotcolumn)
-        for tabledotcolumn in self.predicatelock.notalltabledotcolumnindex:
-            self.lock_indexes['columns_locked_not_all'].append(tabledotcolumn)
         for table in self.predicatelock.tableindex:
             self.tables_locked.append(table)
         if self.predicatelock.readonly:

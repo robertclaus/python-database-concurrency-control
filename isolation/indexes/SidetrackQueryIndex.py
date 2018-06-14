@@ -5,11 +5,7 @@ class SidetrackQueryIndex:
     def __init__(self):
         self.sidetracked_readonly_queries = []
         self.sidetracked_write_queries = []
-        self.sidetrack_indexes = {'columns_locked': defaultdict(list),
-                                  'columns_locked_not_all': {},
-                                  'columns_locked_write': {},
-                                  'column_admit_rate': {},
-                                  'mode': {},
+        self.sidetrack_indexes = {'columns_locked': defaultdict(list)
                                   }
 
     def __len__(self):

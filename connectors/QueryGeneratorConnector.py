@@ -163,6 +163,7 @@ class QueryGeneratorConnector(AbstractConnector):
         print("Average Worker Wait Time: {}".format(total_wait_time / DIBSEngine.worker_num))
         print("Time spent processing completed queries {}".format(IsolationManager.time_processing_completed))
         print("Average Query Size From Generator: {}".format(self.total_query_sizes/self.total_query_count))
+        print("Total Generator Count: {}".format(self.total_thread_count))
         print("Total Time: {}".format(total_time))
         print("Completed: {}".format(completed))
         print("Utilization %: {}".format(total_utilization * 100))

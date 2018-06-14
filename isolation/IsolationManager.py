@@ -81,7 +81,7 @@ class IsolationManager:
             print("#### IO ERROR - Likely Broken Pipe Between Processes")
 
 
-    def add_queries_to_bundle(self,queries, query_bundle):
+    def add_queries_to_bundle(self, queries, query_bundle):
         for query in queries:
             query.finish_admit_time = time.time()
             query.time_to_admit = query.finish_admit_time - query.start_admit_time
@@ -96,4 +96,4 @@ class IsolationManager:
 
             if len(query_bundle) > self.send_bundle_size:
                 self.waiting_queries.put(query_bundle)
-                query_bundle = []
+                query_bundle.clear()

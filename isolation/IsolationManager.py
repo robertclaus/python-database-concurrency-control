@@ -25,7 +25,7 @@ class IsolationManager:
 
     # Return the number of queries that have been admitted but not completed
     def queries_left(self):
-        return self.total_in_engine - self.admitted_count
+        return self.total_in_engine - self.completed_count
 
     # Return the total number of completed queries so far.  This can be in the archive or the completed queue itself.
     def total_completed_queries(self):

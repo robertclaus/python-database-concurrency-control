@@ -21,7 +21,6 @@ class microQuery:
         self.total_time = -1
         self.waiting_time = -1
 
-
 class dbQuery:
     READ = 1
     WRITE = 2
@@ -81,14 +80,6 @@ class dbQuery:
         self.finish_admit_time = time.time()
         self.time_to_admit = self.finish_admit_time - self.start_admit_time
         self.was_admitted = True
-
-    def log_error(self, error):
-        self.error = error
-
-    def complete(self):
-        self.completed_at = time.time()
-        self.total_time = self.completed_at - self.created_at
-        self.completed = True
 
     def done_waiting(self):
         self.waiting_time = time.time() - self.created_at

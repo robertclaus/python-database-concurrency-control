@@ -86,11 +86,12 @@ class IsolationManager:
             query.finish_admit_time = time.time()
             query.time_to_admit = query.finish_admit_time - query.start_admit_time
             query.was_admitted = True
+
             self.active_queries[query.query_id] = query
             query_bundle.append(query.copy_micro())
             self.query_count+=1
 
-            print("Completed query {} {} {} {}".format(query.query_id, query.ps_id,
+            print("Adding query {} {} {} {}".format(query.query_id, query.ps_id,
                                                        query.worker, query.query_text))
 
             if len(query_bundle) > self.send_bundle_size:

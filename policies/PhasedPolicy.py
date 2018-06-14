@@ -149,9 +149,9 @@ class PhasedPolicy(AbstractPolicy):
 
 
     def start_column_phase(self, combination, column_reference, query_list):
-        print("Start Admitting {} queries at {} on columns: {}".format(len(query_list), time.time(),
+        self.queries_this_phase = query_list[-1*config.MAX_QUERIES_PER_PHASE:]
+        print("Start Admitting {} queries at {} on columns: {}".format(len(self.queries_this_phase), time.time(),
                                                                        ",".join(combination)))
         self.lock_index.read_only_mode(False)
         self.lock_index.set_scheduled_columns(column_reference)
-        self.queries_this_phase = list(query_list)
         self.sidetrack_index.remove_queries(self.queries_this_phase)

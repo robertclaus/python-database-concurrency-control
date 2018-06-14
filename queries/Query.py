@@ -7,7 +7,7 @@ import random
 from PredicateLock import PredicateLock
 
 class microQuery:
-    def __init__(self, query_id, query_text, created_at):
+    def __init__(self, query_id, query_text, created_at, ps_id):
         self.id = query_id
         self.query_id = query_id
         self.query_text = query_text
@@ -20,6 +20,7 @@ class microQuery:
         self.completed_at = -1
         self.total_time = -1
         self.waiting_time = -1
+        self.ps_id = None
 
 class dbQuery:
     READ = 1
@@ -51,7 +52,7 @@ class dbQuery:
         self.ps_id = None
 
     def copy_micro(self):
-        return microQuery(self.query_id, self.query_text, self.created_at)
+        return microQuery(self.query_id, self.query_text, self.created_at, self.ps_id)
 
     def merge_micro(self, micro):
         self.result = micro.result

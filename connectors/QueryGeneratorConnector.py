@@ -151,7 +151,7 @@ class QueryGeneratorConnector(AbstractConnector):
         for query_id in type_index_sum:
             total_time_executing += type_index_sum[query_id]
         total_utilization = (total_time_executing / DIBSEngine.worker_num) / total_time
-
+        total_utilization = 1 - ((total_wait_time/DIBSEngine.worker_num) / total_time)
         for query_id in type_index_sum:
             print("Type [{}] Count: {} Average Execution Time: {} [admit[{:1f}] max[{:1f}] +/- {:1f}]".format(
                 str(query_id), str(type_index_count[query_id]),

@@ -47,8 +47,6 @@ class QueryGeneratorConnector(AbstractConnector):
             self.notify_all()
             self.add_generator()
 
-        self.terminate_all()
-
 
     def next_queries(self):
         self.notify_all()

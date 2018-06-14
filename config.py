@@ -23,21 +23,21 @@ MAX_QUERIES_IN_ENGINE = 30000
 NUMBER_OF_DATABASE_CLIENTS = 4
 MAX_QUERIES_TO_RUN = 10000
 MAX_SECONDS_TO_RUN = 10
-CLIENT_BUNDLE_SIZE = 2
+CLIENT_BUNDLE_SIZE = 3
 
 # TATP
 SUBSCRIBER_COUNT = 5000000
 USE_NON_UNIFORM_RANDOM = True
 
 # Generator
-DEFAULT_TARGET_DEPTH = 20000
+DEFAULT_TARGET_DEPTH = 2000
 GENERATOR_BUNDLE_SIZE = 5
-DEFAULT_GENERATOR_WORKER_COUNT = 1
+DEFAULT_GENERATOR_WORKER_COUNT = 10
 
 # Phased Policy
 # Minimum queries to admit for a column key within a phase (will always admit at least once before checking this)
 MIN_QUERIES_TO_ADMIT = 100
 # Maximum queries to run in one phase.  Note MAX_ENGINES_IN_ENGINE may restrict this anyways.
-MAX_QUERIES_PER_PHASE = 30000
+MAX_QUERIES_PER_PHASE = 1000
 # Number of queries to try and admit at once before checking if we should move onto a different phase.
 QUERIES_TO_ADMIT_AT_TIME = 125

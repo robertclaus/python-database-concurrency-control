@@ -21,10 +21,6 @@ class microQuery:
         self.total_time = -1
         self.waiting_time = -1
 
-class compressedQuery:
-    def __init__(self):
-        pass
-
 class dbQuery:
     READ = 1
     WRITE = 2

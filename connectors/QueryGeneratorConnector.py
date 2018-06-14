@@ -26,6 +26,9 @@ class QueryGeneratorConnector(AbstractConnector):
         self.dibs_policy = policy
         self.condition_variable = multiprocessing.Condition()
 
+        self.total_query_sizes = 0
+        self.total_query_count = 0
+
         self.received_queue = received_queue
 
         self.threads = []
@@ -47,7 +50,10 @@ class QueryGeneratorConnector(AbstractConnector):
         self.notify_all()
         try:
             queries = self.received_queue.get_nowait()
-            return cPickle.loads(zlib.decompress(queries))
+            pickled_queries = cPickle.loads(zlib.decompress(queries))
+            self.total_query_sizes += sys.getsizeof(pickled_queries)
+            self.total_query_count += self.bundle_size
+            return pickled_queries
         except Empty:
             self.add_generator()
             sleep(.1)
@@ -151,6 +157,7 @@ class QueryGeneratorConnector(AbstractConnector):
                 math.sqrt(std_devs[query_id])))
         print("Average Worker Wait Time: {}".format(total_wait_time / DIBSEngine.worker_num))
         print("Time spent processing completed queries {}".format(IsolationManager.time_processing_completed))
+        print("Average Query Size From Generator: {}".format(self.total_query_sizes/self.total_query_count))
         print("Total Time: {}".format(total_time))
         print("Completed: {}".format(completed))
         print("Utilization %: {}".format(total_utilization * 100))

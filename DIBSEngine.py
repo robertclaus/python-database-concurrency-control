@@ -52,6 +52,7 @@ class DIBSEngine:
             with query_completed_condition:
                 query_completed_condition.wait(.01)
 
+            print("Completed {}/{}".format(isolation_engine.total_completed_queries(), DIBSEngine.max_queries_total))
             # If we're done, wrap up and print results.
             total_time = time.time() - start
             if (total_time > DIBSEngine.max_seconds_to_run) or \

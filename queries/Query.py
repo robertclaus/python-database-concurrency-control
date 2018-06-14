@@ -48,6 +48,7 @@ class dbQuery:
         self.readonly = True
         self.was_admitted = False
         self.completed_at = None
+        self.ps_id = None
 
     def copy_micro(self):
         return microQuery(self.query_id, self.query_text, self.created_at)

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import math
+import os
 import random
 import sys
 from time import sleep, time
@@ -261,6 +262,7 @@ class QueryGeneratorConnector(AbstractConnector):
                 for i in xrange(bundle_size):
                     index = QueryGeneratorConnector.pick_query_index_to_generate(QueryGeneratorConnector.possible_query_sets)
                     last_query = QueryGeneratorConnector.generate_query(QueryGeneratorConnector.possible_query_sets, index, dibs_policy)
+                    last_query.ps_id = os.getpid()
                     query_bundle.append(last_query)
                 query_bundle = zlib.compress(cPickle.dumps(query_bundle))
                 waiting_queue.put(query_bundle)

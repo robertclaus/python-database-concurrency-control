@@ -40,4 +40,4 @@ MIN_QUERIES_TO_ADMIT = 100
 # Maximum queries to run in one phase.  Note MAX_ENGINES_IN_ENGINE may restrict this anyways.
 MAX_QUERIES_PER_PHASE = 10000
 # Number of queries to try and admit at once before checking if we should move onto a different phase.
-QUERIES_TO_ADMIT_AT_TIME = 100
+QUERIES_TO_ADMIT_AT_TIME = 150

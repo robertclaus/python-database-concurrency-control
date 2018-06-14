@@ -23,6 +23,7 @@ class microQuery:
 
 class compressedQuery:
     def __init__(self):
+        pass
 
 class dbQuery:
     READ = 1

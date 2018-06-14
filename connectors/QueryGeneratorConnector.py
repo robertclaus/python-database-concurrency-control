@@ -41,13 +41,13 @@ class QueryGeneratorConnector(AbstractConnector):
         for i in range(config.DEFAULT_GENERATOR_WORKER_COUNT):
             self.add_generator()
 
-        '''
+
         print("Prepopulating Generator Queue")
         while self.received_queue.qsize() * config.GENERATOR_BUNDLE_SIZE < self.target_depth:
             sleep(.5)
             self.notify_all()
             self.add_generator()
-        '''
+
 
 
     def next_queries(self):

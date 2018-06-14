@@ -18,12 +18,8 @@ class DIBSEngine:
                                                 DIBSEngine.worker_num,
                                                 str(dibs_policy)))
 
-        manager = multiprocessing.Manager()
-        incoming_queue = manager.Queue()
-        complete_list = manager.list()
-
         print("  Starting Connectors")
-        connector = connector_class(incoming_queue, complete_list, dibs_policy)
+        connector = connector_class(dibs_policy)
 
         query_completed_condition = multiprocessing.Condition()
 

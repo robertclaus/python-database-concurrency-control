@@ -4,7 +4,7 @@ from abc import abstractmethod
 class AbstractConnector:
 
     @abstractmethod
-    def __init__(self, received_queue, finished_list, policy):
+    def __init__(self, policy):
         pass
 
     @abstractmethod

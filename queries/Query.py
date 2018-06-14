@@ -20,7 +20,7 @@ class microQuery:
         self.completed_at = -1
         self.total_time = -1
         self.waiting_time = -1
-        self.ps_id = None
+        self.ps_id = ps_id
 
 class dbQuery:
     READ = 1

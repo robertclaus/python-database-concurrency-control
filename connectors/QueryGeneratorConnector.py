@@ -22,15 +22,16 @@ class QueryGeneratorConnector(AbstractConnector):
     possible_query_sets =[]
     last_isolation_level = None
 
-    def __init__(self, received_queue, finished_list, policy):
-        self.finished_list = finished_list
+    def __init__(self, policy):
+        self.finished_list = []
         self.dibs_policy = policy
         self.condition_variable = multiprocessing.Condition()
 
         self.total_query_sizes = 0
         self.total_query_count = 0
 
-        self.received_queue = received_queue
+        manager = multiprocessing.Manager()
+        self.received_queue = manager.Queue()
 
         self.threads = []
         self.total_thread_count = 0
@@ -50,11 +51,11 @@ class QueryGeneratorConnector(AbstractConnector):
     def next_queries(self):
         self.notify_all()
         try:
-            queries = self.received_queue.get_nowait()
-            pickled_queries = cPickle.loads(zlib.decompress(queries))
-            self.total_query_sizes += len(cPickle.dumps(pickled_queries))
+            pickled_queries = self.received_queue.get_nowait()
+            unpickled_queries = cPickle.loads(zlib.decompress(pickled_queries))
+            self.total_query_sizes += len(pickled_queries)
             self.total_query_count += self.bundle_size
-            return pickled_queries
+            return unpickled_queries
         except Empty:
             self.add_generator()
             sleep(.1)

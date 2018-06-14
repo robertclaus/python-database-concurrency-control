@@ -69,9 +69,11 @@ class IsolationManager:
                     self.connector.complete_query(complete_query)
                     queries_to_admit = self.dibs_policy.complete_query(complete_query)
 
-                    self.add_queries_to_bundle(queries_to_admit, query_bundle)
+                    query_bundle = self.add_queries_to_bundle(queries_to_admit, query_bundle)
                 except Empty:
                     break
+                except KeyError:
+                    print("Key Error")
 
             if query_bundle:
                 self.waiting_queries.put(query_bundle)
@@ -89,7 +91,7 @@ class IsolationManager:
 
             self.active_queries[query.query_id] = query
             query_bundle.append(query.copy_micro())
-            self.query_count+=1
+            self.query_count += 1
 
             #print("Adding query {} {} {} {}".format(query.query_id, query.ps_id, query.worker, query.query_text))
 

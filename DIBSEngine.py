@@ -42,8 +42,8 @@ class DIBSEngine:
                 queries_to_accept = config.MAX_QUERIES_IN_ENGINE - isolation_engine.queries_left()
 
                 # Don't go over max_queries_total when admitting more queries
-                if queries_to_accept + isolation_engine.query_count >= DIBSEngine.max_queries_total:
-                    queries_to_accept = DIBSEngine.max_queries_total - isolation_engine.query_count
+                if queries_to_accept + isolation_engine.total_in_engine >= DIBSEngine.max_queries_total:
+                    queries_to_accept = DIBSEngine.max_queries_total - isolation_engine.total_in_engine
 
                 # If we haven't hit max_queries_total, admit more queries
                 if queries_to_accept > 0:

@@ -17,14 +17,15 @@ class IsolationManager:
         # A Queue of completed queries (Queries are moved from waiting to completed by client threads)
         self.completed_queries = manager.Queue()
 
-        self.query_count = 0
+        self.admitted_count = 0
         self.completed_count = 0
+        self.total_in_engine = 0
 
         IsolationManager.time_processing_completed = 0
 
     # Return the number of queries that have been admitted but not completed
     def queries_left(self):
-        return self.waiting_queries.qsize()*self.send_bundle_size
+        return self.total_in_engine - self.admitted_count
 
     # Return the total number of completed queries so far.  This can be in the archive or the completed queue itself.
     def total_completed_queries(self):
@@ -32,6 +33,8 @@ class IsolationManager:
 
     # Try to admit a list of new queries to the database clients
     def admit_multiple(self, new_queries):
+        self.total_in_engine += len(new_queries)
+
         query_bundle = []
 
         for new_query in new_queries:
@@ -46,9 +49,9 @@ class IsolationManager:
 
     # Admit the next queries from the connector
     def append_next(self, queries_to_generate_at_a_time):
-        previous_query_count= self.query_count
+        previous_query_count= self.admitted_count
 
-        while (self.query_count - previous_query_count) < queries_to_generate_at_a_time:
+        while (self.admitted_count - previous_query_count) < queries_to_generate_at_a_time:
             queries = self.connector.next_queries()
             self.admit_multiple(queries)
             self.proccess_completed_queries()
@@ -91,7 +94,7 @@ class IsolationManager:
 
             self.active_queries[query.query_id] = query
             query_bundle.append(query.copy_micro())
-            self.query_count += 1
+            self.admitted_count += 1
 
             #print("Adding query {} {} {} {}".format(query.query_id, query.ps_id, query.worker, query.query_text))
 

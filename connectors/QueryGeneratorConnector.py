@@ -157,7 +157,7 @@ class QueryGeneratorConnector(AbstractConnector):
         total_utilization = 1 - ((total_wait_time/DIBSEngine.worker_num) / total_time)
         for query_id in type_index_sum:
             print("Type [{}] Count: {} [{:d}%] Average Execution Time: {} [admit[{:1f}] max[{:1f}] +/- {:1f}]".format(
-                str(query_id), str(type_index_count[query_id]), 100*str(type_index_count[query_id])/completed,
+                str(query_id), str(type_index_count[query_id]), 100*type_index_count[query_id]/completed,
                 str(type_index_sum[query_id] / type_index_count[query_id]), admit_time[query_id], max[query_id],
                 math.sqrt(std_devs[query_id])))
         print("Average Worker Wait Time: {}".format(total_wait_time / DIBSEngine.worker_num))

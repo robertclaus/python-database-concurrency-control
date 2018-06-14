@@ -41,13 +41,13 @@ class QueryGeneratorConnector(AbstractConnector):
         for i in range(config.DEFAULT_GENERATOR_WORKER_COUNT):
             self.add_generator()
 
-
         print("Prepopulating Generator Queue")
         while self.received_queue.qsize() * config.GENERATOR_BUNDLE_SIZE < self.target_depth:
             sleep(.5)
             self.notify_all()
             self.add_generator()
 
+        self.terminate_all()
 
 
     def next_queries(self):
@@ -67,9 +67,12 @@ class QueryGeneratorConnector(AbstractConnector):
         self.finished_list.append(query)
 
     def end_processes(self):
+        self.terminate_all()
+        self.print_stats()
+
+    def terminate_all(self):
         for p in self.threads:
             p.terminate()
-        self.print_stats()
 
     def add_generator(self):
         p = multiprocessing.Process(target=QueryGeneratorConnector.worker, args=(

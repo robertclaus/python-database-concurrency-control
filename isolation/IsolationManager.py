@@ -49,9 +49,9 @@ class IsolationManager:
 
     # Admit the next queries from the connector
     def append_next(self, queries_to_generate_at_a_time):
-        previous_query_count= self.admitted_count
+        previous_query_count= self.total_in_engine
 
-        while (self.admitted_count - previous_query_count) < queries_to_generate_at_a_time:
+        while (self.total_in_engine - previous_query_count) < queries_to_generate_at_a_time:
             queries = self.connector.next_queries()
             self.admit_multiple(queries)
             self.proccess_completed_queries()

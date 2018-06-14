@@ -46,8 +46,7 @@ class DIBSEngine:
                     queries_to_accept = DIBSEngine.max_queries_total - isolation_engine.total_in_engine
 
                 # If we haven't hit max_queries_total, admit more queries
-                if queries_to_accept > 0:
-                    isolation_engine.append_next(queries_to_accept)
+                isolation_engine.append_next(queries_to_accept)
 
             isolation_engine.proccess_completed_queries()
             with query_completed_condition:

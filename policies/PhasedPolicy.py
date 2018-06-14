@@ -109,7 +109,7 @@ class PhasedPolicy(AbstractPolicy):
         abort_count = 0
         while not self.queries_this_phase:
             abort_count += 1
-            if abort_count > len(self.lock_combination_index)+1:
+            if abort_count > len(self.lock_combinations)+1:
                 break
 
             print("Changing Phases {}".format(time.time()))

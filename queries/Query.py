@@ -43,10 +43,8 @@ class dbQuery:
         self.worker = None
         self.worker_waited_time = None
         self.lock_run_under = None
-        self.tables_locked = []
         self.result = None
-        self.lock_indexes = {'columns_locked': [],
-                             }
+        self.lock_indexes = {'columns_locked': []}
         self.error = None
         self.start_admit_time = 0
         self.finish_admit_time = 0
@@ -81,8 +79,6 @@ class dbQuery:
     def generate_lock_indexes(self):
         for tabledotcolumn in self.predicatelock.tabledotcolumnindex:
             self.lock_indexes['columns_locked'].append(tabledotcolumn)
-        for table in self.predicatelock.tableindex:
-            self.tables_locked.append(table)
         if self.predicatelock.readonly:
             self.readonly = True
         else:

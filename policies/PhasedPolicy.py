@@ -91,7 +91,7 @@ class PhasedPolicy(AbstractPolicy):
         self.queries_this_phase = []
 
     def admit_from_phase(self):
-        if self.lock_combination_index == -1:
+        if self.readonly:
             self.admitted_query_count += len(self.queries_this_phase)
             read_only_queries = list(self.queries_this_phase)
             self.queries_this_phase = []
@@ -131,7 +131,7 @@ class PhasedPolicy(AbstractPolicy):
             return False
 
     def min_queries_this_phase(self):
-        if self.lock_combination_index == -1:
+        if self.readonly:
             return config.MIN_QUERIES_TO_ADMIT_READONLY
         return config.MIN_QUERIES_TO_ADMIT
 

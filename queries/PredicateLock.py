@@ -37,6 +37,7 @@ class PredicateLock:
         newLock = PredicateLock()
         for value in cpredicatelock.values:
             newLock.add_value_from_obj(PredicateValue.decompress(value))
+        return newLock
 
     def add_value(self, tabledotcolumn, type, value, mode):
         predicatevalue = PredicateValue(tabledotcolumn, type, value, mode)

@@ -137,7 +137,7 @@ class PhasedPolicy(AbstractPolicy):
         return config.MIN_QUERIES_TO_ADMIT
 
     def prep_new_phases(self):
-        self.get_new_queries()
+        self.add_new_queries()
         self.add_readonly_phase()
         for combination in self.lock_combinations:
             self.add_phase(combination)

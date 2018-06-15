@@ -111,7 +111,7 @@ class PhasedPolicy(AbstractPolicy):
 
     def consider_changing_lock_mode(self):
         abort_count = 0
-        while len(self.queries_this_phase) < self.min_queries_this_phase():
+        while not self.queries_this_phase:
             abort_count += 1
             if abort_count > len(self.lock_combinations)+1:
                 break

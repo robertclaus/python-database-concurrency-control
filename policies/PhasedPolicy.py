@@ -21,7 +21,7 @@ class PhasedPolicy(AbstractPolicy):
         self.next_lock_combination_index = -1
         self.column_reference_next_phase = {}
         self.new_queries_for_next_phase = []
-        self.prep_next_phase = False
+        self.prep_next_phase = True
 
         self.admitted_query_count = 0
 

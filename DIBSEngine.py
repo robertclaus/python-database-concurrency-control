@@ -42,6 +42,7 @@ class DIBSEngine:
                     and isolation_engine.total_in_engine <= DIBSEngine.max_queries_total:
                 isolation_engine.append_next()
 
+            isolation_engine.proccess_completed_queries()
             with query_completed_condition:
                 query_completed_condition.wait(.01)
 

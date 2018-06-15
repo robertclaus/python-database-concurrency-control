@@ -48,9 +48,13 @@ class IsolationManager:
         return
 
     # Admit the next queries from the connector
-    def append_next(self):
-        queries = self.connector.next_queries()
-        self.admit_multiple(queries)
+    def append_next(self, queries_to_admit):
+        queries_admitted = 0
+        while queries_admitted < queries_to_admit:
+            queries = self.connector.next_queries()
+            self.admit_multiple(queries)
+            queries_admitted += len(queries)
+            self.proccess_completed_queries()
 
     # Process any queries completed by the database clients so the connector can complete them
     def proccess_completed_queries(self):

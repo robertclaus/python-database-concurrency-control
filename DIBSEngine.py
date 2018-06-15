@@ -40,7 +40,9 @@ class DIBSEngine:
         while (True):
             if isolation_engine.queries_left() <= config.MAX_QUERIES_IN_ENGINE\
                     and isolation_engine.total_in_engine <= DIBSEngine.max_queries_total:
-                isolation_engine.append_next()
+                queries_to_admit = min(config.MAX_QUERIES_IN_ENGINE - isolation_engine.queries_left(),
+                                       DIBSEngine.max_queries_total - isolation_engine.total_in_engine)
+                isolation_engine.append_next(queries_to_admit)
 
             isolation_engine.proccess_completed_queries()
             with query_completed_condition:

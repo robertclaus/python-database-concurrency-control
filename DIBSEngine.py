@@ -38,17 +38,10 @@ class DIBSEngine:
         start = time.time()
 
         while (True):
-            if isolation_engine.queries_left() < config.MAX_QUERIES_IN_ENGINE:
-                queries_to_accept = config.MAX_QUERIES_IN_ENGINE - isolation_engine.queries_left()
+            if isolation_engine.queries_left() < config.MAX_QUERIES_IN_ENGINE\
+                    and isolation_engine.total_in_engine < DIBSEngine.max_queries_total:
+                isolation_engine.append_next()
 
-                # Don't go over max_queries_total when admitting more queries
-                if queries_to_accept + isolation_engine.total_in_engine >= DIBSEngine.max_queries_total:
-                    queries_to_accept = DIBSEngine.max_queries_total - isolation_engine.total_in_engine
-
-                # If we haven't hit max_queries_total, admit more queries
-                isolation_engine.append_next(queries_to_accept)
-
-            isolation_engine.proccess_completed_queries()
             with query_completed_condition:
                 query_completed_condition.wait(.01)
 

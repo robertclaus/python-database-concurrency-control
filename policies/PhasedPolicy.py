@@ -24,6 +24,7 @@ class PhasedPolicy(AbstractPolicy):
                 ]
         self.lock_combination_index = -2 # -1 is readonly, so the first phase will be -1.
         self.new_queries = []
+        self.aborted = False
 
     def parse_query(self,query):
         query.parse(True)
@@ -105,10 +106,12 @@ class PhasedPolicy(AbstractPolicy):
 
     def consider_changing_lock_mode(self):
         abort_count = 0
-        while not self.queries_this_phase:
+        while len(self.queries_this_phase) < config.MIN_QUERIES_TO_ADMIT:
             abort_count += 1
             if abort_count > len(self.lock_combinations)+1:
                 break
+
+            self.delay_remaining_queries()
 
             print("Changing Phases {}".format(time.time()))
             self.lock_combination_index += 1

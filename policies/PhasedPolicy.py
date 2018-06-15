@@ -54,7 +54,7 @@ class PhasedPolicy(AbstractPolicy):
         if self.admitted_query_count < (len(self.queries_this_phase)*2):
             return self.admit_from_phase()
 
-        if self.queries_this_phase and len(self.queries_this_phase) < config.MIN_QUERIES_TO_ADMIT:
+        if self.queries_this_phase and len(self.queries_this_phase) < self.min_queries_this_phase():
             self.delay_remaining_queries()
 
         return []
@@ -111,7 +111,7 @@ class PhasedPolicy(AbstractPolicy):
 
     def consider_changing_lock_mode(self):
         abort_count = 0
-        while len(self.queries_this_phase) < config.MIN_QUERIES_TO_ADMIT:
+        while len(self.queries_this_phase) < self.min_queries_this_phase():
             abort_count += 1
             if abort_count > len(self.lock_combinations)+1 and self.queries_this_phase:
                 break

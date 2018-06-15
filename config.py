@@ -30,10 +30,10 @@ SUBSCRIBER_COUNT = 5000000
 USE_NON_UNIFORM_RANDOM = True
 
 # Generator
-DEFAULT_TARGET_DEPTH = 10000
-GENERATOR_BUNDLE_SIZE = 100
+DEFAULT_TARGET_DEPTH = 1000
+GENERATOR_BUNDLE_SIZE = 9
 DEFAULT_GENERATOR_WORKER_COUNT = 10
-MAX_GENERATORS = 30
+MAX_GENERATORS = 15
 
 # Phased Policy
 # Minimum queries to admit for a column key within a phase (will always admit at least once before checking this)

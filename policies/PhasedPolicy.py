@@ -54,8 +54,8 @@ class PhasedPolicy(AbstractPolicy):
             self.prep_new_phases()
 
         if self.admitted_query_count == 0:
-            PhasedPolicy.start = time.time()
             self.start_next_phase()
+            PhasedPolicy.start = time.time()
             return self.admit_from_phase()
 
         return []
@@ -69,8 +69,8 @@ class PhasedPolicy(AbstractPolicy):
             self.prep_new_phases()
 
         if self.admitted_query_count == 0:
-            PhasedPolicy.start = time.time()
             self.start_next_phase()
+            PhasedPolicy.start = time.time()
             return self.admit_from_phase()
 
         if self.admitted_query_count < (len(self.queries_this_phase)*2):

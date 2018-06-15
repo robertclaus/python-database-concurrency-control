@@ -130,7 +130,7 @@ class PhasedPolicy(AbstractPolicy):
         self.queries_this_phase = self.queries_next_phase
 
         if self.lock_combination_index == -1:
-            print("Admitting Reads {}".format(time.time()))
+            #print("Admitting Reads {}".format(time.time()))
             self.lock_index.read_only_mode(True)
             self.lock_index.set_scheduled_columns({})
         else:

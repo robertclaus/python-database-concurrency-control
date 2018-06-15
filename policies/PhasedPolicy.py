@@ -9,6 +9,14 @@ from queries.PredicateLock import NotSchedulableException
 
 
 class PhasedPolicy(AbstractPolicy):
+    time_not_running = 0
+    start = 0
+
+    @staticmethod
+    def finish_running():
+        if not PhasedPolicy.start == -1:
+            PhasedPolicy.time_not_running += (time.time() - PhasedPolicy.start)
+        PhasedPolicy.start = -1
 
     def __init__(self):
         self.lock_index = GlobalLockIndex()
@@ -37,6 +45,7 @@ class PhasedPolicy(AbstractPolicy):
         self.new_queries.append(query)
 
         if self.admitted_query_count == 0:
+            PhasedPolicy.start = time.time()
             self.consider_changing_lock_mode()
             queries_to_admit = self.admit_from_phase()
             print("Admit Queries after admit_from_phase {}".format(time.time()))
@@ -50,6 +59,7 @@ class PhasedPolicy(AbstractPolicy):
             self.lock_index.remove_query(query)
 
         if self.admitted_query_count == 0:
+            PhasedPolicy.start = time.time()
             self.consider_changing_lock_mode()
             queries_to_admit = self.admit_from_phase()
             print("Admit Queries after admit_from_phase {}".format(time.time()))

@@ -8,6 +8,7 @@ from time import sleep, time
 from DIBSEngine import DIBSEngine
 from connectors.AbstractConnector import AbstractConnector
 from isolation.IsolationManager import IsolationManager
+from policies.PhasedPolicy import PhasedPolicy
 from queries.Query import dbQuery
 import config
 
@@ -167,6 +168,7 @@ class QueryGeneratorConnector(AbstractConnector):
         print("Average Worker Wait Time: {}".format(total_wait_time / DIBSEngine.worker_num))
         print("Time spent processing completed queries {}".format(IsolationManager.time_processing_completed))
         print("Average Query Size From Generator: {}".format(self.total_query_sizes/self.total_query_count))
+        print("Time spent between admits {}".format(PhasedPolicy.time_not_running))
         print("Total Generator Count: {}".format(self.total_thread_count))
         print("Total Time: {}".format(total_time))
         print("Completed: {}".format(completed))

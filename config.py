@@ -33,7 +33,7 @@ USE_NON_UNIFORM_RANDOM = True
 DEFAULT_TARGET_DEPTH = 9000
 GENERATOR_BUNDLE_SIZE = 200
 DEFAULT_GENERATOR_WORKER_COUNT = 10
-MAX_GENERATORS = 15
+MAX_GENERATORS = 20
 
 # Phased Policy
 # Minimum queries to admit for a column key within a phase (will always admit at least once before checking this)

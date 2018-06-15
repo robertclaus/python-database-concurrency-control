@@ -7,6 +7,11 @@ from isolation.indexes.SidetrackQueryIndex import SidetrackQueryIndex
 from policies.AbstractPolicy import AbstractPolicy
 from queries.PredicateLock import NotSchedulableException
 
+class Phase():
+    def __init__(self, queries, readonly, column_references):
+        self.queries = queries
+        self.readonly = readonly
+        self.column_references = column_references
 
 class PhasedPolicy(AbstractPolicy):
     time_not_running = 0
@@ -23,6 +28,7 @@ class PhasedPolicy(AbstractPolicy):
         self.sidetrack_index = SidetrackQueryIndex()
         self.queries_this_phase = []
         self.admitted_query_count = 0
+        self.phases = []
 
         self.lock_combinations = [
                     ['call_forwarding.s_id', 'subscriber.sub_nbr', 'special_facility.s_id'],  # Insert
@@ -33,6 +39,7 @@ class PhasedPolicy(AbstractPolicy):
         self.lock_combination_index = -2 # -1 is readonly, so the first phase will be -1.
         self.new_queries = []
         self.aborted = False
+        self.readonly = False
 
     def parse_query(self,query):
         query.parse(True)
@@ -44,9 +51,12 @@ class PhasedPolicy(AbstractPolicy):
 
         self.new_queries.append(query)
 
+        if len(self.phases) == 0:
+            self.prep_new_phases()
+
         if self.admitted_query_count == 0:
             PhasedPolicy.start = time.time()
-            self.consider_changing_lock_mode()
+            self.start_next_phase()
             queries_to_admit = self.admit_from_phase()
             print("Admit Queries after admit_from_phase {}".format(time.time()))
             return queries_to_admit
@@ -58,9 +68,12 @@ class PhasedPolicy(AbstractPolicy):
         if not (self.lock_combination_index == -1 and query.readonly):
             self.lock_index.remove_query(query)
 
+        if len(self.phases) == 0:
+            self.prep_new_phases()
+
         if self.admitted_query_count == 0:
             PhasedPolicy.start = time.time()
-            self.consider_changing_lock_mode()
+            self.start_next_phase()
             queries_to_admit = self.admit_from_phase()
             print("Admit Queries after admit_from_phase {}".format(time.time()))
             return queries_to_admit
@@ -123,60 +136,54 @@ class PhasedPolicy(AbstractPolicy):
             return config.MIN_QUERIES_TO_ADMIT_READONLY
         return config.MIN_QUERIES_TO_ADMIT
 
-    def consider_changing_lock_mode(self):
-        abort_count = 0
-        while not self.queries_this_phase:
-            abort_count += 1
-            if abort_count > len(self.lock_combinations)+1:
-                break
+    def prep_new_phases(self):
+        self.get_new_queries()
+        self.add_readonly_phase()
+        for combination in self.lock_combinations:
+            self.add_phase(combination)
+        self.phases.reverse()
 
-            print("Changing Phases {}".format(time.time()))
-            self.lock_combination_index += 1
-            if self.lock_combination_index == len(self.lock_combinations):
-                self.lock_combination_index = -1
+    def start_next_phase(self):
+        self.start_phase(self.phases.pop())
 
-            if self.lock_combination_index == -1:
-                self.start_read_only_phase()
-            else:
-                combination = self.lock_combinations[self.lock_combination_index]
+    def start_phase(self, phase):
+        if phase.readonly:
+            print("Readonly Start Admitting. {} ".format(time.time()))
+            self.lock_index.read_only_mode(True)
+            self.lock_index.set_scheduled_columns({})
+            self.queries_this_phase = phase.queries
+            self.readonly = True
+        else:
+            self.lock_index.read_only_mode(False)
+            self.lock_index.set_scheduled_columns(phase.column_reference)
+            self.queries_this_phase = phase.queries
+            self.readonly = False
 
-                column_reference = defaultdict(list)
-                query_list = None
-                for column in combination:
-                    column_queries = self.sidetrack_index.sidetrack_indexes['columns_locked'][column]
-
-                    tab = column.split('.')[0]
-                    col = column.split('.')[1]
-                    if query_list is None:
-                        query_list = column_queries
-                    else:
-                        query_list = [q for q in query_list if q in column_queries]
-
-                    column_reference[tab].append(col)
-
-                if query_list is not None:# and len(value) > minimum_queue_size:
-                    self.start_column_phase(combination, column_reference, query_list)
-
-
-
-    def start_read_only_phase(self):
-        print("Readonly Start Admitting. {} ".format(time.time()))
-        self.lock_index.read_only_mode(True)
-        self.lock_index.set_scheduled_columns({})
-
-        # Only add queries right before read phase so that phasing is isolated for locality reasons
+    def add_new_queries(self):
         slice_of_new_queries = self.new_queries[:config.MAX_QUERIES_PER_PHASE]
         self.new_queries = self.new_queries[config.MAX_QUERIES_PER_PHASE:]
-
         self.sidetrack_index.add_queries(slice_of_new_queries)
-        self.queries_this_phase = self.sidetrack_index.take_read_only_queries()
-        print("Readonly {} Queries".format(len(self.queries_this_phase)))
 
+    def add_readonly_phase(self):
+        queries = self.sidetrack_index.take_read_only_queries()
+        self.phases.append(Phase(queries, True, {}))
 
-    def start_column_phase(self, combination, column_reference, query_list):
-        print("Tried Admitting {} queries at {} on columns: {}".format(len(query_list), time.time(),
-                                                                       ",".join(combination)))
-        self.lock_index.read_only_mode(False)
-        self.lock_index.set_scheduled_columns(column_reference)
-        self.queries_this_phase = list(query_list)
-        self.sidetrack_index.remove_queries(self.queries_this_phase)
+    def add_phase(self, combination):
+        column_reference = defaultdict(list)
+        query_list = None
+        for column in combination:
+            column_queries = self.sidetrack_index.sidetrack_indexes['columns_locked'][column]
+
+            tab = column.split('.')[0]
+            col = column.split('.')[1]
+            if query_list is None:
+                query_list = column_queries
+            else:
+                query_list = [q for q in query_list if q in column_queries]
+
+            column_reference[tab].append(col)
+
+        if query_list is not None:  # and len(value) > minimum_queue_size:
+            queries = list(query_list)
+            self.phases.append(Phase(queries, False, column_reference))
+            self.sidetrack_index.remove_queries(queries)

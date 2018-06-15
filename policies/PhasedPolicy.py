@@ -38,7 +38,9 @@ class PhasedPolicy(AbstractPolicy):
 
         if self.admitted_query_count == 0:
             self.consider_changing_lock_mode()
-            return self.admit_from_phase()
+            queries_to_admit = self.admit_from_phase()
+            print("Admit Queries after admit_from_phase {}".format(time.time()))
+            return queries_to_admit
 
         return []
 
@@ -49,7 +51,9 @@ class PhasedPolicy(AbstractPolicy):
 
         if self.admitted_query_count == 0:
             self.consider_changing_lock_mode()
-            return self.admit_from_phase()
+            queries_to_admit = self.admit_from_phase()
+            print("Admit Queries after admit_from_phase {}".format(time.time()))
+            return queries_to_admit
 
         if self.admitted_query_count < (len(self.queries_this_phase)*2):
             return self.admit_from_phase()

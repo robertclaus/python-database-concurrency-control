@@ -87,7 +87,7 @@ class PhasedPolicy(AbstractPolicy):
 
         self.queries_this_phase = [query for query in self.queries_this_phase if query not in queries_to_remove]
 
-        print("Admitting {} queries, with {} remaining.".format(self.admitted_query_count, len(self.queries_this_phase)))
+        print("Admitted {} queries, with {} remaining. {}".format(self.admitted_query_count, len(self.queries_this_phase), time.time()))
         return queries_to_return
 
     def can_admit_query(self, query):

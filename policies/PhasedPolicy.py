@@ -60,6 +60,7 @@ class PhasedPolicy(AbstractPolicy):
         return []
 
     def delay_remaining_queries(self):
+        print("Delay phase with {} queries left.".format(self.queries_this_phase))
         self.new_queries.extend(self.queries_this_phase)
         self.queries_this_phase = []
 

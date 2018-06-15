@@ -14,7 +14,7 @@ config.MAX_QUERIES_TO_RUN = 50000
 
 # Run #1 - Vary Write %
 for query_set in [4]:
-    QueryGeneratorConnector.possible_query_sets = TATP.query_set
+    QueryGeneratorConnector.possible_query_sets = TATP_Read.query_set
     for workers in [16]:
         config.NUMBER_OF_DATABASE_CLIENTS = workers
         for isolation_level in ['ru-phased','ru']:#,'ru']:#, 'ru-p']:

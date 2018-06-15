@@ -62,7 +62,6 @@ class PhasedPolicy(AbstractPolicy):
         self.new_queries.extend(self.queries_this_phase)
         self.queries_this_phase = []
 
-
     def admit_from_phase(self):
         if self.lock_combination_index == -1:
             self.admitted_query_count += len(self.queries_this_phase)
@@ -102,7 +101,6 @@ class PhasedPolicy(AbstractPolicy):
             self.queries_this_phase.remove(query)
             print("Scheduling conflict")
             return False
-
 
 
     def consider_changing_lock_mode(self):

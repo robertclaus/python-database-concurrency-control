@@ -37,7 +37,7 @@ MAX_GENERATORS = 30
 
 # Phased Policy
 # Minimum queries to admit for a column key within a phase (will always admit at least once before checking this)
-MIN_QUERIES_TO_ADMIT = 100
+MIN_QUERIES_TO_ADMIT = 500
 # Maximum queries to run in one phase.  Note MAX_ENGINES_IN_ENGINE may restrict this anyways.
 MAX_QUERIES_PER_PHASE = 4000
 # Number of queries to try and admit at once before checking if we should move onto a different phase.

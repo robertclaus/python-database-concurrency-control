@@ -74,12 +74,15 @@ class QueryGeneratorConnector(AbstractConnector):
             p.terminate()
 
     def add_generator(self):
-        p = multiprocessing.Process(target=QueryGeneratorConnector.worker, args=(
-            self.received_queue, self.dibs_policy, self.target_depth, self.condition_variable, self.bundle_size))
-        p.daemon = True
-        p.start()
-        self.total_thread_count += 1
-        self.threads.append(p)
+        if self.total_thread_count < config.MAX_GENERATORS:
+            p = multiprocessing.Process(target=QueryGeneratorConnector.worker, args=(
+                self.received_queue, self.dibs_policy, self.target_depth, self.condition_variable, self.bundle_size))
+            p.daemon = True
+            p.start()
+            self.total_thread_count += 1
+            self.threads.append(p)
+        else:
+            print("Not generating queries fast enough.")
 
     def print_stats(self):
 

@@ -8,6 +8,13 @@ def default_dict_function():
 class NotSchedulableException(Exception):
     pass
 
+class CompressedLock:
+    def __init__(self, value_list):
+        self.values = []
+        for value in value_list:
+            self.values.append(value.compress())
+
+
 class PredicateLock:
     WRITE = 2
     READ = 1
@@ -22,8 +29,22 @@ class PredicateLock:
         self.equality_index = {}
         self.readonly = True
 
+    def compress(self):
+        return CompressedLock(self.predicatevalues)
+
+    @staticmethod
+    def decompress(cpredicatelock):
+        newLock = PredicateLock()
+        for value in cpredicatelock.values:
+            newLock.add_value_from_obj(PredicateValue.decompress(value))
+
     def add_value(self, tabledotcolumn, type, value, mode):
         predicatevalue = PredicateValue(tabledotcolumn, type, value, mode)
+        self.add_value_from_obj(predicatevalue)
+
+    def add_value_from_obj(self, predicatevalue):
+        tabledotcolumn = predicatevalue.tabledotcolumn
+        mode = predicatevalue.mode
         self.predicatevalues.append(predicatevalue)
 
         if not tabledotcolumn in self.tabledotcolumnindex:

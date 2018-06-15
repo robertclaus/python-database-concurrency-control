@@ -53,6 +53,7 @@ class QueryGeneratorConnector(AbstractConnector):
         try:
             pickled_queries = self.received_queue.get_nowait()
             unpickled_queries = cPickle.loads(zlib.decompress(pickled_queries))
+            unpickled_queries = [dbQuery.decompress(q) for q in unpickled_queries]
             self.total_query_sizes += len(pickled_queries)
             self.total_query_count += self.bundle_size
             return unpickled_queries
@@ -268,6 +269,6 @@ class QueryGeneratorConnector(AbstractConnector):
                     index = QueryGeneratorConnector.pick_query_index_to_generate(QueryGeneratorConnector.possible_query_sets)
                     last_query = QueryGeneratorConnector.generate_query(QueryGeneratorConnector.possible_query_sets, index, dibs_policy)
                     last_query.ps_id = os.getpid()
-                    query_bundle.append(last_query)
+                    query_bundle.append(last_query.compress())
                 query_bundle = zlib.compress(cPickle.dumps(query_bundle))
                 waiting_queue.put(query_bundle)

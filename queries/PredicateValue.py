@@ -1,4 +1,12 @@
 
+class CompressedValue:
+    def __init__(self, tabledotcolumn, type, value, mode):
+        self.tabledotcolumn = tabledotcolumn
+        self.type = type
+        self.value = value
+        self.mode = mode
+
+
 class PredicateValue:
     ALL = 0
     EQ = 1
@@ -12,6 +20,13 @@ class PredicateValue:
         self.column = tabledotcolumn.split('.')[1]
         self.table = tabledotcolumn.split('.')[0]
         self.mode = mode
+
+    def compress(self):
+        return CompressedValue(self.tabledotcolumn, self.type, self.value, self.mode)
+
+    @staticmethod
+    def decompress(cvalue):
+        return PredicateValue(cvalue.tabledotcolumn, cvalue.type, cvalue.value, cvalue.mode)
 
     def __eq__(self, other):
         return (self.tabledotcolumn == other.tabledotcolumn and

@@ -21,6 +21,14 @@ class microQuery:
         self.total_time = -1
         self.waiting_time = -1
 
+class compressedQuery:
+    def __init__(self, query_id, query_text, compressed_lock, query_type, created_at):
+        self.query_id = query_id
+        self.query_text = query_text
+        self.predicatelock = compressed_lock
+        self.query_type_id = query_type
+        self.created_at = created_at
+
 
 class dbQuery:
     READ = 1
@@ -54,6 +62,19 @@ class dbQuery:
         self.readonly = True
         self.was_admitted = False
         self.completed_at = None
+
+    def compress(self):
+        return compressedQuery(self.query_id, self.query_text, self.predicatelock.compress(), self.query_type_id, self.created_at)
+
+    @staticmethod
+    def decompress(compressed_query):
+        dquery = dbQuery(compressed_query.query_text, compressed_query.query_type_id)
+        dquery.query_id = compressed_query.query_id
+        dquery.id = compressed_query.query_id
+        dquery.predicatelock = PredicateLock.decompress(compressed_query.predicatelock)
+        dquery.generate_lock_indexes()
+        return dquery
+
 
     def copy_micro(self):
         return microQuery(self.query_id, self.query_text, self.created_at)

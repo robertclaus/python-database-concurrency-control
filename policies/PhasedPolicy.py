@@ -56,7 +56,7 @@ class PhasedPolicy(AbstractPolicy):
         if self.admitted_query_count == 0:
             self.start_next_phase()
             PhasedPolicy.start = time.time()
-            return self.admit_from_phase()
+            return self.admit_from_phase(True)
 
         return []
 
@@ -71,10 +71,10 @@ class PhasedPolicy(AbstractPolicy):
         if self.admitted_query_count == 0:
             self.start_next_phase()
             PhasedPolicy.start = time.time()
-            return self.admit_from_phase()
+            return self.admit_from_phase(True)
 
         if self.admitted_query_count < (len(self.queries_this_phase)*2):
-            return self.admit_from_phase()
+            return self.admit_from_phase(False)
 
         if self.queries_this_phase and len(self.queries_this_phase) < self.min_queries_this_phase():
             self.delay_remaining_queries()
@@ -86,7 +86,7 @@ class PhasedPolicy(AbstractPolicy):
         self.new_queries.extend(self.queries_this_phase)
         self.queries_this_phase = []
 
-    def admit_from_phase(self):
+    def admit_from_phase(self, intitial_admit):
         if self.readonly:
             self.admitted_query_count += len(self.queries_this_phase)
             read_only_queries = list(self.queries_this_phase)
@@ -105,6 +105,8 @@ class PhasedPolicy(AbstractPolicy):
                 queries_to_remove.append(query)
                 self.lock_index.add_query(query)
                 queries_added+=1
+                if intitial_admit and queries_added > config.QUERIES_TO_INITIALLY_ADMIT:
+                    break
                 if queries_added > config.QUERIES_TO_ADMIT_AT_TIME:
                     break
 

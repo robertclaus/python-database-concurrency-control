@@ -56,9 +56,7 @@ class PhasedPolicy(AbstractPolicy):
         if self.admitted_query_count == 0:
             PhasedPolicy.start = time.time()
             self.start_next_phase()
-            queries_to_admit = self.admit_from_phase()
-            print("Admit Queries after admit_from_phase {}".format(time.time()))
-            return queries_to_admit
+            return self.admit_from_phase()
 
         return []
 
@@ -73,9 +71,7 @@ class PhasedPolicy(AbstractPolicy):
         if self.admitted_query_count == 0:
             PhasedPolicy.start = time.time()
             self.start_next_phase()
-            queries_to_admit = self.admit_from_phase()
-            print("Admit Queries after admit_from_phase {}".format(time.time()))
-            return queries_to_admit
+            return self.admit_from_phase()
 
         if self.admitted_query_count < (len(self.queries_this_phase)*2):
             return self.admit_from_phase()
@@ -113,7 +109,6 @@ class PhasedPolicy(AbstractPolicy):
                     break
 
         self.queries_this_phase = [query for query in self.queries_this_phase if query not in queries_to_remove]
-
         print("Admitted {} queries, with {} remaining. {}".format(self.admitted_query_count, len(self.queries_this_phase), time.time()))
         return queries_to_return
 
@@ -148,8 +143,8 @@ class PhasedPolicy(AbstractPolicy):
         self.start_phase(self.phases.pop())
 
     def start_phase(self, phase):
+        print("Starting Phase Readonly: {}  Columns: {}".format(phase.readonly, phase.column_reference))
         if phase.readonly:
-            print("Readonly Start Admitting. {} ".format(time.time()))
             self.lock_index.read_only_mode(True)
             self.lock_index.set_scheduled_columns({})
             self.queries_this_phase = phase.queries

@@ -36,7 +36,6 @@ class PhasedPolicy(AbstractPolicy):
                     ['call_forwarding.start_time','subscriber.sub_nbr'], # Delete
                     ['subscriber.sub_nbr'], # High Volume Update
                 ]
-        self.lock_combination_index = -2 # -1 is readonly, so the first phase will be -1.
         self.new_queries = []
         self.aborted = False
         self.readonly = False
@@ -45,7 +44,7 @@ class PhasedPolicy(AbstractPolicy):
         query.parse(True)
 
     def new_query(self, query):
-        if self.lock_combination_index == -1 and query.readonly:
+        if self.readonly and query.readonly:
             self.admitted_query_count += 1
             return [query]
 
@@ -65,7 +64,7 @@ class PhasedPolicy(AbstractPolicy):
 
     def complete_query(self, query):
         self.admitted_query_count -= 1
-        if not (self.lock_combination_index == -1 and query.readonly):
+        if not (self.readonly and query.readonly):
             self.lock_index.remove_query(query)
 
         if len(self.phases) == 0:

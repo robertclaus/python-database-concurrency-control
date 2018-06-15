@@ -38,8 +38,8 @@ class DIBSEngine:
         start = time.time()
 
         while (True):
-            if isolation_engine.queries_left() < config.MAX_QUERIES_IN_ENGINE\
-                    and isolation_engine.total_in_engine < DIBSEngine.max_queries_total:
+            if isolation_engine.queries_left() <= config.MAX_QUERIES_IN_ENGINE\
+                    and isolation_engine.total_in_engine <= DIBSEngine.max_queries_total:
                 isolation_engine.append_next()
 
             with query_completed_condition:

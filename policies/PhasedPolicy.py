@@ -108,7 +108,9 @@ class PhasedPolicy(AbstractPolicy):
         abort_count = 0
         while len(self.queries_this_phase) < config.MIN_QUERIES_TO_ADMIT:
             abort_count += 1
-            if abort_count > len(self.lock_combinations)+1:
+            if abort_count > len(self.lock_combinations)+1 and self.queries_this_phase:
+                break
+            if abort_count > len(self.lock_combinations)*2+2:
                 break
 
             self.delay_remaining_queries()
@@ -157,7 +159,7 @@ class PhasedPolicy(AbstractPolicy):
 
 
     def start_column_phase(self, combination, column_reference, query_list):
-        print("Start Admitting {} queries at {} on columns: {}".format(len(query_list), time.time(),
+        print("Tried Admitting {} queries at {} on columns: {}".format(len(query_list), time.time(),
                                                                        ",".join(combination)))
         self.lock_index.read_only_mode(False)
         self.lock_index.set_scheduled_columns(column_reference)

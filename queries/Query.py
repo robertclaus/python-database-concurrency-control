@@ -131,10 +131,6 @@ class dbQuery:
     def strip_fluff(self):
         self.sql_obj = None
 
-    def compress(self):
-        self.predicatelock = None
-        self.lock_indexes = None
-
     def generate_lock_indexes(self):
         for tabledotcolumn in self.predicatelock.tabledotcolumnindex:
             self.lock_indexes['columns_locked'].append(tabledotcolumn)

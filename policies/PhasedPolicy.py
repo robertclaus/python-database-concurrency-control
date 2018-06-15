@@ -11,7 +11,7 @@ class Phase():
     def __init__(self, queries, readonly, column_references):
         self.queries = queries
         self.readonly = readonly
-        self.column_references = column_references
+        self.column_reference = column_references
 
 class PhasedPolicy(AbstractPolicy):
     time_not_running = 0

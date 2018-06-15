@@ -64,7 +64,11 @@ class dbQuery:
         self.completed_at = None
 
     def compress(self):
-        return compressedQuery(self.query_id, self.query_text, self.predicatelock.compress(), self.query_type_id, self.created_at)
+        return compressedQuery(self.query_id,
+                               self.query_text,
+                               self.predicatelock.compress(),
+                               self.query_type_id,
+                               self.created_at)
 
     @staticmethod
     def decompress(compressed_query):

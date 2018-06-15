@@ -270,7 +270,7 @@ class QueryGeneratorConnector(AbstractConnector):
                     last_query = QueryGeneratorConnector.generate_query(QueryGeneratorConnector.possible_query_sets, index, dibs_policy)
                     last_query.ps_id = os.getpid()
                     compresed_query = last_query.compress()
-                    if compresed_query is None:
+                    if last_query is None:
                         print("none query compressed")
                     query_bundle.append(compresed_query)
                 query_bundle = zlib.compress(cPickle.dumps(query_bundle))

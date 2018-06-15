@@ -143,7 +143,7 @@ class PhasedPolicy(AbstractPolicy):
         self.start_phase(self.phases.pop())
 
     def start_phase(self, phase):
-        print("Starting Phase Readonly: {}  Columns: {}".format(phase.readonly, phase.column_reference))
+        print("Starting Phase Count: {}  Readonly: {}  Columns: {}".format(len(phase.queries), phase.readonly, phase.column_reference))
         if phase.readonly:
             self.lock_index.read_only_mode(True)
             self.lock_index.set_scheduled_columns({})

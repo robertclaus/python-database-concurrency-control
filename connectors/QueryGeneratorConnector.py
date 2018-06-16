@@ -38,6 +38,10 @@ class QueryGeneratorConnector(AbstractConnector):
         self.total_thread_count = 0
 
         self.target_depth = config.DEFAULT_TARGET_DEPTH
+
+        if config.PREGENERATE_ALL_QUERIES:
+            self.target_depth = config.MAX_QUERIES_TO_RUN
+
         self.bundle_size = config.GENERATOR_BUNDLE_SIZE
         for i in range(config.DEFAULT_GENERATOR_WORKER_COUNT):
             self.add_generator()
@@ -47,6 +51,9 @@ class QueryGeneratorConnector(AbstractConnector):
             sleep(.1)
             self.notify_all()
             self.add_generator()
+
+        if config.PREGENERATE_ALL_QUERIES:
+            self.terminate_all()
 
 
     def next_queries(self):

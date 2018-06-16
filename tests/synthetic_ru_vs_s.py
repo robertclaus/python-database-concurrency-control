@@ -21,9 +21,7 @@ config.PREGENERATE_ALL_QUERIES = False
 
 # Run #1 - Vary Write %
 for query_set in [Synthetic5050.query_set]:
-    QueryGeneratorConnector.possible_query_sets = query_set
     for workers in [5, 10, 20, 30, 40, 50]:
-        config.NUMBER_OF_DATABASE_CLIENTS = workers
         for isolation_level in ['s','ru','s','ru','s','ru']:
             for synthetic_tuples in [100000]:
                 print("Populating DB")
@@ -36,6 +34,8 @@ for query_set in [Synthetic5050.query_set]:
                 print("Running Queries")
                 config.MAX_SECONDS_TO_RUN = 20
                 config.MAX_QUERIES_TO_RUN = 1000000
+                config.NUMBER_OF_DATABASE_CLIENTS = workers
+                QueryGeneratorConnector.possible_query_sets = query_set
                 dibs_policy = IsolationLevelSetter.run(isolation_level)
                 QueryGeneratorConnector.last_isolation_level = isolation_level
                 try:

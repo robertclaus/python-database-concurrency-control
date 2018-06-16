@@ -137,7 +137,7 @@ class PhasedPolicy(AbstractPolicy):
                 "Admitted {} queries. Remaining: {}  {}".format(len(queries), len(self.current_phase.total_count()), time.time()))
             return queries
 
-        if self.admitted_query_count < (len(self.current_phase.total_count())*2):
+        if self.admitted_query_count < (self.current_phase.total_count()*2):
             queries = self.current_phase.admit_from_phase(False)
             self.admitted_query_count += len(queries)
             print(

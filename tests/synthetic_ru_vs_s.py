@@ -25,7 +25,7 @@ for query_set in [Synthetic5050.query_set]:
     for workers in [5, 10, 20, 30, 40, 50]:
         config.NUMBER_OF_DATABASE_CLIENTS = workers
         for isolation_level in ['s','ru','s','ru','s','ru']:
-            for synthetic_tuples in [1000, 10000, 100000, 1000000]:
+            for synthetic_tuples in [10000]:
                 print("Populating DB")
                 IsolationLevelSetter.setup(synthetic_tuples)
 

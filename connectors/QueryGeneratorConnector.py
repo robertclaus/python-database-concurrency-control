@@ -57,7 +57,8 @@ class QueryGeneratorConnector(AbstractConnector):
 
 
     def next_queries(self):
-        self.notify_all()
+        if not config.PREGENERATE_ALL_QUERIES:
+            self.notify_all()
         try:
             pickled_queries = self.received_queue.get_nowait()
             unpickled_queries = cPickle.loads(zlib.decompress(pickled_queries))

@@ -117,7 +117,7 @@ class PhasedPolicy(AbstractPolicy):
             queries = self.current_phase.get_initial_set()
             self.admitted_query_count += len(queries)
             print(
-                "Admitted {} queries. Remaining: {}  {}".format(len(queries), len(self.current_phase.total_count()), time.time()))
+                "Admitted {} queries. Remaining: {}  {}".format(len(queries), self.current_phase.total_count(), time.time()))
             return queries
 
         return []
@@ -134,14 +134,14 @@ class PhasedPolicy(AbstractPolicy):
             queries = self.current_phase.get_initial_set()
             self.admitted_query_count += len(queries)
             print(
-                "Admitted {} queries. Remaining: {}  {}".format(len(queries), len(self.current_phase.total_count()), time.time()))
+                "Admitted {} queries. Remaining: {}  {}".format(len(queries), self.current_phase.total_count(), time.time()))
             return queries
 
         if self.admitted_query_count < (self.current_phase.total_count()*2):
             queries = self.current_phase.admit_from_phase(False)
             self.admitted_query_count += len(queries)
             print(
-                "Admitted {} queries. Remaining: {}  {}".format(len(queries), len(self.current_phase.total_count()), time.time()))
+                "Admitted {} queries. Remaining: {}  {}".format(len(queries), self.current_phase.total_count(), time.time()))
             return queries
 
         if self.current_phase.queries and len(self.current_phase.queries) < self.current_phase.min_queries_this_phase():
@@ -164,12 +164,12 @@ class PhasedPolicy(AbstractPolicy):
         print("End Prep Phases {}".format(time.time()))
 
     def start_next_phase(self):
-        while len(self.current_phase.total_count()) == 0 and self.phases:
+        while self.current_phase.total_count() == 0 and self.phases:
             self.current_phase = self.phases.pop()
-        if len(self.current_phase.total_count()) == 0:
+        if self.current_phase.total_count() == 0:
             self.current_phase = Phase([], True, {})
         phase = self.current_phase
-        print("Starting Phase  Time {}  Count: {}  Readonly: {}  Columns: {}".format(time.time(), len(phase.total_count()),
+        print("Starting Phase  Time {}  Count: {}  Readonly: {}  Columns: {}".format(time.time(), phase.total_count(),
                                                                                      phase.readonly,
                                                                                      phase.column_reference))
 

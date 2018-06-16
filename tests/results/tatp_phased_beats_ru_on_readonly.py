@@ -1,6 +1,7 @@
 import os
 import sys
 
+from policies.PhasedPolicy import PhasedPolicy
 from tests.IsolationLevelSetter import IsolationLevelSetter
 from DIBSEngine import DIBSEngine
 from clients.MySQLClient import MySQLClient
@@ -16,6 +17,7 @@ config.MAX_QUERIES_TO_RUN = 50000
 for query_set in [4]:
     QueryGeneratorConnector.possible_query_sets = TATP_Read.query_set
     config.PREGENERATE_ALL_QUERIES = True
+    PhasedPolicy.lock_combinations = []
     for workers in [16]:
         config.NUMBER_OF_DATABASE_CLIENTS = workers
         for isolation_level in ['ru-phased','ru']:#,'ru']:#, 'ru-p']:

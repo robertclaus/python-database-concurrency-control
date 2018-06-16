@@ -84,23 +84,23 @@ class Phase():
             self.lock_index.remove_query(query)
 
 class PhasedPolicy(AbstractPolicy):
-
-    def __init__(self):
-        self.sidetrack_index = SidetrackQueryIndex()
-        self.admitted_query_count = 0
-
-        self.lock_combinations = [
+    lock_combinations = [
                     ['call_forwarding.s_id', 'subscriber.sub_nbr', 'special_facility.s_id'],  # Insert
                     ['special_facility.s_id', 'subscriber.s_id'],  # Low Volume Update
                     ['call_forwarding.start_time','subscriber.sub_nbr'], # Delete
                     ['subscriber.sub_nbr'], # High Volume Update
                 ]
 
+
+    def __init__(self):
+        self.sidetrack_index = SidetrackQueryIndex()
+        self.admitted_query_count = 0
+
         self.phases = deque()
         self.new_queries = []
         self.current_phase = Phase([],True,{})
         self.last_phase_added = 0
-        self.total_phases = len(self.lock_combinations) + 1
+        self.total_phases = len(PhasedPolicy.lock_combinations) + 1
 
     def parse_query(self,query):
         query.parse(True)
@@ -162,7 +162,7 @@ class PhasedPolicy(AbstractPolicy):
                 self.add_new_queries()
                 self.add_readonly_phase()
             else:
-                self.add_phase(self.lock_combinations[next_phase_to_add-1])
+                self.add_phase(PhasedPolicy.lock_combinations[next_phase_to_add-1])
             self.last_phase_added += 1
             print("Finish Adding One Phase {}".format(time.time()))
 

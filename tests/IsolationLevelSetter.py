@@ -1,5 +1,9 @@
 import MySQLdb
 import config
+from DIBSEngine import DIBSEngine
+from clients.MySQLClient import MySQLClient
+from connectors.QueryGeneratorConnector import QueryGeneratorConnector
+from connectors.QuerySets import Insert
 
 from policies.NoIsolationPolicy import NoIsolationPolicy
 from policies.PhasedPolicy import PhasedPolicy
@@ -64,3 +68,24 @@ class IsolationLevelSetter:
             conn.commit()
 
             return dibs_policies[policy]
+
+    @staticmethod
+    def setup(count):
+        IsolationLevelSetter.run('ru')
+
+        MAX_SECONDS_TO_RUN = config.MAX_SECONDS_TO_RUN
+        MAX_QUERIES_TO_RUN = config.MAX_QUERIES_TO_RUN
+        NUMBER_OF_DATABASE_CLIENTS = config.NUMBER_OF_DATABASE_CLIENTS
+        oldQuerySets = QueryGeneratorConnector.possible_query_sets
+
+        config.MAX_SECONDS_TO_RUN = 1000000
+        config.MAX_QUERIES_TO_RUN = count
+        config.NUMBER_OF_DATABASE_CLIENTS = 20
+        QueryGeneratorConnector.possible_query_sets = Insert.query_set
+        dibs_policy = IsolationLevelSetter.run("synthetic-setup")
+        DIBSEngine.run(dibs_policy, MySQLClient, QueryGeneratorConnector)
+
+        config.MAX_SECONDS_TO_RUN = MAX_SECONDS_TO_RUN
+        config.MAX_QUERIES_TO_RUN = MAX_QUERIES_TO_RUN
+        config.NUMBER_OF_DATABASE_CLIENTS = NUMBER_OF_DATABASE_CLIENTS
+        QueryGeneratorConnector.possible_query_sets = oldQuerySets

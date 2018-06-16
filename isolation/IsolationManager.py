@@ -42,7 +42,6 @@ class IsolationManager:
         for new_query in new_queries:
             new_query.start_admit_time = time.time()
             queries_to_admit = self.dibs_policy.new_query(new_query)
-            PhasedPolicy.finish_running()
             query_bundle = self.add_queries_to_bundle(queries_to_admit, query_bundle)
 
         if query_bundle:

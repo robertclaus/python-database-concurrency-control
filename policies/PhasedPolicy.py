@@ -75,14 +75,6 @@ class Phase():
             self.lock_index.remove_query(query)
 
 class PhasedPolicy(AbstractPolicy):
-    time_not_running = 0
-    start = 0
-
-    @staticmethod
-    def finish_running():
-        if not PhasedPolicy.start == -1:
-            PhasedPolicy.time_not_running += (time.time() - PhasedPolicy.start)
-        PhasedPolicy.start = -1
 
     def __init__(self):
         self.sidetrack_index = SidetrackQueryIndex()
@@ -115,7 +107,6 @@ class PhasedPolicy(AbstractPolicy):
 
         if self.admitted_query_count == 0:
             self.start_next_phase()
-            PhasedPolicy.start = time.time()
             queries = self.current_phase.initial_set
             self.admitted_query_count += len(queries)
             print(
@@ -133,7 +124,6 @@ class PhasedPolicy(AbstractPolicy):
 
         if self.admitted_query_count == 0:
             self.start_next_phase()
-            PhasedPolicy.start = time.time()
             queries = self.current_phase.initial_set
             self.admitted_query_count += len(queries)
             print(

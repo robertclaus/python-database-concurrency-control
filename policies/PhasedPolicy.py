@@ -12,6 +12,60 @@ class Phase():
         self.queries = queries
         self.readonly = readonly
         self.column_reference = column_references
+        self.lock_index = GlobalLockIndex()
+
+        if self.readonly:
+            self.lock_index.read_only_mode(True)
+            self.lock_index.set_scheduled_columns({})
+        else:
+            self.lock_index.read_only_mode(False)
+            self.lock_index.set_scheduled_columns(self.column_reference)
+
+        self.initial_set = self.admit_from_phase(True)
+
+    def min_queries_this_phase(self):
+        if self.readonly:
+            return config.MIN_QUERIES_TO_ADMIT_READONLY
+        return config.MIN_QUERIES_TO_ADMIT
+
+    def admit_from_phase(self, intitial_admit):
+        if self.readonly:
+            queries = list(self.queries)
+            self.queries = []
+            return queries
+
+        queries_to_return = []
+        queries_to_remove = []
+        queries_added = 0
+
+        for query in self.queries:
+            query.start_admit_time = time.time() # Override admit time on the query
+            if self.can_admit_query(query):
+                queries_to_return.append(query)
+                queries_to_remove.append(query)
+                self.lock_index.add_query(query)
+                queries_added+=1
+                if intitial_admit and queries_added > config.QUERIES_TO_INITIALLY_ADMIT:
+                    break
+                if queries_added > config.QUERIES_TO_ADMIT_AT_TIME:
+                    break
+
+        self.queries = [query for query in self.queries if query not in queries_to_remove]
+        print("Admitted queries, with {} remaining. {}".format(len(self.queries), time.time()))
+        return queries_to_return
+
+    def can_admit_query(self, query):
+        admit_as_readonly = self.lock_index.readonly and query.readonly
+        sidetrack_if_not_readonly = self.lock_index.readonly
+        try:
+            if (not admit_as_readonly) and (sidetrack_if_not_readonly or self.lock_index.does_conflict(query)):
+                return False
+            else:
+                return True
+        except NotSchedulableException:
+            self.queries.remove(query)
+            print("Scheduling conflict")
+            return False
 
 class PhasedPolicy(AbstractPolicy):
     time_not_running = 0
@@ -24,11 +78,8 @@ class PhasedPolicy(AbstractPolicy):
         PhasedPolicy.start = -1
 
     def __init__(self):
-        self.lock_index = GlobalLockIndex()
         self.sidetrack_index = SidetrackQueryIndex()
-        self.queries_this_phase = []
         self.admitted_query_count = 0
-        self.phases = []
 
         self.lock_combinations = [
                     ['call_forwarding.s_id', 'subscriber.sub_nbr', 'special_facility.s_id'],  # Insert
@@ -36,15 +87,17 @@ class PhasedPolicy(AbstractPolicy):
                     ['call_forwarding.start_time','subscriber.sub_nbr'], # Delete
                     ['subscriber.sub_nbr'], # High Volume Update
                 ]
+
+        self.phases = []
         self.new_queries = []
-        self.aborted = False
         self.readonly = False
+        self.current_phase = None
 
     def parse_query(self,query):
         query.parse(True)
 
     def new_query(self, query):
-        if self.readonly and query.readonly:
+        if self.current_phase.readonly and query.readonly:
             self.admitted_query_count += 1
             return [query]
 
@@ -56,14 +109,16 @@ class PhasedPolicy(AbstractPolicy):
         if self.admitted_query_count == 0:
             self.start_next_phase()
             PhasedPolicy.start = time.time()
-            return self.admit_from_phase(True)
+            queries = self.current_phase.initial_set
+            self.admitted_query_count += len(queries)
+            return queries
 
         return []
 
     def complete_query(self, query):
         self.admitted_query_count -= 1
-        if not (self.readonly and query.readonly):
-            self.lock_index.remove_query(query)
+        if not (self.current_phase.readonly and query.readonly):
+            self.current_phase.lock_index.remove_query(query)
 
         if len(self.phases) == 0:
             self.prep_new_phases()
@@ -71,66 +126,22 @@ class PhasedPolicy(AbstractPolicy):
         if self.admitted_query_count == 0:
             self.start_next_phase()
             PhasedPolicy.start = time.time()
-            return self.admit_from_phase(True)
+            queries = self.current_phase.initial_set
+            self.admitted_query_count += len(queries)
+            return queries
 
-        if self.admitted_query_count < (len(self.queries_this_phase)*2):
-            return self.admit_from_phase(False)
+        if self.admitted_query_count < (len(self.current_phase.queries)*2):
+            return self.current_phase.admit_from_phase(False)
 
-        if self.queries_this_phase and len(self.queries_this_phase) < self.min_queries_this_phase():
+        if self.self.current_phase.queries and len(self.self.current_phase.queries) < self.current_phase.min_queries_this_phase():
             self.delay_remaining_queries()
 
         return []
 
     def delay_remaining_queries(self):
-        print("Delay phase with {} queries left.".format(len(self.queries_this_phase)))
-        self.new_queries.extend(self.queries_this_phase)
-        self.queries_this_phase = []
-
-    def admit_from_phase(self, intitial_admit):
-        if self.readonly:
-            self.admitted_query_count += len(self.queries_this_phase)
-            read_only_queries = list(self.queries_this_phase)
-            self.queries_this_phase = []
-            return read_only_queries
-
-        queries_to_return = []
-        queries_to_remove = []
-        queries_added = 0
-
-        for query in self.queries_this_phase:
-            query.start_admit_time = time.time() # Override admit time on the query
-            if self.can_admit_query(query):
-                queries_to_return.append(query)
-                self.admitted_query_count += 1
-                queries_to_remove.append(query)
-                self.lock_index.add_query(query)
-                queries_added+=1
-                if intitial_admit and queries_added > config.QUERIES_TO_INITIALLY_ADMIT:
-                    break
-                if queries_added > config.QUERIES_TO_ADMIT_AT_TIME:
-                    break
-
-        self.queries_this_phase = [query for query in self.queries_this_phase if query not in queries_to_remove]
-        print("Admitted {} queries, with {} remaining. {}".format(self.admitted_query_count, len(self.queries_this_phase), time.time()))
-        return queries_to_return
-
-    def can_admit_query(self, query):
-        admit_as_readonly = self.lock_index.readonly and query.readonly
-        sidetrack_if_not_readonly = self.lock_index.readonly
-        try:
-            if (not admit_as_readonly) and (sidetrack_if_not_readonly or self.lock_index.does_conflict(query)):
-                return False
-            else:
-                return True
-        except NotSchedulableException:
-            self.queries_this_phase.remove(query)
-            print("Scheduling conflict")
-            return False
-
-    def min_queries_this_phase(self):
-        if self.readonly:
-            return config.MIN_QUERIES_TO_ADMIT_READONLY
-        return config.MIN_QUERIES_TO_ADMIT
+        print("Delay phase with {} queries left.".format(len(self.current_phase.queries)))
+        self.new_queries.extend(self.current_phase.queries)
+        self.current_phase.queries = []
 
     def prep_new_phases(self):
         print("Start Prep Phases {}".format(time.time()))
@@ -146,16 +157,8 @@ class PhasedPolicy(AbstractPolicy):
 
     def start_phase(self, phase):
         print("Starting Phase  Time {}  Count: {}  Readonly: {}  Columns: {}".format(time.time(), len(phase.queries), phase.readonly, phase.column_reference))
-        if phase.readonly:
-            self.lock_index.read_only_mode(True)
-            self.lock_index.set_scheduled_columns({})
-            self.queries_this_phase = phase.queries
-            self.readonly = True
-        else:
-            self.lock_index.read_only_mode(False)
-            self.lock_index.set_scheduled_columns(phase.column_reference)
-            self.queries_this_phase = phase.queries
-            self.readonly = False
+        self.readonly = phase.readonly
+        self.current_phase = phase
 
     def add_new_queries(self):
         slice_of_new_queries = self.new_queries[:config.MAX_QUERIES_PER_PHASE]

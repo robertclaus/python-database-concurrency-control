@@ -1,11 +1,11 @@
 import os
 import sys
 
-from IsolationLevelSetter import IsolationLevelSetter
+from tests.IsolationLevelSetter import IsolationLevelSetter
 from DIBSEngine import DIBSEngine
 from clients.MySQLClient import MySQLClient
 from connectors.QueryGeneratorConnector import QueryGeneratorConnector
-from connectors.QuerySets import TATP, TATP_Read, Synthetic5050, Insert
+from connectors.QuerySets import TATP, TATP_Read, Synthetic5050, Insert, Synthetic9406
 
 import config
 
@@ -19,10 +19,9 @@ config.DEFAULT_GENERATOR_WORKER_COUNT = 2
 config.MAX_GENERATORS = 20
 config.PREGENERATE_ALL_QUERIES = True
 
-# Run #1 - Vary Write %
-for query_set in [Synthetic5050.query_set]:
+for query_set in [Synthetic9406.query_set]:
     QueryGeneratorConnector.possible_query_sets = query_set
-    for workers in [5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]:
+    for workers in [20]:
         config.NUMBER_OF_DATABASE_CLIENTS = workers
         for isolation_level in ['s','ru','s','ru','s','ru']:
             for synthetic_tuples in [10000]:

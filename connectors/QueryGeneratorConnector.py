@@ -59,17 +59,21 @@ class QueryGeneratorConnector(AbstractConnector):
     def next_queries(self):
         if not config.PREGENERATE_ALL_QUERIES:
             self.notify_all()
-        try:
-            pickled_queries = self.received_queue.get_nowait()
-            unpickled_queries = cPickle.loads(zlib.decompress(pickled_queries))
-            decompressed_unpickled_queries = [dbQuery.decompress(q) for q in unpickled_queries]
-            self.total_query_sizes += len(pickled_queries)
-            self.total_query_count += self.bundle_size
-            return decompressed_unpickled_queries
-        except Empty:
-            self.add_generator()
-            sleep(.05)
-            return []
+
+        queries = []
+        while len(queries) < config.QUERIES_TO_NEXT_AT_TIME:
+            try:
+                pickled_queries = self.received_queue.get_nowait()
+                unpickled_queries = cPickle.loads(zlib.decompress(pickled_queries))
+                decompressed_unpickled_queries = [dbQuery.decompress(q) for q in unpickled_queries]
+                self.total_query_sizes += len(pickled_queries)
+                self.total_query_count += self.bundle_size
+                queries.extend(decompressed_unpickled_queries)
+            except Empty:
+                self.add_generator()
+                sleep(.05)
+                return queries
+        return queries
 
     def complete_query(self, query):
         self.finished_list.append(query)

@@ -54,8 +54,8 @@ class IsolationManager:
         queries_admitted = 0
         while queries_admitted < queries_to_admit:
             queries = self.connector.next_queries()
-            self.admit_multiple(queries)
             queries_admitted += len(queries)
+            self.admit_multiple(queries)
             self.proccess_completed_queries()
 
     # Process any queries completed by the database clients so the connector can complete them

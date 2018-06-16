@@ -36,6 +36,8 @@ DEFAULT_GENERATOR_WORKER_COUNT = 10
 MAX_GENERATORS = 15
 PREGENERATE_ALL_QUERIES = False
 
+QUERIES_TO_NEXT_AT_TIME = 1000
+
 # Phased Policy
 # Minimum queries to admit for a column key within a phase (will always admit at least once before checking this)
 MIN_QUERIES_TO_ADMIT = 500

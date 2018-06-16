@@ -28,6 +28,7 @@ for query_set in [Synthetic5050.query_set]:
                 dibs_policy = IsolationLevelSetter.run("synthetic-setup")
                 config.MAX_SECONDS_TO_RUN = 1000000
                 config.MAX_QUERIES_TO_RUN = synthetic_tuples
+                config.NUMBER_OF_DATABASE_CLIENTS = 30
                 QueryGeneratorConnector.possible_query_sets = Insert.query_set
                 DIBSEngine.run(dibs_policy, MySQLClient, QueryGeneratorConnector)
 

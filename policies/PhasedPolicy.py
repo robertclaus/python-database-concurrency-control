@@ -55,7 +55,6 @@ class Phase():
                     break
 
         self.queries = [query for query in self.queries if query not in queries_to_remove]
-        print("Admitted queries Initial: {}  Remaining: {}  {}".format(initial_admit, len(self.queries), time.time()))
         return queries_to_return
 
     def can_admit_query(self, query):
@@ -119,6 +118,8 @@ class PhasedPolicy(AbstractPolicy):
             PhasedPolicy.start = time.time()
             queries = self.current_phase.initial_set
             self.admitted_query_count += len(queries)
+            print(
+                "Admitted {} queries. Remaining: {}  {}".format(len(queries), len(self.current_phase.queries), time.time()))
             return queries
 
         return []
@@ -135,11 +136,15 @@ class PhasedPolicy(AbstractPolicy):
             PhasedPolicy.start = time.time()
             queries = self.current_phase.initial_set
             self.admitted_query_count += len(queries)
+            print(
+                "Admitted {} queries. Remaining: {}  {}".format(len(queries), len(self.current_phase.queries), time.time()))
             return queries
 
         if self.admitted_query_count < (len(self.current_phase.queries)*2):
             queries = self.current_phase.admit_from_phase(False)
             self.admitted_query_count += len(queries)
+            print(
+                "Admitted {} queries. Remaining: {}  {}".format(len(queries), len(self.current_phase.queries), time.time()))
             return queries
 
         if self.current_phase.queries and len(self.current_phase.queries) < self.current_phase.min_queries_this_phase():

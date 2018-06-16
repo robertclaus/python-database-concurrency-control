@@ -35,7 +35,7 @@ class IsolationLevelSetter:
             if isolation_level == 'ru-directcomparison':
               isolation_level = 0
               policy = 3
-            if isolation_level == 'd':
+            if isolation_level == 'synthetic-setup':
               isolation_level = 4
             if isolation_level == 'ru-p':
               isolation_level = 0

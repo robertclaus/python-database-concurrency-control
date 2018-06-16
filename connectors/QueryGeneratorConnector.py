@@ -48,7 +48,7 @@ class QueryGeneratorConnector(AbstractConnector):
 
         print("Prepopulating Generator Queue")
         while self.received_queue.qsize() * config.GENERATOR_BUNDLE_SIZE < self.target_depth:
-            sleep(.1)
+            sleep(.3)
             self.notify_all()
             self.add_generator()
 

@@ -22,7 +22,7 @@ config.PREGENERATE_ALL_QUERIES = True
 # Run #1 - Vary Write %
 for query_set in [Synthetic5050.query_set]:
     QueryGeneratorConnector.possible_query_sets = query_set
-    for workers in [5, 10, 20, 30, 40, 50]:
+    for workers in [5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]:
         config.NUMBER_OF_DATABASE_CLIENTS = workers
         for isolation_level in ['s','ru','s','ru','s','ru']:
             for synthetic_tuples in [10000]:

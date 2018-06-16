@@ -43,9 +43,11 @@ class IsolationManager:
             new_query.start_admit_time = time.time()
             queries_to_admit = self.dibs_policy.new_query(new_query)
             query_bundle = self.add_queries_to_bundle(queries_to_admit, query_bundle)
+            self.proccess_completed_queries()
 
         if query_bundle:
             self.waiting_queries.put(query_bundle)
+            self.proccess_completed_queries()
 
         return
 
@@ -56,7 +58,6 @@ class IsolationManager:
             queries = self.connector.next_queries()
             queries_admitted += len(queries)
             self.admit_multiple(queries)
-            self.proccess_completed_queries()
 
     # Process any queries completed by the database clients so the connector can complete them
     def proccess_completed_queries(self):

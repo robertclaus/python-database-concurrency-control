@@ -156,7 +156,7 @@ class PhasedPolicy(AbstractPolicy):
         print("End Prep Phases {}".format(time.time()))
 
     def start_next_phase(self):
-        while len(self.current_phase.queries == 0) and self.phases:
+        while len(self.current_phase.queries)==0 and self.phases:
             self.current_phase = self.phases.pop()
         if len(self.current_phase.queries) == 0:
             self.current_phase = Phase([], True, {})

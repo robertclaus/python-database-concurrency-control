@@ -133,7 +133,7 @@ class PhasedPolicy(AbstractPolicy):
         if self.admitted_query_count < (len(self.current_phase.queries)*2):
             return self.current_phase.admit_from_phase(False)
 
-        if self.self.current_phase.queries and len(self.self.current_phase.queries) < self.current_phase.min_queries_this_phase():
+        if self.current_phase.queries and len(self.current_phase.queries) < self.current_phase.min_queries_this_phase():
             self.delay_remaining_queries()
 
         return []

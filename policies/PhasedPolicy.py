@@ -1,4 +1,5 @@
-from collections import defaultdict
+from Queue import Queue
+from collections import defaultdict, deque
 import time
 
 import config
@@ -95,9 +96,11 @@ class PhasedPolicy(AbstractPolicy):
                     ['subscriber.sub_nbr'], # High Volume Update
                 ]
 
-        self.phases = []
+        self.phases = deque()
         self.new_queries = []
         self.current_phase = Phase([],True,{})
+        self.last_phase_added = 0
+        self.total_phases = len(self.lock_combinations) + 1
 
     def parse_query(self,query):
         query.parse(True)
@@ -109,16 +112,12 @@ class PhasedPolicy(AbstractPolicy):
 
         self.new_queries.append(query)
 
-        if len(self.phases) == 0:
+        if len(self.phases) < self.total_phases:
             self.prep_new_phases()
 
         if self.admitted_query_count == 0:
             self.start_next_phase()
-            queries = self.current_phase.get_initial_set()
-            self.admitted_query_count += len(queries)
-            print(
-                "Admitted {} queries. Remaining: {}  {}".format(len(queries), self.current_phase.total_count(), time.time()))
-            return queries
+            return self.call_phase_admit(True)
 
         return []
 
@@ -126,28 +125,29 @@ class PhasedPolicy(AbstractPolicy):
         self.admitted_query_count -= 1
         self.current_phase.complete_query(query)
 
-        if len(self.phases) == 0:
+        if len(self.phases) < self.total_phases:
             self.prep_new_phases()
 
         if self.admitted_query_count == 0:
             self.start_next_phase()
-            queries = self.current_phase.get_initial_set()
-            self.admitted_query_count += len(queries)
-            print(
-                "Admitted {} queries. Remaining: {}  {}".format(len(queries), self.current_phase.total_count(), time.time()))
-            return queries
+            return self.call_phase_admit(True)
 
         if self.admitted_query_count < (self.current_phase.total_count()*2):
-            queries = self.current_phase.admit_from_phase(False)
-            self.admitted_query_count += len(queries)
-            print(
-                "Admitted {} queries. Remaining: {}  {}".format(len(queries), self.current_phase.total_count(), time.time()))
-            return queries
+            return self.call_phase_admit(False)
 
         if self.current_phase.queries and len(self.current_phase.queries) < self.current_phase.min_queries_this_phase():
             self.delay_remaining_queries()
 
         return []
+
+    def call_phase_admit(self, initial):
+        if initial:
+            queries = self.current_phase.get_initial_set()
+        else:
+            queries = self.current_phase.admit_from_phase(False)
+        self.admitted_query_count += len(queries)
+        print("Admitted queries. Admitted: {}  Remaining: {}  {}".format(self.admitted_query_count, self.current_phase.total_count(), time.time()))
+        return queries
 
     def delay_remaining_queries(self):
         print("Delay phase with {} queries left.".format(len(self.current_phase.queries)))
@@ -155,17 +155,21 @@ class PhasedPolicy(AbstractPolicy):
         self.current_phase.queries = []
 
     def prep_new_phases(self):
-        print("Start Prep Phases {}".format(time.time()))
-        self.add_new_queries()
-        self.add_readonly_phase()
-        for combination in self.lock_combinations:
-            self.add_phase(combination)
-        self.phases.reverse()
-        print("End Prep Phases {}".format(time.time()))
+        while len(self.phases)< self.total_phases:
+            print("Add One Phase {}".format(time.time()))
+            next_phase_to_add = self.last_phase_added % self.total_phases
+            if next_phase_to_add == 0:
+                self.add_new_queries()
+                self.add_readonly_phase()
+            else:
+                self.add_phase(self.lock_combinations[next_phase_to_add-1])
+            self.last_phase_added += 1
+            print("Finish Adding One Phase {}".format(time.time()))
+
 
     def start_next_phase(self):
         while self.current_phase.total_count() == 0 and self.phases:
-            self.current_phase = self.phases.pop()
+            self.current_phase = self.phases.popleft()
         if self.current_phase.total_count() == 0:
             self.current_phase = Phase([], True, {})
         phase = self.current_phase
@@ -196,8 +200,9 @@ class PhasedPolicy(AbstractPolicy):
                 query_list = [q for q in query_list if q in column_queries]
 
             column_reference[tab].append(col)
+        if not query_list:
+            query_list = []
 
-        if query_list is not None:  # and len(value) > minimum_queue_size:
-            queries = list(query_list)
-            self.phases.append(Phase(queries, False, column_reference))
-            self.sidetrack_index.remove_queries(queries)
+        queries = list(query_list)
+        self.phases.append(Phase(queries, False, column_reference))
+        self.sidetrack_index.remove_queries(queries)

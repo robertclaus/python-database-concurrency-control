@@ -89,7 +89,6 @@ class PhasedPolicy(AbstractPolicy):
 
         self.phases = []
         self.new_queries = []
-        self.readonly = False
         self.current_phase = Phase([],True,{})
 
     def parse_query(self,query):
@@ -157,12 +156,14 @@ class PhasedPolicy(AbstractPolicy):
         print("End Prep Phases {}".format(time.time()))
 
     def start_next_phase(self):
-        self.start_phase(self.phases.pop())
-
-    def start_phase(self, phase):
-        print("Starting Phase  Time {}  Count: {}  Readonly: {}  Columns: {}".format(time.time(), len(phase.queries), phase.readonly, phase.column_reference))
-        self.readonly = phase.readonly
-        self.current_phase = phase
+        while (self.current_phase.queries == 0) and self.phases:
+            self.current_phase = self.phases.pop()
+        if len(self.current_phase.queries) == 0:
+            self.current_phase = Phase([], True, {})
+        phase = self.current_phase
+        print("Starting Phase  Time {}  Count: {}  Readonly: {}  Columns: {}".format(time.time(), len(phase.queries),
+                                                                                     phase.readonly,
+                                                                                     phase.column_reference))
 
     def add_new_queries(self):
         slice_of_new_queries = self.new_queries[:config.MAX_QUERIES_PER_PHASE]

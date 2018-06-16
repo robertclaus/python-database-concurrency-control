@@ -91,7 +91,7 @@ class PhasedPolicy(AbstractPolicy):
         self.phases = []
         self.new_queries = []
         self.readonly = False
-        self.current_phase = None
+        self.current_phase = Phase([],True,{})
 
     def parse_query(self,query):
         query.parse(True)

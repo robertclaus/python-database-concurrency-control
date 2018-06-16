@@ -166,12 +166,20 @@ class PhasedPolicy(AbstractPolicy):
             self.last_phase_added += 1
             print("Finish Adding One Phase {}".format(time.time()))
 
+        for phase in self.phases:
+            if phase.total_count() == 0:
+                self.phases.remove(phase)
+
+        if not self.phases:
+            self.add_readonly_phase()
+
 
     def start_next_phase(self):
         while self.current_phase.total_count() == 0 and self.phases:
             self.current_phase = self.phases.popleft()
         if self.current_phase.total_count() == 0:
-            self.current_phase = Phase([], True, {})
+            if not self.current_phase.readonly:
+                self.current_phase = Phase([], True, {})
         phase = self.current_phase
         print("Starting Phase  Time {}  Count: {}  Readonly: {}  Columns: {}".format(time.time(), phase.total_count(),
                                                                                      phase.readonly,

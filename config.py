@@ -34,7 +34,7 @@ DEFAULT_TARGET_DEPTH = 5000
 GENERATOR_BUNDLE_SIZE = 100
 DEFAULT_GENERATOR_WORKER_COUNT = 10
 MAX_GENERATORS = 20
-PREGENERATE_ALL_QUERIES = True
+PREGENERATE_ALL_QUERIES = False
 
 # Phased Policy
 # Minimum queries to admit for a column key within a phase (will always admit at least once before checking this)

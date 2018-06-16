@@ -132,7 +132,7 @@ class PhasedPolicy(AbstractPolicy):
             self.start_next_phase()
             return self.call_phase_admit(True)
 
-        if self.admitted_query_count < (self.current_phase.total_count()*2):
+        if self.admitted_query_count < (self.current_phase.total_count()/2):
             return self.call_phase_admit(False)
 
         if self.current_phase.queries and len(self.current_phase.queries) < self.current_phase.min_queries_this_phase():

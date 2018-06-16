@@ -90,7 +90,8 @@ class QueryGeneratorConnector(AbstractConnector):
             self.total_thread_count += 1
             self.threads.append(p)
         else:
-            print("Not generating queries fast enough.")
+            if not config.PREGENERATE_ALL_QUERIES:
+                print("Not generating queries fast enough.")
 
     def print_stats(self):
 

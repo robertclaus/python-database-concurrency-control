@@ -15,12 +15,12 @@ config.MAX_QUERIES_TO_RUN = 10000
 config.MAX_QUERIES_IN_ENGINE = 300
 
 config.DEFAULT_TARGET_DEPTH = 1000
-config.GENERATOR_BUNDLE_SIZE = 10
+config.GENERATOR_BUNDLE_SIZE = 6
 config.DEFAULT_GENERATOR_WORKER_COUNT = 2
-config.MAX_GENERATORS = 20
+config.MAX_GENERATORS = 25
 config.PREGENERATE_ALL_QUERIES = False
 
-for pred_count in [1, 10, 100, 1000]:
+for pred_count in [10,20,30,40,50,60,70,80,90]:
     QueryGeneratorConnector.possible_query_sets = SyntheticPredicate.get_query_set(pred_count)
     for workers in [20]:
         config.NUMBER_OF_DATABASE_CLIENTS = workers

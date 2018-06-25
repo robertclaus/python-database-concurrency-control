@@ -6,6 +6,7 @@ from DIBSEngine import DIBSEngine
 from clients.MySQLClient import MySQLClient
 from connectors.QueryGeneratorConnector import QueryGeneratorConnector
 from connectors.QuerySets import SyntheticPredicate
+from policies.PhasedPolicy import PhasedPolicy
 
 import config
 
@@ -31,6 +32,8 @@ for pred_count in [1, 10, 100, 1000]:
                 print("Running Queries")
                 dibs_policy = IsolationLevelSetter.run(isolation_level)
                 QueryGeneratorConnector.last_isolation_level = isolation_level
+                PhasedPolicy.lock_combinations = [['a.a3']]
+
                 try:
                     DIBSEngine.run(dibs_policy, MySQLClient, QueryGeneratorConnector)
                 except IOError:

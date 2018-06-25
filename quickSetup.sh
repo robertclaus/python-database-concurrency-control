@@ -18,3 +18,5 @@ sudo ./tatp config/mysql.ddf config/update_and_read.tdf
 cd /opt/python-database-concurrency-control/backup
 sudo sh -c 'cat backup_to_be_catd_together/backup_to_be_catd_together* > loaddata.sql'
 sudo mysql -ptest -Dmydb < loaddata.sql
+sudo mysql -ptest -e 'CREATE DATABASE t;'
+sudo mysql -ptest -e 'CREATE TABLE t.a (a1 int, a2 int, a3 int);'

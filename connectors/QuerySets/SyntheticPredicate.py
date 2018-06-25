@@ -4,4 +4,4 @@ def get_query_set(number_of_ors):
     for x in xrange(number_of_ors):
         base = base + " OR a.a3 = <randIntu>"
     base = base + ";"
-    return [ base ]
+    return [ base, 100 ]

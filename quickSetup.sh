@@ -1,5 +1,5 @@
 echo "When prompted use password 'test' and select the legacy authentication mode."
-
+sleep 60
 sudo apt-get purge mysql-server mysql-client mysql-common mysql-server-core-* mysql-client-core-*
 sudo rm -rf /etc/mysql /var/lib/mysql
 sudo apt-get autoremove
@@ -14,3 +14,7 @@ sudo service mysql start
 sudo mysql -ptest -e "CREATE DATABASE mydb"
 export PYTHONPATH='.'
 cd /opt/tatpbenchmark-1.1.1/source/src/
+sudo ./tatp config/mysql.ddf config/update_and_read.tdf
+cd /opt/python-database-concurrency-control/backup
+sudo sh -c 'cat backup_to_be_catd_together/backup_to_be_catd_together* > loaddata.sql'
+sudo mysql -ptest -Dmydb < loaddata.sql

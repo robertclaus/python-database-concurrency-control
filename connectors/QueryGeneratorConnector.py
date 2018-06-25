@@ -205,12 +205,19 @@ class QueryGeneratorConnector(AbstractConnector):
         sys.stdout.write(", {}, {}, {} \n\n\n\n".format(self.last_isolation_level, DIBSEngine.worker_num, QueryGeneratorConnector.possible_query_sets))
 
     class replacePattern:
-        def __init__(self, pattern, lambda_function):
+        def __init__(self, pattern, lambda_function, shared=True):
             self._lambda_function = lambda_function
             self._pattern = pattern
+            self._shared = shared
 
         def replace(self, target, query_obj):
-            return target.replace(self._pattern, self._lambda_function(query_obj))
+            if self._shared:
+                return target.replace(self._pattern, self._lambda_function(query_obj))
+
+            new_target = target
+            while self._pattern in new_target:
+                new_target = new_target.replace(self._pattern, self._lambda_function(query_obj), 1)
+            return new_target
 
     wild_card_rules = [
         replacePattern("<randInt>", lambda s: str(random.randint(1, 100000))),
@@ -235,6 +242,8 @@ class QueryGeneratorConnector(AbstractConnector):
                        lambda s: str(QueryGeneratorConnector.non_uniform_random(1,
                                                                        config.SUBSCRIBER_COUNT)).rjust(15, '0')),
         replacePattern("<rand_int_1_big>", lambda s: str(random.randint(1, 256 * 256 * 256))),
+
+        replacePattern("<randIntu>", lambda s: str(random.randint(1, 100000)), False),
     ]
 
     # Used for the TATP 

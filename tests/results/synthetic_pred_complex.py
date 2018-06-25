@@ -10,9 +10,9 @@ from policies.PhasedPolicy import PhasedPolicy
 
 import config
 
-config.MAX_SECONDS_TO_RUN = 20000
-config.MAX_QUERIES_TO_RUN = 1000
-config.MAX_QUERIES_IN_ENGINE = 100
+config.MAX_SECONDS_TO_RUN = 20
+config.MAX_QUERIES_TO_RUN = 10000
+config.MAX_QUERIES_IN_ENGINE = 300
 
 config.DEFAULT_TARGET_DEPTH = 1000
 config.GENERATOR_BUNDLE_SIZE = 10

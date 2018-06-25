@@ -20,7 +20,7 @@ config.DEFAULT_GENERATOR_WORKER_COUNT = 2
 config.MAX_GENERATORS = 25
 config.PREGENERATE_ALL_QUERIES = False
 
-for pred_count in [10,20,30,40,50,60,70,80,90]:
+for pred_count in [1,2,3,5,8,13,21,34,55]:
     QueryGeneratorConnector.possible_query_sets = SyntheticPredicate.get_query_set(pred_count)
     for workers in [20]:
         config.NUMBER_OF_DATABASE_CLIENTS = workers

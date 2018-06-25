@@ -70,8 +70,9 @@ class QueryGeneratorConnector(AbstractConnector):
                 self.total_query_count += self.bundle_size
                 queries.extend(decompressed_unpickled_queries)
             except Empty:
-                self.add_generator()
-                sleep(.05)
+                if not config.PREGENERATE_ALL_QUERIES:
+                    self.add_generator()
+                    sleep(.05)
                 return queries
         return queries
 

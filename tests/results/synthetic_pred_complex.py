@@ -24,7 +24,7 @@ for pred_count in [1, 10, 100, 1000]:
     QueryGeneratorConnector.possible_query_sets = SyntheticPredicate.get_query_set(pred_count)
     for workers in [20]:
         config.NUMBER_OF_DATABASE_CLIENTS = workers
-        for isolation_level in ['ru', 'ru-phased', 'ru-directcomparison', 'ru-zerocc', 's']:
+        for isolation_level in ['ru', 'ru-directcomparison', 'ru-zerocc', 's']:
             for synthetic_tuples in [10000]:
                 print("Populating DB")
                 IsolationLevelSetter.setup(synthetic_tuples)

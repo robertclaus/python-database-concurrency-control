@@ -18,6 +18,8 @@ POSTGRES_USER = 'robertclaus'
 POSTGRES_PASSWORD = 'test'
 POSTGRES_DB_NAME = 't'
 
+SQLITEFILE='/data/mydb'
+
 # Engine Configuration
 MAX_QUERIES_IN_ENGINE = 15000
 NUMBER_OF_DATABASE_CLIENTS = 4

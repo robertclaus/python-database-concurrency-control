@@ -14,11 +14,9 @@ MYSQL_DB_NAME = 'mydb' #t for standard, mydb for tatp
 # Postgres Configuration
 POSTGRES_HOST = '127.0.0.1'
 POSTGRES_PORT = '5432'
-POSTGRES_USER = 'robertclaus'
+POSTGRES_USER = 'postgres'
 POSTGRES_PASSWORD = 'test'
 POSTGRES_DB_NAME = 't'
-
-SQLITEFILE='/data/mydb'
 
 # Engine Configuration
 MAX_QUERIES_IN_ENGINE = 15000

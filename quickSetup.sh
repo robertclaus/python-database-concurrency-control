@@ -20,3 +20,8 @@ sudo sh -c 'cat backup_to_be_catd_together/backup_to_be_catd_together* > loaddat
 sudo mysql -ptest -Dmydb < loaddata.sql
 sudo mysql -ptest -e 'CREATE DATABASE t;'
 sudo mysql -ptest -e 'CREATE TABLE t.a (a1 int, a2 int, a3 int);'
+sudo apt-get install sqlite3
+sqlite3 b 'attach database sqlitedb as t; create table t.a (a1 int, a2 int, a3 int);'
+sudo -u postgres psql -c 'CREATE DATABASE t;'
+sudo -u postgres psql -d t -c 'CREATE SCHEMA t;'
+sudo -u postgres psql -d t -c 'CREATE TABLE t.a (a1 int, a2 int, a3 int);'

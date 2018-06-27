@@ -2,6 +2,7 @@ import MySQLdb
 import config
 from DIBSEngine import DIBSEngine
 from clients.MySQLClient import MySQLClient
+from clients.PostgresClient import PostgresClient
 from clients.SqliteClient import SqliteClient
 from connectors.QueryGeneratorConnector import QueryGeneratorConnector
 from connectors.QuerySets import Insert
@@ -63,9 +64,19 @@ class IsolationLevelSetter:
                 NoIsolationPolicyWithParsing(),
                 PhasedIntegratedPolicy(),
             ]
-            if (not dbClient == SqliteClient) or isolation_level>3:
+            if (dbClient == MySQLClient) or isolation_level>3:
                 client = dbClient()
                 client.execute(query_text[isolation_level])
+
+            if (dbClient == PostgresClient) and isolation_level <4:
+                psql_query_text = [
+                    "SET SESSION CHARACTERISTICS AS TRANSACTION READ UNCOMMITTED;",
+                    "SET SESSION CHARACTERISTICS AS TRANSACTION SERIALIZABLE;",
+                    "SET SESSION CHARACTERISTICS AS TRANSACTION READ COMMITTED;",
+                    "SET SESSION CHARACTERISTICS AS TRANSACTION LEVEL REPEATABLE READ;",
+                ]
+                PostgresClient.initialization_query = psql_query_text[isolation_level]
+
 
             return dibs_policies[policy]
 

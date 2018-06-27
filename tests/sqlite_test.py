@@ -13,8 +13,8 @@ from policies.PhasedPolicy import PhasedPolicy
 
 import config
 
-config.MAX_SECONDS_TO_RUN = 30
-config.MAX_QUERIES_TO_RUN = 1000
+config.MAX_SECONDS_TO_RUN = 500
+config.MAX_QUERIES_TO_RUN = 10000
 config.MAX_QUERIES_IN_ENGINE = 300
 
 config.DEFAULT_TARGET_DEPTH = 1000
@@ -23,7 +23,7 @@ config.DEFAULT_GENERATOR_WORKER_COUNT = 2
 config.MAX_GENERATORS = 25
 config.PREGENERATE_ALL_QUERIES = True
 
-for dbclient in [SqliteClient, PostgresClient, MySQLClient]:
+for dbclient in [PostgresClient, SqliteClient, MySQLClient]:
     for synthetic_tuples in [100000]:
         print("Populating DB")
         IsolationLevelSetter.setup(synthetic_tuples, dbclient)

@@ -19,6 +19,7 @@ class PostgresClient(AbstractClient):
 
     def execute(self, query_text):
         try:
+            self.cursor = self.connection.cursor()
             self.cursor.execute(query_text)
             self.connection.commit()
             return self._result_to_string()

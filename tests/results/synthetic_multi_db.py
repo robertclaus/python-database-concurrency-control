@@ -28,7 +28,7 @@ for readpercent in [10, 30, 50, 70, 90]:
     for workers in [10]:
         config.NUMBER_OF_DATABASE_CLIENTS = workers
         for isolation_level in [ 'ru-directcomparison', 'ru', 'ru-zerocc', 's']:
-            for dbclient in [SqliteClient, PostgresClient, MySQLClient]:
+            for dbclient in [PostgresClient, SqliteClient, MySQLClient]:
                 for synthetic_tuples in [1000]:
                     print("Populating DB")
                     IsolationLevelSetter.setup(synthetic_tuples, dbclient)

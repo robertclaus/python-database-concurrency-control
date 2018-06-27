@@ -281,8 +281,8 @@ class dbQuery:
     def add_identifier(self, identifier, mode):
         ident = str(identifier)
 
-        if not '.' in str(ident):
-            ident = config.DEFAULT_TABLE + ident
+        if not '.' in ident:
+            ident = config.DEFAULT_TABLE + "."+ ident
 
         self.predicatelock.add_value(ident,
                                      0,

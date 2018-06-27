@@ -14,7 +14,7 @@ MYSQL_DB_NAME = 'mydb' #t for standard, mydb for tatp
 # Postgres Configuration
 POSTGRES_HOST = '127.0.0.1'
 POSTGRES_PORT = '5432'
-POSTGRES_USER = 'postgres'
+POSTGRES_USER = 'test'
 POSTGRES_PASSWORD = 'test'
 POSTGRES_DB_NAME = 't'
 

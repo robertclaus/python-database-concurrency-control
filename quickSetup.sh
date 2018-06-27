@@ -25,3 +25,4 @@ sqlite3 b 'attach database sqlitedb as t; create table t.a (a1 int, a2 int, a3 i
 sudo -u postgres psql -c 'CREATE DATABASE t;'
 sudo -u postgres psql -d t -c 'CREATE SCHEMA t;'
 sudo -u postgres psql -d t -c 'CREATE TABLE t.a (a1 int, a2 int, a3 int);'
+sudo -u postgres psql -d t -c "CREATE USER test WITH PASSWORD 'test';"

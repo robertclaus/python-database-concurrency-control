@@ -70,10 +70,10 @@ class IsolationLevelSetter:
 
             if (dbClient == PostgresClient) and isolation_level <4:
                 psql_query_text = [
-                    "SET SESSION CHARACTERISTICS AS TRANSACTION READ UNCOMMITTED;",
-                    "SET SESSION CHARACTERISTICS AS TRANSACTION SERIALIZABLE;",
-                    "SET SESSION CHARACTERISTICS AS TRANSACTION READ COMMITTED;",
-                    "SET SESSION CHARACTERISTICS AS TRANSACTION LEVEL REPEATABLE READ;",
+                    "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;",
+                    "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL SERIALIZABLE;",
+                    "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED;",
+                    "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL LEVEL REPEATABLE READ;",
                 ]
                 PostgresClient.initialization_query = psql_query_text[isolation_level]
 

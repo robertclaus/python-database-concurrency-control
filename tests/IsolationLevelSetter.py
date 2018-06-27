@@ -2,6 +2,7 @@ import MySQLdb
 import config
 from DIBSEngine import DIBSEngine
 from clients.MySQLClient import MySQLClient
+from clients.SqliteClient import SqliteClient
 from connectors.QueryGeneratorConnector import QueryGeneratorConnector
 from connectors.QuerySets import Insert
 
@@ -41,6 +42,8 @@ class IsolationLevelSetter:
               policy = 3
             if isolation_level == 'synthetic-setup':
               isolation_level = 4
+            if isolation_level == 'delete-synthetic':
+              isolation_level = 5
             if isolation_level == 'ru-p':
               isolation_level = 0
               policy = 4
@@ -81,8 +84,14 @@ class IsolationLevelSetter:
         config.MAX_SECONDS_TO_RUN = 1000000
         config.MAX_QUERIES_TO_RUN = count
         config.NUMBER_OF_DATABASE_CLIENTS = 20
+        if dbclient == SqliteClient:
+            config.NUMBER_OF_DATABASE_CLIENTS = 1
+
         QueryGeneratorConnector.possible_query_sets = Insert.query_set
+
         dibs_policy = IsolationLevelSetter.run("synthetic-setup")
+        IsolationLevelSetter.run("delete-synthetic")
+
         DIBSEngine.run(dibs_policy, dbclient, QueryGeneratorConnector)
 
         config.MAX_SECONDS_TO_RUN = MAX_SECONDS_TO_RUN

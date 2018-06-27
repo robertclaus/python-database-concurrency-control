@@ -23,22 +23,22 @@ config.DEFAULT_GENERATOR_WORKER_COUNT = 2
 config.MAX_GENERATORS = 25
 config.PREGENERATE_ALL_QUERIES = True
 
-for readpercent in [10, 30, 50, 70, 90]:
-    QueryGeneratorConnector.possible_query_sets = Synthetic.get_query_set(readpercent)
-    for workers in [20]:
-        config.NUMBER_OF_DATABASE_CLIENTS = workers
-        for synthetic_tuples in [100000]:
-            print("Populating DB")
-            IsolationLevelSetter.setup(synthetic_tuples, dbclient)
+for dbclient in [SqliteClient, PostgresClient, MySQLClient]:
+    print("Populating DB")
+    IsolationLevelSetter.setup(synthetic_tuples, dbclient)
 
-            for isolation_level in ['ru-phased', 'ru', 'ru-directcomparison', 'ru-zerocc', 's']:
-                for dbclient in [SqliteClient, PostgresClient, MySQLClient]:
-                    print("Running Queries")
+    for readpercent in [10, 30, 50, 70, 90]:
+        for workers in [20]:
+            for synthetic_tuples in [100000]:
+                for isolation_level in ['ru-phased', 'ru', 'ru-directcomparison', 'ru-zerocc', 's']:
+                        print("Running Queries")
+                        QueryGeneratorConnector.possible_query_sets = Synthetic.get_query_set(readpercent)
+                        config.NUMBER_OF_DATABASE_CLIENTS = workers
 
-                    PhasedPolicy.lock_combinations = [['a.a2']]
-                    dibs_policy = IsolationLevelSetter.run(isolation_level, dbclient)
+                        PhasedPolicy.lock_combinations = [['a.a2']]
+                        dibs_policy = IsolationLevelSetter.run(isolation_level, dbclient)
 
-                    try:
-                        DIBSEngine.run(dibs_policy, dbclient, QueryGeneratorConnector)
-                    except IOError:
-                        sys.stdout.write("\n\nIO ERROR ENDED TEST\n\n")
+                        try:
+                            DIBSEngine.run(dibs_policy, dbclient, QueryGeneratorConnector)
+                        except IOError:
+                            sys.stdout.write("\n\nIO ERROR ENDED TEST\n\n")

@@ -4,6 +4,7 @@ import sys
 import multiprocessing
 import random
 
+import config
 from PredicateLock import PredicateLock
 
 class microQuery:
@@ -264,6 +265,9 @@ class dbQuery:
         main_column = str(comparison[0])
         comparison_column = str(comparison[4]).replace("'", "")
 
+        if not '.' in main_column:
+            main_column = config.DEFAULT_TABLE + main_column
+
         # Comparing between columns means use ANY for both columns
         if '.' in comparison_column:
             self.add_identifier(main_column, mode)
@@ -275,7 +279,12 @@ class dbQuery:
                                          mode)
 
     def add_identifier(self, identifier, mode):
-        self.predicatelock.add_value(str(identifier),
+        ident = str(identifier)
+
+        if not '.' in str(ident):
+            ident = config.DEFAULT_TABLE + ident
+
+        self.predicatelock.add_value(ident,
                                      0,
                                      "",
                                      mode)

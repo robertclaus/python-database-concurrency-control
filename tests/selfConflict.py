@@ -1,11 +1,12 @@
-from connectors import QueryGeneratorConnector, QuerySets
-import sys
+from connectors import QueryGeneratorConnector
 
-query_set = int(sys.argv[1])
-query_to_generate = int(sys.argv[2])
+from connectors.QuerySets import Synthetic
+from policies.DirectPredicatePolicy import DirectPredicatePolicy
 
-q1 = QueryGeneratorConnector.QueryGenerator.generate_query(QuerySets.query_sets[query_set], query_to_generate, 1, True)
-q2 = QueryGeneratorConnector.QueryGenerator.generate_query(QuerySets.query_sets[query_set], query_to_generate, 1, True)
-columns_to_consider = {"subscriber":["sub_nbr"]}
+QueryGeneratorConnector.possible_query_sets = Synthetic.get_query_set(10)
+
+q1 = QueryGeneratorConnector.QueryGeneratorConnector.generate_query(QueryGeneratorConnector.possible_query_sets, 2, DirectPredicatePolicy())
+q2 = QueryGeneratorConnector.QueryGeneratorConnector.generate_query(QueryGeneratorConnector.possible_query_sets, 2, DirectPredicatePolicy())
+columns_to_consider = None # {"subscriber":["sub_nbr"]}
 conflicts= q1.conflicts(q2,columns_to_consider)
 print("Query 1: {}\n\nQuery2: {}\n\nUsing Columns: {}\n\nConflict: {}".format(q1,q2,columns_to_consider,conflicts))

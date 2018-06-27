@@ -44,7 +44,7 @@ class ClientConnectorManager:
                     query.result = connector.execute(query.query_text)
 
                 except Exception as e:
-                    query.error = "ERROR: {}".format(str(e))
+                    query.error = "ERROR: [{}] on Query [{}]".format(str(e), query.query_text)
                     print(query.error)
 
                 query.completed_at = time.time()

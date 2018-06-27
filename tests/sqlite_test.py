@@ -13,29 +13,29 @@ from policies.PhasedPolicy import PhasedPolicy
 
 import config
 
-config.MAX_SECONDS_TO_RUN = 20
-config.MAX_QUERIES_TO_RUN = 10000
+config.MAX_SECONDS_TO_RUN = 30
+config.MAX_QUERIES_TO_RUN = 1000
 config.MAX_QUERIES_IN_ENGINE = 300
 
 config.DEFAULT_TARGET_DEPTH = 1000
 config.GENERATOR_BUNDLE_SIZE = 6
 config.DEFAULT_GENERATOR_WORKER_COUNT = 2
 config.MAX_GENERATORS = 25
-config.PREGENERATE_ALL_QUERIES = False
+config.PREGENERATE_ALL_QUERIES = True
 
 for readpercent in [10, 30, 50, 70, 90]:
     QueryGeneratorConnector.possible_query_sets = Synthetic.get_query_set(readpercent)
-    for workers in [10]:
+    for workers in [20]:
         config.NUMBER_OF_DATABASE_CLIENTS = workers
-        for isolation_level in [ 'ru-directcomparison', 'ru', 'ru-zerocc', 's']:
-            for dbclient in [SqliteClient, PostgresClient, MySQLClient]:
-                for synthetic_tuples in [100000]:
-                    print("Populating DB")
-                    IsolationLevelSetter.setup(synthetic_tuples, dbclient)
+        for synthetic_tuples in [100000]:
+            print("Populating DB")
+            IsolationLevelSetter.setup(synthetic_tuples, dbclient)
 
+            for isolation_level in ['ru-phased', 'ru', 'ru-directcomparison', 'ru-zerocc', 's']:
+                for dbclient in [SqliteClient, PostgresClient, MySQLClient]:
                     print("Running Queries")
 
-                    PhasedPolicy.lock_combinations = [['a.a3']]
+                    PhasedPolicy.lock_combinations = [['a.a2']]
                     dibs_policy = IsolationLevelSetter.run(isolation_level, dbclient)
 
                     try:

@@ -266,7 +266,7 @@ class dbQuery:
         comparison_column = str(comparison[4]).replace("'", "")
 
         if not '.' in main_column:
-            main_column = config.DEFAULT_TABLE + main_column
+            main_column = config.DEFAULT_TABLE + "." +main_column
 
         # Comparing between columns means use ANY for both columns
         if '.' in comparison_column:
@@ -282,7 +282,7 @@ class dbQuery:
         ident = str(identifier)
 
         if not '.' in ident:
-            ident = config.DEFAULT_TABLE + "."+ ident
+            ident = config.DEFAULT_TABLE + "." + ident
 
         self.predicatelock.add_value(ident,
                                      0,

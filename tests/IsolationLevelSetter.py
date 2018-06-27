@@ -70,7 +70,7 @@ class IsolationLevelSetter:
             return dibs_policies[policy]
 
     @staticmethod
-    def setup(count):
+    def setup(count, dbclient=MySQLClient):
         IsolationLevelSetter.run('ru')
 
         MAX_SECONDS_TO_RUN = config.MAX_SECONDS_TO_RUN
@@ -83,7 +83,7 @@ class IsolationLevelSetter:
         config.NUMBER_OF_DATABASE_CLIENTS = 20
         QueryGeneratorConnector.possible_query_sets = Insert.query_set
         dibs_policy = IsolationLevelSetter.run("synthetic-setup")
-        DIBSEngine.run(dibs_policy, MySQLClient, QueryGeneratorConnector)
+        DIBSEngine.run(dibs_policy, dbclient, QueryGeneratorConnector)
 
         config.MAX_SECONDS_TO_RUN = MAX_SECONDS_TO_RUN
         config.MAX_QUERIES_TO_RUN = MAX_QUERIES_TO_RUN

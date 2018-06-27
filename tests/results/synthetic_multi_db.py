@@ -31,7 +31,7 @@ for readpercent in [10, 30, 50, 70, 90]:
             for dbclient in [SqliteClient, PostgresClient, MySQLClient]:
                 for synthetic_tuples in [10000]:
                     print("Populating DB")
-                    IsolationLevelSetter.setup(synthetic_tuples)
+                    IsolationLevelSetter.setup(synthetic_tuples, dbclient)
 
                     print("Running Queries")
                     dibs_policy = IsolationLevelSetter.run(isolation_level)

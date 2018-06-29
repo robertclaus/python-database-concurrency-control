@@ -43,14 +43,14 @@ config.PREGENERATE_ALL_QUERIES = True
 #                         except IOError:
 #                             sys.stdout.write("\n\nIO ERROR ENDED TEST\n\n")
 
-for dbclient in [PostgresClient, SqliteClient]:
+for dbclient in [MySQLClient]:
     for synthetic_tuples in [100000]:
         print("Populating DB")
         IsolationLevelSetter.setup(synthetic_tuples, dbclient)
 
-        for readpercent in [10, 30, 50, 70, 90]:
+        for readpercent in [ 50, 30, 70, 10, 90]:
             for workers in [20]:
-                for isolation_level in ['s', 'ru']:
+                for isolation_level in ['ru-phased', 'ru', 'ru-directcomparison', 'ru-zerocc', 's']:
                         print("Running Queries")
                         QueryGeneratorConnector.possible_query_sets = Synthetic.get_query_set(readpercent)
                         config.NUMBER_OF_DATABASE_CLIENTS = workers

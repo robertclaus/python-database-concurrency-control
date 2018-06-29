@@ -27,3 +27,5 @@ sudo -u postgres psql -d t -c 'CREATE SCHEMA t;'
 sudo -u postgres psql -d t -c 'CREATE TABLE t.a (a1 int, a2 int, a3 int);'
 sudo -u postgres psql -d t -c "CREATE USER test WITH PASSWORD 'test';"
 sudo -u postgres psql -d t -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA t TO test;"
+echo "Done with automatic setup."
+echo "Run sudo service mysql stop, then add [mysqld] \n innodb_buffer_pool_size=10737418240 to the /etc/mysql/conf.d/mysql.cnf file, then run sudo service mysql start!!"

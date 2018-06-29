@@ -50,7 +50,7 @@ for dbclient in [PostgresClient, SqliteClient]:
 
         for readpercent in [10, 30, 50, 70, 90]:
             for workers in [20]:
-                for isolation_level in ['ru', 's']:
+                for isolation_level in ['s', 'ru']:
                         print("Running Queries")
                         QueryGeneratorConnector.possible_query_sets = Synthetic.get_query_set(readpercent)
                         config.NUMBER_OF_DATABASE_CLIENTS = workers

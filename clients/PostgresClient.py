@@ -28,7 +28,7 @@ class PostgresClient(AbstractClient):
                 if "no results to fetch" in str(e):
                     return ""
                 elif "The transaction might succeed if retried." in str(e):
-                    pass
+                    self.cursor.close()
                 else:
                     raise e
         raise psycopg2.OperationalError('Retried 1000 times!!!')

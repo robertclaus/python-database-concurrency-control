@@ -27,7 +27,10 @@ class PostgresClient(AbstractClient):
             except ProgrammingError as e:
                 if "no results to fetch" in str(e):
                     return ""
-                elif "The transaction might succeed if retried." in str(e):
+                else:
+                    raise e
+            except psycopg2.OperationalError as e:
+                if "could not serialize access" in str(e):
                     self.cursor.close()
                 else:
                     raise e

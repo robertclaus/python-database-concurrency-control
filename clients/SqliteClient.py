@@ -5,11 +5,14 @@ import config
 import sqlite3
 
 class SqliteClient(AbstractClient):
+    initialization_query = None
 
     def __init__(self):
         self.db = sqlite3.connect('sqlitedb', timeout=100)
         self.cursor = self.db.cursor()
         self.cursor.execute('PRAGMA journal_mode=WAL;')
+        if SqliteClient.initialization_query:
+            self.cursor.execute(SqliteClient.initialization_query)
         self.cursor.execute('PRAGMA wal_autocheckpoint=1000;')
         self.cursor.execute('attach database sqlitedb as t;')
         self.db.commit()

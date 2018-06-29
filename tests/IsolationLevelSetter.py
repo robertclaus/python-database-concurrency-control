@@ -77,6 +77,14 @@ class IsolationLevelSetter:
                 ]
                 PostgresClient.initialization_query = psql_query_text[isolation_level]
 
+            if (dbClient == SqliteClient) and isolation_level <4:
+                sqlite_query_text = [
+                    "PRAGMA read_uncommitted = true;",
+                    "PRAGMA read_uncommitted = false;", # Serializable
+                    "PRAGMA read_uncommitted = true;",
+                    "PRAGMA read_uncommitted = true;",
+                ]
+                SqliteClient.initialization_query = sqlite_query_text[isolation_level]
 
             return dibs_policies[policy]
 

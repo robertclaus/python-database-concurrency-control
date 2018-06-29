@@ -18,16 +18,20 @@ class PostgresClient(AbstractClient):
             self.connection.commit()
 
     def execute(self, query_text):
-        try:
-            self.cursor = self.connection.cursor()
-            self.cursor.execute(query_text)
-            self.connection.commit()
-            return self._result_to_string()
-        except ProgrammingError as e:
-            if "no results to fetch" in str(e):
-                return ""
-            else:
-                raise e
+        for i in xrange(1, 1000):
+            try:
+                self.cursor = self.connection.cursor()
+                self.cursor.execute(query_text)
+                self.connection.commit()
+                return self._result_to_string()
+            except ProgrammingError as e:
+                if "no results to fetch" in str(e):
+                    return ""
+                elif "The transaction might succeed if retried." in str(e):
+                    pass
+                else:
+                    raise e
+        raise psycopg2.OperationalError('Retried 1000 times!!!')
 
 
     def _result_to_string(self):

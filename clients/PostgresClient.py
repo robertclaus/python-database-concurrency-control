@@ -24,14 +24,13 @@ class PostgresClient(AbstractClient):
                 self.cursor.execute(query_text)
                 self.connection.commit()
                 return self._result_to_string()
-            except ProgrammingError as e:
+            except psycopg2.DatabaseError as e:
+                self.connection.rollback()
+                self.cursor.close()
                 if "no results to fetch" in str(e):
                     return ""
-                else:
-                    raise e
-            except psycopg2.OperationalError as e:
-                if "could not serialize access" in str(e):
-                    self.cursor.close()
+                elif "could not serialize access" in str(e):
+                    pass
                 else:
                     raise e
         raise psycopg2.OperationalError('Retried 1000 times!!!')

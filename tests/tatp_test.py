@@ -26,8 +26,8 @@ config.QUERIES_TO_NEXT_AT_TIME = 10
 config.MAX_QUERIES_PER_PHASE = 15000
 
 # Number of queries to try and admit at once before checking if we should move onto a different phase.
-config.QUERIES_TO_ADMIT_AT_TIME = 10
-config.QUERIES_TO_INITIALLY_ADMIT = 10
+config.QUERIES_TO_ADMIT_AT_TIME = 1
+config.QUERIES_TO_INITIALLY_ADMIT = 1
 
 # If less than this many queries are in the phase, we will move on to the next phase (will always admit at least once before checking this)
 config.MIN_QUERIES_TO_ADMIT = 1

@@ -143,7 +143,7 @@ class QueryGeneratorConnector(AbstractConnector):
             if query.worker_waited_time is not None:
                 total_wait_time += query.worker_waited_time
 
-            if not query.query_type_id in type_index_sum:
+            if not query.query_type_id in total_time:
                 total_time[query.query_type_id] = 0
             total_time[query.query_type_id] += query.total_time
 

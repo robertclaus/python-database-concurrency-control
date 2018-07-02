@@ -145,7 +145,7 @@ class QueryGeneratorConnector(AbstractConnector):
 
             if not query.query_type_id in total_time_per_type:
                 total_time_per_type[query.query_type_id] = 0
-                total_time_per_type[query.query_type_id] += query.total_time
+            total_time_per_type[query.query_type_id] += query.total_time
 
         for query in finished_list:
             if not query.query_type_id in std_devs:

@@ -13,8 +13,12 @@ class MySQLClient(AbstractClient):
         self.cursor = self.connection.cursor()
 
     def execute(self, query_text):
-        self.cursor.execute(query_text)
-        self.connection.commit()
+        try:
+            self.cursor.execute(query_text)
+            self.connection.commit()
+        except Exception as e:
+            if "Duplicate entry" in e:
+                return "Duplicate entry error, but query ran."
         return self._result_to_string()
 
     def _result_to_string(self):

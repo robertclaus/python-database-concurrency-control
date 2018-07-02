@@ -41,10 +41,12 @@ PREGENERATE_ALL_QUERIES = False
 QUERIES_TO_NEXT_AT_TIME = 1000
 
 # Phased Policy
-# Minimum queries to admit for a column key within a phase (will always admit at least once before checking this)
-MIN_QUERIES_TO_ADMIT = 500
-# Maximum queries to run in one phase.  Note MAX_ENGINES_IN_ENGINE may restrict this anyways.
+# Maximum queries to run in a round of phases. Note MAX_QUERIES_IN_ENGINE may restrict this anyways.
 MAX_QUERIES_PER_PHASE = 15000
+
 # Number of queries to try and admit at once before checking if we should move onto a different phase.
 QUERIES_TO_ADMIT_AT_TIME = 500
 QUERIES_TO_INITIALLY_ADMIT = 200
+
+# If less than this many queries are in the phase, we will move on to the next phase (will always admit at least once before checking this)
+MIN_QUERIES_TO_ADMIT = 500

@@ -5,7 +5,7 @@ from IsolationLevelSetter import IsolationLevelSetter
 from DIBSEngine import DIBSEngine
 from clients.MySQLClient import MySQLClient
 from connectors.QueryGeneratorConnector import QueryGeneratorConnector
-from connectors.QuerySets import query_sets
+from connectors.QuerySets import TATP
 
 import config
 
@@ -33,14 +33,13 @@ config.QUERIES_TO_INITIALLY_ADMIT = 200
 config.MIN_QUERIES_TO_ADMIT = 500
 
 for dbclient in [MySQLClient]:
-    for query_set in [4]:
-        QueryGeneratorConnector.possible_query_sets = query_sets[query_set]
-        for workers in [12]:
-            config.NUMBER_OF_DATABASE_CLIENTS = workers
-            for isolation_level in ['ru-phased','ru', 's']:
-                dibs_policy = IsolationLevelSetter.run(isolation_level,dbclient)
+    QueryGeneratorConnector.possible_query_sets = TATP.query_set
+    for workers in [12]:
+        config.NUMBER_OF_DATABASE_CLIENTS = workers
+        for isolation_level in ['ru-phased','ru', 's']:
+            dibs_policy = IsolationLevelSetter.run(isolation_level,dbclient)
 
-                try:
-                    DIBSEngine.run(dibs_policy, MySQLClient, QueryGeneratorConnector)
-                except IOError:
-                    sys.stdout.write("\n\nIO ERROR ENDED TEST\n\n")
+            try:
+                DIBSEngine.run(dibs_policy, MySQLClient, QueryGeneratorConnector)
+            except IOError:
+                sys.stdout.write("\n\nIO ERROR ENDED TEST\n\n")

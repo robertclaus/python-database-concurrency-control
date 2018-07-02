@@ -11,10 +11,10 @@ import config
 
 config.MAX_SECONDS_TO_RUN = 120
 config.MAX_QUERIES_TO_RUN = 25000
-config.MAX_QUERIES_IN_ENGINE = 10000
+config.MAX_QUERIES_IN_ENGINE = 15000
 config.CLIENT_BUNDLE_SIZE = 3
 
-config.DEFAULT_TARGET_DEPTH = 1000
+config.DEFAULT_TARGET_DEPTH = 2000
 config.GENERATOR_BUNDLE_SIZE = 8
 config.DEFAULT_GENERATOR_WORKER_COUNT = 2
 config.MAX_GENERATORS = 25
@@ -27,7 +27,7 @@ config.MAX_QUERIES_PER_PHASE = 15000
 
 # Number of queries to try and admit at once before checking if we should move onto a different phase.
 config.QUERIES_TO_ADMIT_AT_TIME = 500
-config.QUERIES_TO_INITIALLY_ADMIT = 200
+config.QUERIES_TO_INITIALLY_ADMIT = 300
 
 # If less than this many queries are in the phase, we will move on to the next phase (will always admit at least once before checking this)
 config.MIN_QUERIES_TO_ADMIT = 500

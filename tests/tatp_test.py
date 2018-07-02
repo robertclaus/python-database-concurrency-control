@@ -19,7 +19,7 @@ config.GENERATOR_BUNDLE_SIZE = 1
 config.DEFAULT_GENERATOR_WORKER_COUNT = 2
 config.MAX_GENERATORS = 50
 config.PREGENERATE_ALL_QUERIES = False
-config.QUERIES_TO_NEXT_AT_TIME = 24
+config.QUERIES_TO_NEXT_AT_TIME = 1
 
 # Phased Policy
 # Maximum queries to run in a round of phases. Note MAX_QUERIES_IN_ENGINE may restrict this anyways.

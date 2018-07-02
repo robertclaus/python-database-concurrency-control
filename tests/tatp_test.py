@@ -23,7 +23,7 @@ config.QUERIES_TO_NEXT_AT_TIME = 24
 
 # Phased Policy
 # Maximum queries to run in a round of phases. Note MAX_QUERIES_IN_ENGINE may restrict this anyways.
-config.MAX_QUERIES_PER_PHASE = 3000
+config.MAX_QUERIES_PER_PHASE = 8000
 #15000 -> 7500 had little effect.
 
 # Number of queries to try and admit at once before checking if we should move onto a different phase.

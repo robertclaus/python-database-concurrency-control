@@ -125,6 +125,7 @@ class QueryGeneratorConnector(AbstractConnector):
         std_devs = {}
         max = {}
         admit_time = {}
+        total_time = {}
         total_wait_time = 0
 
         finished_list = self.finished_list
@@ -141,6 +142,10 @@ class QueryGeneratorConnector(AbstractConnector):
             type_index_count[query.query_type_id] += 1
             if query.worker_waited_time is not None:
                 total_wait_time += query.worker_waited_time
+
+            if not query.query_type_id in type_index_sum:
+                total_time[query.query_type_id] = 0
+            total_time[query.query_type_id] += query.total_time
 
         for query in finished_list:
             if not query.query_type_id in std_devs:
@@ -200,8 +205,8 @@ class QueryGeneratorConnector(AbstractConnector):
             sys.stdout.write(",{}".format(type_index_count[query_type]))
         for query_type in sorted(type_index_sum.iterkeys()):
             sys.stdout.write(
-                ",{},{},{}".format(query_type, microseconds_used(type_index_sum, type_index_count, query_type),
-                                   type_index_count[query_type]))
+                ",{},{},{},{}".format(query_type, microseconds_used(type_index_sum, type_index_count, query_type),
+                                   type_index_count[query_type],total_time[query_type]))
 
         sys.stdout.write(", {}, {}, {} \n\n\n\n".format(self.last_isolation_level, DIBSEngine.worker_num, QueryGeneratorConnector.possible_query_sets))
 

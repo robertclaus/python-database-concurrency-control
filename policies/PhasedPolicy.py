@@ -140,7 +140,7 @@ class PhasedPolicy(AbstractPolicy):
             self.delay_remaining_queries()
             return []
 
-        if self.admitted_query_count < config.ADMIT_MORE_QUERIES_IF_LESS_THAN:
+        if self.admitted_query_count < config.ADMIT_MORE_QUERIES_IF_LESS_THAN and len(self.current_phase.queries)>0:
             return self.call_phase_admit(False)
 
         return []

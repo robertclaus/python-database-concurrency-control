@@ -32,6 +32,7 @@ config.QUERIES_TO_INITIALLY_ADMIT = 100
 
 # If less than this many queries are in the phase, we will move on to the next phase (will always admit at least once before checking this)
 config.MIN_QUERIES_TO_ADMIT = 100000
+config.MIN_QUERIES_TO_ADMIT_READONLY = 100000
 
 ADMIT_MORE_QUERIES_IF_LESS_THAN = 1
 
@@ -42,7 +43,7 @@ for dbclient in [MySQLClient]:
         for isolation_level in ['ru-phased','ru', 's']:
             phase_lengths = [100]
             if isolation_level == 'ru-phased':
-                phase_lengths = [10, 30, 60, 100, 150, 200, 250, 300, 350, 400]
+                phase_lengths = [10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30]
 
             for phase_length in phase_lengths:
                 config.QUERIES_TO_INITIALLY_ADMIT = phase_length

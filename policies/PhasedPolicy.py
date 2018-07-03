@@ -119,6 +119,10 @@ class PhasedPolicy(AbstractPolicy):
             self.start_next_phase()
             return self.call_phase_admit(True)
 
+        if self.current_phase.queries and len(self.current_phase.queries) < self.current_phase.min_queries_this_phase():
+            self.delay_remaining_queries()
+            return []
+
         return []
 
     def complete_query(self, query):

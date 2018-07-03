@@ -27,11 +27,11 @@ config.MAX_QUERIES_PER_PHASE = 10000
 #15000 -> 7500 had little effect.
 
 # Number of queries to try and admit at once before checking if we should move onto a different phase.
-config.QUERIES_TO_ADMIT_AT_TIME = 500
-config.QUERIES_TO_INITIALLY_ADMIT = 300
+config.QUERIES_TO_ADMIT_AT_TIME = 60
+config.QUERIES_TO_INITIALLY_ADMIT = 60
 
 # If less than this many queries are in the phase, we will move on to the next phase (will always admit at least once before checking this)
-config.MIN_QUERIES_TO_ADMIT = 500
+config.MIN_QUERIES_TO_ADMIT = 60
 
 for dbclient in [MySQLClient]:
     QueryGeneratorConnector.possible_query_sets = TATP.query_set

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import io
 import math
 import os
 import random
@@ -166,12 +167,7 @@ class QueryGeneratorConnector(AbstractConnector):
             if query.total_time - query.waiting_time > max[query.query_type_id]:
                 max[query.query_type_id] = query.total_time - query.waiting_time
 
-        with open('allqueries.csv', 'wb') as file:
-            for query in finished_list:
-                file.write("{},{},{},{},{},\"{}\"\n".format(query.id, query.worker,
-                                                            1000 * (query.waiting_time + query.created_at),
-                                                            1000 * (query.total_time + query.created_at),
-                                                            query.lock_run_under, query.query_type_id))
+
 
         # Total utilization
         total_time_executing = 0
@@ -195,20 +191,34 @@ class QueryGeneratorConnector(AbstractConnector):
             print("### ERROR: Utilization under 98% - Indicates this process was too slow.")
         print("Throughput (Q/s) : " + str(completed / total_time))
 
-        sys.stdout.write(
+        buffer = io.BytesIO()
+        buffer.write(
             "\n csv,{},{},{},{},{}".format(total_time, DIBSEngine.worker_num, completed, str(completed / total_time),
                                         total_utilization * 100))
 
         for query_type in sorted(type_index_sum.iterkeys()):
-            sys.stdout.write(",{}".format(microseconds_used(type_index_sum, type_index_count, query_type)))
+            buffer.write(",{}".format(microseconds_used(type_index_sum, type_index_count, query_type)))
         for query_type in sorted(type_index_sum.iterkeys()):
-            sys.stdout.write(",{}".format(type_index_count[query_type]))
+            buffer.write(",{}".format(type_index_count[query_type]))
         for query_type in sorted(type_index_sum.iterkeys()):
-            sys.stdout.write(
+            buffer.write(
                 ",{},{},{},{},{}".format("Query Type",query_type, microseconds_used(type_index_sum, type_index_count, query_type),
                                    type_index_count[query_type],microseconds_used(total_time_per_type, type_index_count, query_type)))
 
-        sys.stdout.write(", {}, {}, {}, {}, {} \n\n\n\n".format(self.last_isolation_level, DIBSEngine.worker_num, QueryGeneratorConnector.possible_query_sets), "Phase Length:", config.QUERIES_TO_INITIALLY_ADMIT)
+        buffer.write(", {}, {}, {}, {}, {} \n\n\n\n".format(self.last_isolation_level, DIBSEngine.worker_num, QueryGeneratorConnector.possible_query_sets), "Phase Length:", config.QUERIES_TO_INITIALLY_ADMIT)
+
+        sys.stdout.write(buffer.getvalue())
+
+        with open('allqueries.csv', 'a') as file:
+            file.write(buffer.getvalue())
+            for query in finished_list:
+                file.write("query,{},{},{},{},{},\"{}\",{}\n".format(query.id, query.worker,
+                                                            1000 * (query.waiting_time + query.created_at),
+                                                            1000 * (query.total_time + query.created_at),
+                                                            query.lock_run_under,
+                                                            query.query_type_id,
+                                                            query.total_time))
+        file.write("endquery\n")
 
     class replacePattern:
         def __init__(self, pattern, lambda_function, shared=True):

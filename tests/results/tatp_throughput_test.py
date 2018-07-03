@@ -28,18 +28,16 @@ config.MAX_QUERIES_PER_PHASE = 10000
 
 # Number of queries to try and admit at once before checking if we should move onto a different phase.
 config.QUERIES_TO_ADMIT_AT_TIME = 500
-config.QUERIES_TO_INITIALLY_ADMIT = 100
+config.QUERIES_TO_INITIALLY_ADMIT = 500
 
 # If less than this many queries are in the phase, we will move on to the next phase (will always admit at least once before checking this)
-config.MIN_QUERIES_TO_ADMIT = 100000
-
-ADMIT_MORE_QUERIES_IF_LESS_THAN = 1
+config.MIN_QUERIES_TO_ADMIT = 60
 
 for dbclient in [MySQLClient]:
     QueryGeneratorConnector.possible_query_sets = TATP.query_set
-    for workers in [8]:
+    for workers in [2, 4, 6, 8, 10, 12, 14, 16]:
         config.NUMBER_OF_DATABASE_CLIENTS = workers
-        for isolation_level in ['ru-phased','ru', 's']:
+        for isolation_level in ['ru-phased','ru', 'ru-directcomparison', 'ru-zerocc', 'ru', 's']:
             dibs_policy = IsolationLevelSetter.run(isolation_level,dbclient)
 
             try:

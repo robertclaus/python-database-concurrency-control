@@ -48,5 +48,7 @@ MAX_QUERIES_PER_PHASE = 15000
 QUERIES_TO_ADMIT_AT_TIME = 500
 QUERIES_TO_INITIALLY_ADMIT = 200
 
+ADMIT_MORE_QUERIES_IF_LESS_THAN = 200
+
 # If less than this many queries are in the phase, we will move on to the next phase (will always admit at least once before checking this)
 MIN_QUERIES_TO_ADMIT = 500

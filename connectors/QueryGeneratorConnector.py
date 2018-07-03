@@ -218,7 +218,7 @@ class QueryGeneratorConnector(AbstractConnector):
                                                             query.lock_run_under,
                                                             query.query_type_id,
                                                             query.total_time))
-        file.write("endquery\n")
+            file.write("endquery\n")
 
     class replacePattern:
         def __init__(self, pattern, lambda_function, shared=True):

@@ -40,9 +40,15 @@ for dbclient in [MySQLClient]:
     for workers in [8]:
         config.NUMBER_OF_DATABASE_CLIENTS = workers
         for isolation_level in ['ru-phased','ru', 's']:
-            dibs_policy = IsolationLevelSetter.run(isolation_level,dbclient)
+            phase_lengths = [100]
+            if isolation_level == 'ru-phased':
+                phase_lengths = [10, 30, 60, 100, 150, 200, 250, 300, 350, 400]
 
-            try:
-                DIBSEngine.run(dibs_policy, MySQLClient, QueryGeneratorConnector)
-            except IOError:
-                sys.stdout.write("\n\nIO ERROR ENDED TEST\n\n")
+            for phase_length in phase_lengths:
+                config.QUERIES_TO_INITIALLY_ADMIT = phase_length
+                dibs_policy = IsolationLevelSetter.run(isolation_level,dbclient)
+
+                try:
+                    DIBSEngine.run(dibs_policy, MySQLClient, QueryGeneratorConnector)
+                except IOError:
+                    sys.stdout.write("\n\nIO ERROR ENDED TEST\n\n")

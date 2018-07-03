@@ -208,7 +208,7 @@ class QueryGeneratorConnector(AbstractConnector):
                 ",{},{},{},{},{}".format("Query Type",query_type, microseconds_used(type_index_sum, type_index_count, query_type),
                                    type_index_count[query_type],microseconds_used(total_time_per_type, type_index_count, query_type)))
 
-        sys.stdout.write(", {}, {}, {} \n\n\n\n".format(self.last_isolation_level, DIBSEngine.worker_num, QueryGeneratorConnector.possible_query_sets))
+        sys.stdout.write(", {}, {}, {}, {}, {} \n\n\n\n".format(self.last_isolation_level, DIBSEngine.worker_num, QueryGeneratorConnector.possible_query_sets), "Phase Length:", config.QUERIES_TO_INITIALLY_ADMIT)
 
     class replacePattern:
         def __init__(self, pattern, lambda_function, shared=True):

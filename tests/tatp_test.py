@@ -43,7 +43,7 @@ for dbclient in [MySQLClient]:
         for isolation_level in ['ru-phased','ru', 's']:
             phase_lengths = [100]
             if isolation_level == 'ru-phased':
-                phase_lengths = [10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30]
+                phase_lengths = [10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 35, 40, 45, 50, 55, 60, 65, 70]
 
             for phase_length in phase_lengths:
                 config.QUERIES_TO_INITIALLY_ADMIT = phase_length

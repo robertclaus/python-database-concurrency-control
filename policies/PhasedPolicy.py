@@ -106,6 +106,7 @@ class PhasedPolicy(AbstractPolicy):
         query.parse(True)
 
     def new_query(self, query):
+        print("New Query")
         if self.current_phase.readonly and query.readonly:
             self.admitted_query_count += 1
             return [query]

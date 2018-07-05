@@ -47,7 +47,7 @@ for dbclient in [MySQLClient]:
 
             for phase_length in phase_lengths:
                 config.QUERIES_TO_INITIALLY_ADMIT = phase_length
-                config.MAX_QUERIES_IN_ENGINE = phase_length * 2
+                config.MAX_QUERIES_IN_ENGINE = phase_length * 100
                 dibs_policy = IsolationLevelSetter.run(isolation_level,dbclient)
 
                 try:

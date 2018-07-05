@@ -53,6 +53,7 @@ class IsolationManager:
 
     # Admit the next queries from the connector
     def append_next(self, queries_to_admit):
+        print("admitting {}".format(queries_to_admit))
         queries_admitted = 0
         while queries_admitted < queries_to_admit:
             queries = self.connector.next_queries()

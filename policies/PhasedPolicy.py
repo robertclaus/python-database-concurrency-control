@@ -178,7 +178,9 @@ class PhasedPolicy(AbstractPolicy):
         while self.current_phase.total_count() == 0 and self.phases:
             self.current_phase = self.phases.popleft()
         if self.current_phase.total_count() == 0:
-            self.current_phase = Phase([], True, {})
+            self.prep_new_phases()
+            while self.current_phase.total_count() == 0 and self.phases:
+                self.current_phase = self.phases.popleft()
         phase = self.current_phase
         print("Starting Phase  Time {}  Count: {}  Readonly: {}  Columns: {}".format(time.time(), phase.total_count(),
                                                                                      phase.readonly,

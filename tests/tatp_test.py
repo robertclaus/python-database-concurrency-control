@@ -49,6 +49,7 @@ for dbclient in [MySQLClient]:
                 config.QUERIES_TO_INITIALLY_ADMIT = phase_length
                 config.MAX_QUERIES_IN_ENGINE = phase_length
                 config.QUERIES_TO_NEXT_AT_TIME = min(phase_length, 20)
+                config.GENERATOR_BUNDLE_SIZE = min(phase_length, 10)
 
                 dibs_policy = IsolationLevelSetter.run(isolation_level,dbclient)
 

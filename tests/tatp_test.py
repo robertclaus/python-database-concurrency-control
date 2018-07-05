@@ -11,7 +11,7 @@ import config
 
 config.MAX_SECONDS_TO_RUN = 120
 config.MAX_QUERIES_TO_RUN = 30000
-config.MAX_QUERIES_IN_ENGINE = 15000
+config.MAX_QUERIES_IN_ENGINE = 2 #15000
 config.CLIENT_BUNDLE_SIZE = 3
 
 config.DEFAULT_TARGET_DEPTH = 100
@@ -47,7 +47,6 @@ for dbclient in [MySQLClient]:
 
             for phase_length in phase_lengths:
                 config.QUERIES_TO_INITIALLY_ADMIT = phase_length
-                config.MAX_QUERIES_IN_ENGINE = phase_length * 1000
                 dibs_policy = IsolationLevelSetter.run(isolation_level,dbclient)
 
                 try:

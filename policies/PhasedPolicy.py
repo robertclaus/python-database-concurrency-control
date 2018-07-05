@@ -180,9 +180,10 @@ class PhasedPolicy(AbstractPolicy):
             while self.current_phase.total_count() == 0 and self.phases:
                 self.current_phase = self.phases.popleft()
         phase = self.current_phase
-        print("Starting Phase  Time {}  Count: {}  Readonly: {}  Columns: {}".format(time.time(), phase.total_count(),
+        print("Starting Phase  Time {}  Count: {}  Readonly: {}  Columns: {} Total: {}".format(time.time(), phase.total_count(),
                                                                                      phase.readonly,
-                                                                                     phase.column_reference))
+                                                                                     phase.column_reference,
+                                                                                     self.admitted_query_count))
 
     def add_new_queries(self):
         slice_of_new_queries = self.new_queries[:config.MAX_QUERIES_PER_PHASE]
